@@ -1,0 +1,46 @@
+# Charte graphique — abac_visuel
+# Modifiez ce fichier pour personnaliser l'apparence des abaques.
+
+[figure]
+largeur = 16          # largeur en pouces
+hauteur_par_ligne = 0.45  # hauteur par ligne de produit (pouces)
+hauteur_min = 4       # hauteur minimale de la figure (pouces)
+dpi = 150
+
+[couleurs.fond]
+pair   = "#f0f0f0"    # fond des groupes pairs
+impair = "#ffffff"    # fond des groupes impairs
+
+[couleurs.texte]
+titre      = "#000000"
+entete     = "#000000"
+produit    = "#000000"
+valeur_bar = "#1a1a1a"  # valeur portée affichée en bout de barre
+
+[couleurs.separateurs]
+fort   = "#aaaaaa"    # entre groupes produits
+leger  = "#dddddd"    # entre sous-lignes d'un même produit
+entete = "#333333"    # ligne sous l'en-tête
+
+[couleurs.grille]
+verticale = "#cccccc"  # lignes verticales des portées
+
+[polices]
+titre        = 13
+entete       = 7
+produit      = 7
+entraxe      = 7
+indice       = 8
+valeur_bar   = 6.5
+
+# Couleurs des barres par entraxe (ordre croissant d'entraxe)
+# Ajoutez autant de couleurs que d'entraxes différents dans vos configs.
+[couleurs.entraxes]
+couleurs = [
+    "#2196f3",   # entraxe 1 (le plus petit)
+    "#4caf50",   # entraxe 2
+    "#ff9800",   # entraxe 3
+    "#e91e63",   # entraxe 4
+    "#9c27b0",   # entraxe 5
+    "#00bcd4",   # entraxe 6
+]

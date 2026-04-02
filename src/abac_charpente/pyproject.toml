@@ -1,0 +1,36 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "abac-charpente"
+version = "0.1.0"
+description = "Calcul de portées admissibles EN 1990/EC5 pour structures bois"
+requires-python = ">=3.14"
+dependencies = [
+    "numpy>=1.26",
+    "click>=8.1",
+    "pydantic>=2.0",
+    "loguru>=0.7",
+    "pandas>=2.2",
+    "sapeg-regen-stock",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov",
+    "forallpeople",
+]
+build = [
+    "pyinstaller>=6.0",
+]
+
+[project.scripts]
+abac = "abac_charpente.cli:cli"
+
+[tool.hatch.build.targets.wheel]
+packages = ["abac_charpente"]
+
+[tool.hatch.build.targets.wheel.shared-data]
+"abac_charpente/data" = "abac_charpente/data"

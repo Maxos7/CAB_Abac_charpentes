@@ -1,0 +1,20 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "abac-visuel"
+version = "0.1.0"
+description = "Visualisation des portées admissibles ABAC-Charpente"
+requires-python = ">=3.14"
+dependencies = [
+    "pandas>=2.2",
+    "matplotlib>=3.8",
+    "loguru>=0.7",
+]
+
+[project.scripts]
+abac-visuel = "abac_visuel.cli:cli"
+
+[tool.hatch.build.targets.wheel]
+packages = ["abac_visuel"]

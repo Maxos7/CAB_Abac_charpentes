@@ -1,0 +1,20 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "sapeg-regen-stock"
+version = "0.1.0"
+description = "Filtre et enrichissement du fichier stock SAPEG pour le calcul EC5"
+requires-python = ">=3.14"
+dependencies = [
+    "pandas>=2.2",
+    "loguru>=0.7",
+    "pydantic>=2.0",
+]
+
+[project.scripts]
+sapeg-regen-stock = "sapeg_regen_stock.cli:cli"
+
+[tool.hatch.build.targets.wheel]
+packages = ["sapeg_regen_stock"]

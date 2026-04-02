@@ -1,0 +1,10 @@
+usage;w_inst_inv;w_fin_inv;w_2_inv;second_oeuvre_defaut;applicable
+TOITURE_INACC;300;250;;false;true
+TOITURE_ACC;300;300;;false;true
+PLANCHER_HAB;300;300;350;true;true
+PLANCHER_BUR;300;300;350;true;true
+PLANCHER_REU;300;250;350;true;true
+PLANCHER_COM;300;250;;false;true
+PLANCHER_STO;200;200;;false;true
+PLANCHER_PAR;;;;false;false
+AGRICOLE;200;150;;false;true
