@@ -1,13 +1,13 @@
 #[[config_calcul]]
-#id_config_calcul = "SOLIVE_HAB_600"
+#id_config_calcul = "SOLIVE_HAB"
 #type_poutre = "Solive"
 #usage = "PLANCHER_HAB"
 #L_min_m = 2.0
 #pas_longueur_m = 0.5
 #pente_deg = 0.0
-#entraxe_m = [0.6,1.2]
+#entraxe_m = [0.6]
 #classe_service = 1
-#g_k_kNm2 = 0.4
+#g_k_kNm2 = [0.5, 0.6, 0.7]
 #q_k_kNm2 = 1.5
 #s_k_kNm2 = 0.0
 #w_k_kNm2 = 0.0
@@ -16,7 +16,7 @@
 #entraxe_antideversement_mm = 0
 
 [[config_calcul]]
-id_config_calcul = "PANNE_TOITURE"
+id_config_calcul = "PANNE_TOITURE_INACC"
 type_poutre = "Panne"
 usage = "TOITURE_INACC"
 L_min_m = 2.0
@@ -25,9 +25,30 @@ pente_deg = [4, 15, 30, 35, 40, 45]
 entraxe_m = [1.2, 1.7]
 classe_service = 1
 g_k_kNm2 = [0.4, 0.5, 0.6, 0.7, 0.8]
+g2_k_pcent = 0.0
 q_k_kNm2 = 0.0
-s_k_kNm2 = 0.5
+categorie_q = "H"
+s_k_kNm2 = 0.36
 w_k_kNm2 = 0.0
-second_oeuvre = true
-double_flexion = false
+type_toiture_vent = "1_pan"
+second_oeuvre = false
+double_flexion = true
 entraxe_antideversement_mm = 0
+marge_securite = 0
+
+#[[config_calcul]]
+#id_config_calcul = "PANNE_TOITURE_ACC"
+#type_poutre = "Panne"
+#usage = "TOITURE_ACC"
+#L_min_m = 2.0
+#pas_longueur_m = 0.5
+#pente_deg = [4, 15, 30, 35, 40, 45]
+#entraxe_m = [1.2, 1.7]
+#classe_service = 1
+#g_k_kNm2 = [0.4, 0.5, 0.6, 0.7, 0.8]
+#q_k_kNm2 = 0.8
+#s_k_kNm2 = 0.54
+#w_k_kNm2 = 0.0
+#second_oeuvre = false
+#double_flexion = true
+#entraxe_antideversement_mm = 0

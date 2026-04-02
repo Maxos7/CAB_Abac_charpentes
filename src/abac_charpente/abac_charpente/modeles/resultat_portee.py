@@ -63,6 +63,7 @@ class RésultatPortée:
     # Charges linéaires (kN/m)
     # -----------------------------------------------------------------------
     q_G_kNm: float
+    q_G2_pcent: float
     q_Q_kNm: float
     q_S_kNm: float
     q_W_kNm: float

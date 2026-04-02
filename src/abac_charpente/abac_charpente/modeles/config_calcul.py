@@ -45,6 +45,7 @@ class ConfigCalcul(BaseModel):
 
     # Charges caractéristiques (kN/m² ou kN/m)
     g_k_kNm2: float | list[float] = 0.0
+    g2_k_pcent: float | list[float] = 0.0
     q_k_kNm2: float | list[float] = 0.0
     categorie_q: str = "H"  # catégorie d'utilisation EN 1990
     s_k_kNm2: float | list[float] = 0.0
