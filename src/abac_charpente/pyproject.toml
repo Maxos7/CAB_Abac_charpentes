@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "abac-charpente"
 version = "0.1.0"
 description = "Calcul de portées admissibles EN 1990/EC5 pour structures bois"
-requires-python = ">=3.14"
+requires-python = ">=3.13"
 dependencies = [
     "numpy>=1.26",
     "click>=8.1",

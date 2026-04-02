@@ -11,7 +11,7 @@ description = "Produits charpente bois massif C24 avec dimensions structurelles"
   [[filtre.regles]]
   type = "plage"
   champ = "b_mm"
-  min = 35.0
+  min = 45.0
 
   [[filtre.regles]]
   type = "plage"
