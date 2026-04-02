@@ -1,0 +1,33 @@
+[[config_calcul]]
+id_config_calcul = "SOLIVE_HAB_600"
+type_poutre = "Solive"
+usage = "PLANCHER_HAB"
+L_min_m = 2.0
+pas_longueur_m = 0.5
+pente_deg = 0.0
+entraxe_m = ["0.6","1.2"]
+classe_service = 1
+g_k_kNm2 = 0.4
+q_k_kNm2 = 1.5
+s_k_kNm2 = 0.0
+w_k_kNm2 = 0.0
+second_oeuvre = true
+double_flexion = false
+entraxe_antideversement_mm = 0
+
+[[config_calcul]]
+id_config_calcul = "PANNE_TOITURE_C24"
+type_poutre = "Panne"
+usage = "TOITURE_INACC"
+L_min_m = 2.0
+pas_longueur_m = 0.5
+pente_deg = 20.0
+entraxe_m = 0.8
+classe_service = 1
+g_k_kNm2 = 0.3
+q_k_kNm2 = 0.0
+s_k_kNm2 = 0.5
+w_k_kNm2 = 0.0
+second_oeuvre = false
+double_flexion = false
+entraxe_antideversement_mm = 0

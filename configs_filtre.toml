@@ -1,0 +1,19 @@
+[[filtre]]
+nom = "charpente"
+sortie = "resultats/stock_charpente.csv"
+description = "Produits charpente bois massif C24 avec dimensions structurelles"
+
+  [[filtre.regles]]
+  type = "liste"
+  champ = "classe_resistance"
+  valeurs = ["C24", "GL24H", "GT24"]
+
+  [[filtre.regles]]
+  type = "plage"
+  champ = "b_mm"
+  min = 35.0
+
+  [[filtre.regles]]
+  type = "plage"
+  champ = "h_mm"
+  min = 100.0

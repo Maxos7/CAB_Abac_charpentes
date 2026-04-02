@@ -1,0 +1,20 @@
+[tool.uv.workspace]
+members = ["src/abac_charpente", "src/sapeg_regen_stock", "src/abac_visuel"]
+
+[tool.uv.sources]
+sapeg-regen-stock = { workspace = true }
+abac-charpente = { workspace = true }
+
+[dependency-groups]
+dev = [
+    "abac-charpente[dev]",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "slow: tests de performance (exclure avec -m 'not slow')",
+]
+
+[tool.coverage.run]
+source = ["src"]

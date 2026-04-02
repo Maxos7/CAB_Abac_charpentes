@@ -1,0 +1,19 @@
+[stock]
+repertoire = "."
+filtre_calcul = "charpente"
+
+[sortie]
+fichier_csv = "resultats/portees_admissibles.csv"
+registre = "resultats/registre_calcul.csv"
+stock_enrichi = "resultats/stock_enrichi.csv"
+
+[calcul]
+fichier_configs_calcul = "configs_calcul.toml"
+
+[filtres]
+fichier_configs_filtre = "configs_filtre.toml"
+
+[calcul.defaults]
+longueur_appui_mm = 50.0
+k_c90 = 1.0
+taux_cible_appui = 0.80
