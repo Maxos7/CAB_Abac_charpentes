@@ -6,12 +6,18 @@ filtre_calcul = "charpente"
 fichier_csv = "resultats/portees_admissibles.csv"
 registre = "resultats/registre_calcul.csv"
 stock_enrichi = "resultats/stock_enrichi.csv"
+fichier_csv_formulaire = "resultats/articles_proposer.csv"
 
 [calcul]
 fichier_configs_calcul = "configs_calcul.toml"
+fichier_configs_formulaire = "configs_sortie_formulaire.toml"
 
 [filtres]
+fichier_configs_regene = "configs_regene.toml"
 fichier_configs_filtre = "configs_filtre.toml"
+
+[visuel]
+fichier_configs_visuel = "charte_graphique.toml"
 
 [calcul.defaults]
 longueur_appui_mm = 50.0

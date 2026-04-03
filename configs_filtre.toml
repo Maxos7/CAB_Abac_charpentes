@@ -17,3 +17,8 @@ description = "Produits charpente bois massif C24 avec dimensions structurelles"
   type = "plage"
   champ = "h_mm"
   min = 100.0
+
+#[[filtre]]
+#nom = "CW_barre"
+#sortie = "resultats/stock_CW_barre.csv"
+#description = "Produits pour optimisation barre dans CadWork"
