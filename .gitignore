@@ -1,6 +1,5 @@
 # Ne pas sync les résutats dans le répo
 resultats/
-docs/
 .claude
 .vscode
 
