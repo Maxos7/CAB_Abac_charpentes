@@ -4,12 +4,15 @@ WiP (Work in Progress)
 
 # Installation
 
+Ce progrmma s'execute sous un environement python gérer via "UV"
 Si vous ne disposée pas de UV, vous pouvez l'installer via la commande suivante :
 ```
 winget install --id=astral-sh.uv  -e
 ```
 Ou suivez les instruction de l'editeur
 https://docs.astral.sh/uv/getting-started/installation/#pypi
+
+Une fois cela ffait, uv ce chargeras de l'instalation des dépendance lors du premier lancement d'un des programmes.
 
 # Configuration
 
