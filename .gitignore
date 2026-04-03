@@ -1,5 +1,8 @@
-# Ne pas sunc les résutats dans le répo
+# Ne pas sync les résutats dans le répo
 resultats/
+docs/
+.claude
+.vscode
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

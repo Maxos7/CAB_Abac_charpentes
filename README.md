@@ -8,12 +8,18 @@ WiP
 
 # Configuration
 
-
-
 ## Configuration "regene stock"
 
-Le sous programe de filtre et régeneration des information du stock est paramétrable.
-Un fichier stock_enrichi est crée par défaux dans le dossier résultats. Egalement, pour tout filtre remplis dans le fichier "comfig_regen_stock.toml" un autre fichier filtée est crée suivant les régle de filtre.
+Le sous programme de filtre et régeneration des information du stock est paramétrable.
+Un fichier stock_enrichi est crée par défaux dans le dossier résultats.
+
+### Configuration du régénerateur
+
+WiP
+
+### Configuration du filtre
+
+ Pour tout filtre remplis dans le fichier "comfig_regen_stock.toml" un autre fichier filtée est crée suivant les régle de filtre.
 
 ```
 [[filtre]]
@@ -41,9 +47,9 @@ description = "Produits charpente bois pour usages structurels"
 
 # régle de filtre selon egalitée d'argument
   [[filtre.regles]]
-  type = "egale"
-  champ = "h_mm"
-  min = 100.0
+  type = "egal"
+  champ = "classe_resistance"
+  valeur = "C24"
   ```
 
 ## Configuration "calcul abac"
@@ -80,6 +86,10 @@ classe_service = 1
 
 # Valeur permanente de chargement (float; list[float])
 g_k_kNm2 = [0.4, 0.5, 0.6, 0.7, 0.8] 
+
+# Valeur permanente fragile de chargement (float)
+# Non foncionel pour l'instant
+# g2_k_pcent
 
 # Valeur exploitation de chargement (float; list[float])
 q_k_kNm2 = 0.0 
@@ -134,9 +144,9 @@ uv run abac calculer --stock "C:\votreficher.csv" --config "config.toml"
 ## Lancer la régéneration du stock
 
 Ce programme peut étre lancée de magniére indépendante.
-
-
-
+````
+uv run sapeg-regen-stock regenerer --source "." --filtres "configs_filtre.toml" --stock-enrichi "resultats\stock_enrichi.csv"
+````
 
 ## Lancer la génération des abaque visuel
 
