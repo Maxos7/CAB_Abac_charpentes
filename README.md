@@ -4,7 +4,12 @@ WiP (Work in Progress)
 
 # Installation
 
-WiP
+Si vous ne disposée pas de UV, vous pouvez l'installer via la commande suivante :
+```
+winget install --id=astral-sh.uv  -e
+```
+Ou suivez lzs instruction de l'editeur
+https://docs.astral.sh/uv/getting-started/installation/#pypi
 
 # Configuration
 
