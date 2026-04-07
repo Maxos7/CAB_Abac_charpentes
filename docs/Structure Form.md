@@ -1,14 +1,26 @@
-# Foncionement Sys
+# Foncionement Sys d'Abaque
 
 ````mermaid
 ---
-titre : Fonction
+title : Fonctionnement
 ---
 flowchart LR
-Logiciel
-Questionaire
-Boite_d'envoi
-
+Questionaire[Questionaire ADH]@{ shape: manual-input} --->|Rèponse|Boite_d'envoi
+Boite_d'envoi --->|Via boite email BE| Mail_ADH@{shape: curv-trap}
+Boite_d'envoi <--->|Comparaison valeurs| Base_simple
+Reglages@{ shape: lean-r}--->|.toml|logiciels
+Execution@{shape: procs}--->|automatique mensuel|logiciels
+subgraph logiciels [Logiciels BE charpente]
+    direction TB
+    Abac_charpente
+    Regene_stock
+    Abac_view
+    Autre[Autre logiciel à venir]
+end
+Abac_charpente--->|Ecriture|Base_simple@{shape: cyl}
+Abac_charpente--->|Ecriture|Base@{shape: cyl}
+Regene_stock--->|Ecriture|Base@{shape: cyl}
+Abac_view--->|Generation|abac[Feuille graphique pour le BE]@{shape: doc}
 ````
 
 # Logiciel de calcul de portée
