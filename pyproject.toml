@@ -8,6 +8,7 @@ abac-charpente = { workspace = true }
 [dependency-groups]
 dev = [
     "abac-charpente[dev]",
+    "handcalcs>=1.11.0",
 ]
 
 [tool.pytest.ini_options]
