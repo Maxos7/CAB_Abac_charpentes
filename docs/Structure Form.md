@@ -44,17 +44,22 @@ Abac_view--->|Generation|abac[Feuille graphique pour le BE
 
 Voir le README du projet
 
-## Info de sortie
-Donnée a extraire du logicielle de calcul de portée : 
+## Info de sortie (pour questionaire)
+Donnée a extraire du logicielle de calcul de portée sous format .csv (les deux tableau suivant en forme 1 seul).
 
-- Code Sapeg
-- ID MAT
-- ID config
-- Essence
-- Portée
-- Indice de classement
+Données pour comparaison questionaire :
 
-# Formulaire
+|type_poutre |Pente (°)|G (permanente) daN/m²| Entraxe (m)|Portée (m) |Essence|
+|---|---|---|---|---|---|
+|panne|40|96.51|1.2|10.5|Epicea|
+
+Données complementaire exatraite à afficher dans l'e-mail : -> { Liste 10 article }
+
+|Code Sapeg| Indice de classement (à ne pas afficher)|Base (mm)|Hauteur (mm)|Longeur_article (m)|Classe de resistance|Commentaire|
+|---|---|---|---|---|---|---|
+|100300|1.05|45|120|13000|GL24h|texte..........|
+
+# Questionaire
 ## Diagrame du questionaire sur Type Forme :
 ````mermaid
 ---
@@ -68,7 +73,11 @@ Type_poutre{Type de poutre ?}
 
 subgraph panne [Pannes]
     direction TB
-Pente{{Pente:
+Usage1[Usage: 
+= Toiture Inaccesible - valeur par defaux]
+
+Usage1 --->  Pente{{Pente:
+    -4°
     -15°
     -30°
     -35°
@@ -99,7 +108,11 @@ end
 
 subgraph solive [Solive]
     direction TB
-Plancher{{ Palancher :
+Usage2{{Usage :
+    - Habitation
+    - Autre}}
+
+Usage2 ---> Plancher{{ Palancher :
     -  -> }}
 Plancher --> SupportP{{Support de plancher :
     - Lambris résineux ép.  -> 
@@ -115,10 +128,10 @@ end
 
 panne ---> Finition
 solive ---> Finition
-Finition{{Finition
+Finition{{Finition :
     - Palaco platre Ba13 -> 17
     -Lambris -> 8}}
-Finition  ---> Entraxe
+Finition  ---> A@{ shape: subproc, label: "Somme des valeurs de charge + ajout de 5daN de marge"} ---> Entraxe
 Entraxe{{Entraxe :
     -1.2
     -1.7}}
@@ -133,7 +146,7 @@ Essence ---> End
 # Boite d'envoi
 ## Réponce à l'aderent :
 
-Réponce par e-mail
+Réponce par e-mail via la boite "etudes.chapente@cab56.com"
 
 ### Réuissite
 
@@ -146,9 +159,11 @@ Bonjour,
 Pour les données suivantes fournies dans le formulaire :
 
 Une {Type de pièce} de {portée_m} m de portée avec {entraxe_m} m d'entraxe en {essence}.
+Avec une composition de 
+{Liste rèponce questionaire (charge)}
 
-Nous ne trouvons pas d'article répondant à votre demande dans notre base.
-Merci de revenir vers nous pour une évaluation plus prècise.
+Nous pouvons vous proposée les article suivants : 
+{ Liste 10 article }
 
 Attention:
 - Ces valeurs sont  calculées en fonction des règles de construction en vigeur (Eurocodes 5, Eurocode 0 et Eurocode 1). 
