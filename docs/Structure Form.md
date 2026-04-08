@@ -1,26 +1,42 @@
-# Foncionement Sys d'Abaque
+# Foncionement Systéme d'Abaque
 
 ````mermaid
 ---
 title : Fonctionnement
 ---
 flowchart LR
-Questionaire[Questionaire ADH]@{ shape: manual-input} --->|Rèponse|Boite_d'envoi
-Boite_d'envoi --->|Via boite email BE| Mail_ADH@{shape: curv-trap}
-Boite_d'envoi <--->|Comparaison valeurs| Base_simple
-Reglages@{ shape: lean-r}--->|.toml|logiciels
+
+Questionaire[Questionaire ADH
+TypeForm]@{ shape: manual-input} --->|Rèponse|Boite_d'envoi
+
+Boite_d'envoi --->|Envoi via boite email BE| Mail_ADH@{shape: curv-trap}
+
+Boite_d'envoi <--->|Comparaison valeurs| Base_simplifier
+
+Reglages[Reglages
+.toml]@{ shape: lean-r}--->logiciels
+
 Execution@{shape: procs}--->|automatique mensuel|logiciels
-subgraph logiciels [Logiciels BE charpente]
+
+subgraph logiciels [Logiciels BE charpente .python]
     direction TB
     Abac_charpente
     Regene_stock
     Abac_view
     Autre[Autre logiciel à venir]
 end
-Abac_charpente--->|Ecriture|Base_simple@{shape: cyl}
-Abac_charpente--->|Ecriture|Base@{shape: cyl}
-Regene_stock--->|Ecriture|Base@{shape: cyl}
-Abac_view--->|Generation|abac[Feuille graphique pour le BE]@{shape: doc}
+
+Abac_charpente--->|Ecriture|Base_simplifier[Bases simplifier
+.csv]@{shape: cyl}
+
+Abac_charpente--->|Ecriture|Bases_complete[Bases_complete
+.csv]@{shape: cyl}
+
+Regene_stock--->|Ecriture|Bases_complete@{shape: cyl}
+
+Abac_view--->|Generation|abac[Feuille graphique pour le BE
+.pdf]@{shape: doc}
+
 ````
 
 # Logiciel de calcul de portée
