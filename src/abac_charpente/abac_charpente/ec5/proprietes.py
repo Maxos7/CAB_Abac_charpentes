@@ -26,8 +26,7 @@ _DATA = Path(__file__).parent.parent / "data"
 # ---------------------------------------------------------------------------
 
 def _charger_materiaux() -> pd.DataFrame:
-    df = pd.read_csv(_DATA / "materiaux_bois.csv", sep=";")
-    df = df.set_index("classe")
+    df = pd.read_csv(_DATA / "materiaux_bois.csv", sep=";",index_col="classe")
     return df
 
 

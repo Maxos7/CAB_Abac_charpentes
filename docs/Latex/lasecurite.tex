@@ -1,0 +1,33 @@
+% ─────────────────────────────────────────────────────────────────────────────
+\section{La marge de s\'ecurit\'e suppl\'ementaire}
+% ─────────────────────────────────────────────────────────────────────────────
+
+Le code permet d'ajouter une \textbf{marge de s\'ecurit\'e suppl\'ementaire}
+via le param\`etre \py{marge\_securite} (entre 0 et 1).
+Elle est appliqu\'ee \emph{apr\`es} tous les calculs EC5,
+en multipliant tous les taux par $(1 + \text{marge})$~:
+
+\begin{equation}
+\text{taux\_effectif} = \text{taux}_{EC5} \times (1 + \text{marge\_securite})
+\end{equation}
+
+\begin{lstlisting}[style=python, caption={\fichier{moteur.py} --- application de la marge de sécurité (EF-026)}]
+def _appliquer_marge(résultats: list[dict], marge: float) -> list[dict]:
+    """Applique taux_effectif = taux × (1 + marge) sur tous les taux."""
+    if marge == 0.0:
+        return résultats   # optimisation : rien à faire si marge = 0
+
+    champs_taux = [k for k in résultats[0].keys() if "taux" in k]
+    for r in résultats:
+        for k in champs_taux:
+            v = r.get(k)
+            if isinstance(v, float):
+                r[k] = v * (1.0 + marge)
+    return résultats
+\end{lstlisting}
+
+Exemple~: avec \py{marge\_securite = 0.15} et un taux calcul\'e de 0{,}85~:
+\[
+\text{taux\_effectif} = 0{,}85 \times 1{,}15 = 0{,}978 \leq 1{,}0
+\quad \Rightarrow \text{ admis, mais conservateur}
+\]

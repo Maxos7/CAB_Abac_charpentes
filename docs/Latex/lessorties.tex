@@ -1,0 +1,79 @@
+% ===========================================================================
+\chapter{Les sorties}
+% ===========================================================================
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Le CSV de r\'esultats}
+% ─────────────────────────────────────────────────────────────────────────────
+
+Le fichier \fichier{resultats/portees\_admissibles.csv} est la sortie principale.
+Chaque ligne correspond \`a une combinaison
+(produit $\times$ config\_calcul $\times$ port\'ee $\times$ combinaison EN~1990).
+
+Colonnes principales~:
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+\textbf{Colonne} & \textbf{Description}\\
+\midrule
+\py{id\_produit} & R\'ef\'erence du produit bois\\
+\py{id\_config\_calcul} & Identifiant du sc\'enario EC5\\
+\py{type\_poutre} & Panne, Solive, Chevron, Sommier\\
+\py{longueur\_m} & Port\'ee v\'erifi\'ee (m)\\
+\py{statut} & \py{admis} / \py{refus\'e} / \py{rejet\'e\_usage}\\
+\py{taux\_determinant} & Taux de sollicitation maximal\\
+\py{verification\_determinante} & Quelle v\'erification est critique\\
+\py{clause\_EC5} & R\'ef\'erence normative (\S{}6.1.6, \S{}7.2, etc.)\\
+\py{sigma\_m\_MPa} & Contrainte de flexion calcul\'ee\\
+\py{taux\_flexion\_ELU} & Taux ELU flexion\\
+\py{tau\_MPa} & Contrainte de cisaillement calcul\'ee\\
+\py{taux\_cisaillement\_ELU} & Taux ELU cisaillement\\
+\py{taux\_appui\_ELU} & Taux ELU appui\\
+\py{longueur\_appui\_min\_mm} & Longueur d'appui minimale calcul\'ee\\
+\py{k\_crit} & Coefficient de d\'eversement\\
+\py{taux\_deversement\_ELU} & Taux ELU d\'eversement\\
+\py{w\_inst\_mm} & Fl\`eche instantan\'ee (mm)\\
+\py{w\_fin\_mm} & Fl\`eche finale avec fluage (mm)\\
+\py{taux\_ELS\_inst} & Taux ELS fl\`eche instantan\'ee\\
+\py{taux\_ELS\_fin} & Taux ELS fl\`eche finale\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{maitre}
+Comment le programme sait-il quelle v\'erification est la plus critique~?
+\end{maitre}
+
+\begin{apprenti}
+Il prend le taux le plus \'elev\'e parmi toutes les v\'erifications~?
+\end{apprenti}
+
+\begin{maitre}
+Exactement~:
+\end{maitre}
+
+\begin{lstlisting}[style=python, caption={Extrait de \fichier{moteur.py} --- vérification déterminante}]
+def _trouver_verification_determinante(elu, els, df, taux_max):
+    """Trouve quelle vérification a le taux le plus élevé."""
+    candidates = {
+        "flexion_ELU":      elu.get("taux_flexion_ELU", 0),
+        "cisaillement_ELU": elu.get("taux_cisaillement_ELU", 0),
+        "appui_ELU":        elu.get("taux_appui_ELU", 0),
+        "deversement_ELU":  elu.get("taux_deversement_ELU", 0),
+        "fleche_inst":      els.get("taux_ELS_inst", 0),
+        "fleche_fin":       els.get("taux_ELS_fin", 0),
+    }
+    # max() sur un dict : trouve la clé avec la valeur maximale
+    return max(candidates, key=lambda k: candidates[k] or 0)
+
+# Correspondance vérification -> clause normative
+mapping_clause = {
+    "flexion_ELU":      "§6.1.6",
+    "cisaillement_ELU": "§6.1.7",
+    "appui_ELU":        "§6.1.5",
+    "deversement_ELU":  "§6.3.3",
+    "fleche_inst":      "§7.2",
+    "fleche_fin":       "§7.2",
+}
+\end{lstlisting}

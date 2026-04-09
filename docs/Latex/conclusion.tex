@@ -1,0 +1,61 @@
+% ===========================================================================
+\chapter*{Conclusion~: le voyage complet}
+\addcontentsline{toc}{chapter}{Conclusion}
+% ===========================================================================
+
+\begin{maitre}
+R\'esumons notre voyage. Qu'est-ce que fait ce logiciel,
+dans tes propres mots~?
+\end{maitre}
+
+\begin{apprenti}
+Il lit un stock de poutres bois, g\'en\`ere toutes les configurations
+de calcul (en faisant le produit cart\'esien des param\`etres),
+et pour chaque poutre et chaque port\'ee, il v\'erifie la r\'esistance
+(ELU~: flexion, cisaillement, appui, d\'eversement) et les d\'eformations
+(ELS~: fl\`eches instantan\'ee et finale) selon l'Eurocode~5.
+Il stocke les r\'esultats dans un CSV et m\'emorise ce qui a d\'ej\`a
+\'et\'e calcul\'e pour ne pas tout recalculer \`a chaque fois.
+\end{apprenti}
+
+\begin{maitre}
+Et Python dans tout \c{c}a~?
+\end{maitre}
+
+\begin{apprenti}
+Python orchestre tout. Les \textbf{variables} stockent les donn\'ees
+(avec l'unit\'e dans le nom). Les \textbf{fonctions} encapsulent les formules
+(une fonction = une formule de la norme). Les \textbf{classes} mod\'elisent
+les types de poutres avec leur comportement propre~: c'est le polymorphisme.
+Les \textbf{boucles} parcourent le stock et les port\'ees. NumPy
+\textbf{vectorise} les calculs pour la performance. Pandas lit et \'ecrit
+les CSV. Et Pydantic valide les donn\'ees d'entr\'ee.
+\end{apprenti}
+
+\begin{important}
+Les concepts Python rencontr\'es dans ce logiciel~--- variables, fonctions,
+classes, polymorphisme, boucles, dictionnaires, modules~--- sont exactement
+ceux qu'on enseigne en premi\`ere ann\'ee de programmation.
+La diff\'erence, c'est qu'ici ils sont mis au service d'un probl\`eme
+d'ing\'enierie r\'eel et norm\'e.
+La structure du code \textbf{refl\`ete} la structure de la norme~:
+un module \py{ec0/} pour EN~1990, un module \py{ec1/} pour EN~1991,
+et un module \py{ec5/} pour EN~1995.
+Ce n'est pas un hasard~: c'est une conception d\'elib\'er\'ee.
+\end{important}
+
+\vspace{2em}
+\begin{center}
+\rule{0.5\textwidth}{0.5pt}
+\end{center}
+\vspace{1em}
+
+\begin{tcolorbox}[
+  colback=bleuMaitreLight, colframe=bleuMaitre,
+  width=0.9\textwidth, center
+]
+\centering\itshape
+\guillemotleft\, La connaissance s'acqui\`ere par l'exp\'erience,\\
+tout le reste n'est qu'information.\,\guillemotright\\[4pt]
+{\normalsize --- Albert Einstein}
+\end{tcolorbox}

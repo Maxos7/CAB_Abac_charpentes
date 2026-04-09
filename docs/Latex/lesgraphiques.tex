@@ -1,0 +1,19 @@
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Les graphiques}
+% ─────────────────────────────────────────────────────────────────────────────
+
+Le module \py{abac\_visuel} lit le CSV de r\'esultats et g\'en\`ere
+des graphiques de port\'ees admissibles avec Matplotlib~:
+
+\begin{lstlisting}[style=toml, language={}, caption={Lancement de la génération graphique}]
+uv run abac-visuel generer \
+    --donnees resultats/portees_admissibles.csv \
+    --configs configs_calcul.toml \
+    --sortie  resultats/graphiques
+\end{lstlisting}
+
+Le module \fichier{abac\_visuel/generateur.py} lis le CSV,
+groupe les r\'esultats par configuration de calcul,
+et pour chaque configuration, trace les port\'ees admissibles
+en fonction des dimensions de section (b, h), avec les taux de
+sollicitation repr\'esent\'es par une \'echelle de couleurs.

@@ -1,0 +1,83 @@
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Double flexion (\S{}6.1.6)}
+% ─────────────────────────────────────────────────────────────────────────────
+
+\begin{maitre}
+Pour une panne de toiture inclin\'ee, dans quel plan la charge
+s'exerce-t-elle~?
+\end{maitre}
+
+\begin{apprenti}
+La charge est verticale (poids, neige), mais la panne est inclin\'ee.
+Donc la charge cr\'ee \`a la fois un moment dans le plan de la section
+(axe fort $y$) \textbf{et} hors du plan (axe faible $z$)~?
+\end{apprenti}
+
+\begin{maitre}
+Exactement. C'est la double flexion.
+La d\'ecomposition de la charge $q_d$ selon les axes de la panne est~:
+\end{maitre}
+
+\begin{equation}
+q_y = q_d \cdot \cos(\alpha) \qquad \text{(axe fort)}
+\qquad
+q_z = q_d \cdot \sin(\alpha) \qquad \text{(axe faible)}
+\label{eq:decomp}
+\end{equation}
+
+\noindent o\`u $\alpha$ est la pente de la toiture. Les moments correspondants~:
+
+\begin{equation}
+M_{y,d} = \frac{q_y \cdot L^2}{8}, \qquad M_{z,d} = \frac{q_z \cdot L^2}{8}
+\end{equation}
+
+La v\'erification EN~1995 \S{}6.1.6 pour la double flexion donne
+deux crit\`eres (les deux doivent \^etre satisfaits)~:
+
+\begin{align}
+\frac{\sigma_{m,y,d}}{f_{m,d}} + k_m \cdot \frac{\sigma_{m,z,d}}{f_{m,d}} &\leq 1{,}0
+\label{eq:biaxial1}\\
+k_m \cdot \frac{\sigma_{m,y,d}}{f_{m,d}} + \frac{\sigma_{m,z,d}}{f_{m,d}} &\leq 1{,}0
+\label{eq:biaxial2}
+\end{align}
+
+\noindent avec $k_m = 0{,}7$ pour les sections rectangulaires.
+
+\begin{lstlisting}[style=python, caption={Décomposition de charge et interaction biaxiale}]
+import math
+
+pente_rad = math.radians(config.pente_deg)
+
+# Décomposition de la charge de calcul selon les axes de la panne
+q_y = q_d * math.cos(pente_rad)   # composante axe fort
+q_z = q_d * math.sin(pente_rad)   # composante axe faible
+
+# Moments correspondants (poutre simplement appuyée)
+M_y = q_y * L**2 / 8.0   # kN.m
+M_z = q_z * L**2 / 8.0   # kN.m
+
+# Contraintes (MPa) — même conversion que §6.1.6
+sigma_y = M_y * 1e3 / materiau.W_cm3   / 10.0
+sigma_z = M_z * 1e3 / materiau.W_z_cm3 / 10.0
+
+# Deux taux d'interaction — §6.1.6 (les deux doivent être <= 1.0)
+k_m = 0.7   # sections rectangulaires
+taux_1 = sigma_y / f_m_d + k_m * sigma_z / f_m_d
+taux_2 = k_m * sigma_y / f_m_d + sigma_z / f_m_d
+\end{lstlisting}
+
+\begin{maitre}
+\`A quoi sert ce $k_m = 0{,}7$~?
+\end{maitre}
+
+\begin{apprenti}
+Il r\'eduit la contribution de l'axe faible dans le crit\`ere ?
+\end{apprenti}
+
+\begin{maitre}
+Oui, et inversement. C'est un facteur de r\'eduction de l'interaction~:
+la norme reconnait que les deux moments n'atteignent pas leur valeur maximale
+au m\^eme point de la section en m\^eme temps.
+Pour une section carr\'ee ($b = h$), $k_m$ serait \'egal \`a 1{,}0
+et les deux crit\`eres seraient identiques.
+\end{maitre}

@@ -1,0 +1,298 @@
+% ─────────────────────────────────────────────────────────────────────────────
+\section{ELU~--- V\'erification en flexion (\S{}6.1.6)}
+% ─────────────────────────────────────────────────────────────────────────────
+
+\subsection{La physique}
+
+Sous une charge $q_d$ uniform\'ement r\'epartie, une poutre simplement
+appuy\'ee de port\'ee $L$ est soumise \`a un moment maximum en trav\'ee~:
+
+\begin{equation}
+M_{d} = \frac{q_d \cdot L^2}{8}
+\label{eq:moment}
+\end{equation}
+
+Ce moment cr\'ee une contrainte de flexion aux fibres extr\^emes~:
+
+\begin{equation}
+\sigma_{m,d} = \frac{M_d}{W_y} = \frac{M_d}{b \cdot h^2 / 6}
+\label{eq:sigma}
+\end{equation}
+
+La v\'erification consiste \`a s'assurer que cette contrainte ne d\'epasse
+pas la r\'esistance de calcul $f_{m,d}$~:
+
+\begin{equation}
+\frac{\sigma_{m,d}}{f_{m,d}} \leq 1{,}0
+\label{eq:taux_flex}
+\end{equation}
+
+Ce rapport est appel\'e le \textbf{taux de sollicitation}.
+Si taux $\leq 1$~: la poutre est admise. Sinon~: elle est refus\'ee.
+
+\subsection{Le code}
+
+\begin{lstlisting}[style=python, caption={\fichier{ec5/elu.py} --- fonction \py{calculer\_flexion()}}]
+def calculer_flexion(
+    materiau: ConfigMatériau,
+    M_d_kNm: np.ndarray,   # tableau : un moment par longueur testée
+    k_mod: float,
+    gamma_M: float,
+) -> dict[str, np.ndarray]:
+    """Flexion §6.1.6 : σ_m_d = M_d / W_y ; taux = σ_m_d / f_m_d."""
+
+    W_cm3     = materiau.W_cm3        # module de résistance (cm³)
+    f_m_k_MPa = materiau.f_m_k_MPa   # résistance caractéristique (MPa)
+
+    # Résistance de calcul (MPa) — Équation (4.3)
+    f_m_d_MPa = f_m_k_MPa * k_mod / gamma_M
+
+    # Contrainte de flexion (MPa)
+    # Conversion des unités :
+    #   M [kN.m] × 1e3 = M [N.m]
+    #   M [N.m]  × 1e3 = M [N.mm]     (× 1e6 total)
+    #   W [cm³]  × 1e3 = W [mm³]
+    #   σ = M [N.mm] / W [mm³]  = N/mm² = MPa
+    # -> σ [MPa] = M_kNm × 1e6 / (W_cm3 × 1e3) = M_kNm × 1e3 / W_cm3
+    # ou encore : M_kNm × 1e3 / W_cm3 / 10.0
+    #            car 1 kNm → MPa avec W en cm³ = ×1000/×10 = ×100...
+    # Vérification : M=10 kNm, W=1000 cm³ : σ = 10×1000/1000/10 = 1 MPa ✓
+    sigma_m_MPa = M_d_kNm * 1e3 / W_cm3 / 10.0
+
+    return {
+        "f_m_d_MPa":      np.full_like(sigma_m_MPa, f_m_d_MPa),
+        "sigma_m_MPa":    sigma_m_MPa,
+        "taux_flexion_ELU": sigma_m_MPa / f_m_d_MPa,
+    }
+\end{lstlisting}
+
+\begin{maitre}
+Pourquoi \py{M\_d\_kNm} est un \py{np.ndarray} plut\^ot qu'un simple \py{float}~?
+\end{maitre}
+
+\begin{apprenti}
+Parce qu'on calcule pour toutes les longueurs en m\^eme temps~?
+\py{M\_d\_kNm} contient par exemple 9~valeurs pour les 9~port\'ees
+[2,0\,m, 2,5\,m, \ldots, 6,0\,m]~?
+\end{apprenti}
+
+\begin{maitre}
+Exactement. NumPy applique l'op\'eration \py{* 1e3 / W\_cm3 / 10.0}
+sur toutes les valeurs simultan\'ement, sans boucle explicite.
+C'est ce qu'on appelle la \textbf{vectorisation}~--- bien plus rapide
+qu'une boucle Python classique.
+\end{maitre}
+
+\begin{important}
+La vectorisation NumPy est l'un des secrets de performance de ce logiciel.
+L\`a o\`u une boucle Python traiterait les port\'ees une par une,
+NumPy les traite toutes en parall\`ele au niveau du processeur.
+Sur un grand stock, cela repr\'esente un facteur~100 de gain de vitesse.
+\end{important}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{ELU~--- V\'erification au cisaillement (\S{}6.1.7)}
+% ─────────────────────────────────────────────────────────────────────────────
+
+L'effort tranchant maximum dans une poutre simplement appuy\'ee est~:
+
+\begin{equation}
+V_{d} = \frac{q_d \cdot L}{2}
+\end{equation}
+
+La contrainte de cisaillement au niveau de l'axe neutre est~:
+
+\begin{equation}
+\tau_d = \frac{3}{2} \cdot \frac{V_d}{A_{eff}} = \frac{3}{2} \cdot \frac{V_d}{b_{eff} \cdot h}
+\label{eq:tau}
+\end{equation}
+
+o\`u $b_{eff} = k_{cr} \cdot b$ est la largeur effective, r\'eduite
+par le facteur $k_{cr}$ qui tient compte du risque de fissuration
+en cisaillement (EC5 \S{}6.1.7(2)).
+En pratique $k_{cr} = 0{,}67$ pour le bois massif non trait\'e
+en surface.
+
+La v\'erification~:
+
+\begin{equation}
+\frac{\tau_d}{f_{v,d}} \leq 1{,}0
+\end{equation}
+
+\begin{lstlisting}[style=python, caption={\fichier{ec5/elu.py} --- fonction \py{calculer\_cisaillement()}}]
+def calculer_cisaillement(
+    materiau: ConfigMatériau,
+    V_d_kN: np.ndarray,
+    k_mod: float,
+    gamma_M: float,
+    k_cr: float,        # facteur de fissuration (0.67 pour bois massif)
+) -> dict[str, np.ndarray]:
+    """Cisaillement §6.1.7."""
+    b_eff_mm  = k_cr * materiau.b_mm          # largeur effective (mm)
+    A_eff_mm2 = b_eff_mm * materiau.h_mm      # aire effective (mm²)
+
+    f_v_d_MPa = materiau.f_v_k_MPa * k_mod / gamma_M  # résistance cisaillement
+
+    # Contrainte (MPa) :
+    # V [kN] × 1000 [N/kN] / A [mm²] × 1.5  (facteur 3/2 pour section rect.)
+    tau_d_MPa = 1.5 * V_d_kN * 1000.0 / A_eff_mm2
+
+    return {
+        "f_v_d_MPa":          np.full_like(tau_d_MPa, f_v_d_MPa),
+        "tau_MPa":            tau_d_MPa,
+        "taux_cisaillement_ELU": tau_d_MPa / f_v_d_MPa,
+    }
+\end{lstlisting}
+
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{ELU~--- V\'erification \`a l'appui (\S{}6.1.5)}
+% ─────────────────────────────────────────────────────────────────────────────
+
+\`A l'appui, le bois est \'ecras\'e \textbf{perpendiculairement au fil},
+ce qui est sa direction de moindre r\'esistance. La contrainte est~:
+
+\begin{equation}
+\sigma_{c,90,d} = \frac{V_d}{A_{appui}} = \frac{V_d}{b \cdot l_{appui}}
+\end{equation}
+
+La v\'erification EC5 \S{}6.1.5~:
+
+\begin{equation}
+\frac{\sigma_{c,90,d}}{k_{c,90} \cdot f_{c,90,d}} \leq 1{,}0
+\end{equation}
+
+Le code calcule aussi en retour la \textbf{longueur d'appui minimale}
+$l_{min}$ pour satisfaire un taux cible de 0,80~:
+
+\begin{equation}
+l_{min} = \left\lceil \frac{V_d \cdot 1000}{b \cdot \text{taux\_cible} \cdot k_{c,90} \cdot f_{c,90,d}} \right\rceil \text{ mm}
+\label{eq:lmin}
+\end{equation}
+
+\begin{lstlisting}[style=python, caption={\fichier{ec5/elu.py} --- appui et longueur minimale d'appui}]
+def calculer_appui(materiau, V_d_kN, longueur_appui_mm, k_c90,
+                   k_mod, gamma_M) -> dict:
+    """Appui §6.1.5 : σ_c90_d = V_d / A_appui."""
+    b_mm = materiau.b_mm
+    f_c90_d_MPa = materiau.f_c90_k_MPa * k_mod / gamma_M
+
+    A_appui_mm2 = b_mm * longueur_appui_mm          # aire d'appui (mm²)
+    sigma_c90_MPa = V_d_kN * 1000.0 / A_appui_mm2  # MPa
+
+    return {
+        "sigma_c90_MPa":  sigma_c90_MPa,
+        "taux_appui_ELU": sigma_c90_MPa / (k_c90 * f_c90_d_MPa),
+    }
+
+def calculer_longueur_appui_min(materiau, V_d_kN, k_c90, taux_cible,
+                                k_mod, gamma_M) -> float:
+    """Longueur d'appui minimale (mm) pour satisfaire le taux cible."""
+    b_mm = materiau.b_mm
+    f_c90_d_MPa = materiau.f_c90_k_MPa * k_mod / gamma_M
+    denom = b_mm * taux_cible * k_c90 * f_c90_d_MPa
+    if denom <= 0:
+        return 0.0
+    # math.ceil : arrondi au mm supérieur
+    return math.ceil(V_d_kN * 1000.0 / denom)
+\end{lstlisting}
+
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{ELU~--- D\'eversement lat\'eral (\S{}6.3.3)}
+% ─────────────────────────────────────────────────────────────────────────────
+
+\begin{maitre}
+Qu'est-ce que le d\'eversement d'une poutre en bois~?
+\end{maitre}
+
+\begin{apprenti}
+C'est quand une poutre \'elanc\'ee fl\'echit lat\'eralement au lieu de
+rester dans son plan de chargement~? Une poutre haute et \'etroite,
+peu retenue lat\'eralement, peut basculer sur le c\^ot\'e~?
+\end{apprenti}
+
+\begin{maitre}
+Exactement. Plus la poutre est haute, \'etroite et longue (ou peu retenue),
+plus elle risque de se d\'evier. L'EC5 \S{}6.3.3 quantifie ce risque
+via le coefficient $k_{crit}$.
+\end{maitre}
+
+Le calcul part de la contrainte critique de d\'eversement
+(EC5 \'Eq.~6.32) pour une section rectangulaire~:
+
+\begin{equation}
+\sigma_{m,crit} = \frac{0{,}78 \cdot b^2 \cdot E_{0,05}}{h \cdot L_{ef}}
+\label{eq:sigmacrit}
+\end{equation}
+
+On en d\'eduit l'\'elancement relatif~:
+
+\begin{equation}
+\lambda_{rel,m} = \sqrt{\frac{f_{m,k}}{\sigma_{m,crit}}}
+\label{eq:lambda}
+\end{equation}
+
+Et le coefficient $k_{crit}$ selon les seuils EC5 \S{}6.3.3(3)~:
+
+\begin{equation}
+k_{crit} = \begin{cases}
+1{,}0 & \text{si } \lambda_{rel,m} \leq 0{,}75 \\
+1{,}56 - 0{,}75 \, \lambda_{rel,m} & \text{si } 0{,}75 < \lambda_{rel,m} \leq 1{,}4 \\
+1/\lambda_{rel,m}^2 & \text{si } \lambda_{rel,m} > 1{,}4
+\end{cases}
+\label{eq:kcrit}
+\end{equation}
+
+La v\'erification finale est~:
+
+\begin{equation}
+\frac{\sigma_{m,d}}{k_{crit} \cdot f_{m,d}} \leq 1{,}0
+\label{eq:taux_dever}
+\end{equation}
+
+\begin{lstlisting}[style=python, caption={\fichier{ec5/elu.py} --- coefficient de déversement \py{calculer\_k\_crit()}}]
+def calculer_k_crit(materiau, L_deversement_m) -> float:
+    """Coefficient de déversement k_crit §6.3.3."""
+    b_mm      = materiau.b_mm
+    h_mm      = materiau.h_mm
+    f_m_k_MPa = materiau.f_m_k_MPa
+    E_005_MPa = materiau.E_0_05_MPa   # E_0,05 = module caractéristique
+
+    L_dev_mm = L_deversement_m * 1000.0   # m -> mm
+
+    # Contrainte critique de déversement (MPa) — EC5 Éq. (6.32)
+    # σ_m,crit = 0.78 × b[mm]² × E_0,05[MPa] / (h[mm] × L_ef[mm])
+    sigma_m_crit = 0.78 * b_mm**2 * E_005_MPa / (h_mm * L_dev_mm)
+
+    # Élancement relatif
+    lambda_rel_m = math.sqrt(f_m_k_MPa / sigma_m_crit)
+
+    # Règles §6.3.3(3) : trois zones d'élancement
+    if lambda_rel_m <= 0.75:
+        return 1.0                            # pas de réduction
+    elif lambda_rel_m <= 1.4:
+        return 1.56 - 0.75 * lambda_rel_m    # réduction linéaire
+    else:
+        return 1.0 / lambda_rel_m**2          # réduction quadratique
+\end{lstlisting}
+
+\begin{maitre}
+Quelle est la longueur de d\'eversement $L_{ef}$ utilis\'ee~?
+\end{maitre}
+
+\begin{apprenti}
+La distance entre les \'el\'ements qui retiennent la poutre lat\'eralement~?
+Comme les pannes secondaires, les liteaux ou les contrefiches~?
+\end{apprenti}
+
+\begin{maitre}
+Exactement. C'est l'entraxe des anti-d\'eversements. Le code le g\`ere
+dans la m\'ethode \py{longueur\_deversement\_m()} de la classe \py{TypePoutre}~:
+\begin{itemize}
+  \item Si pas d'anti-d\'eversement~: $L_{ef} = L$
+  \item Si $L \leq 2 \times a$~: $L_{ef} = L/2$
+  \item Si $L > 2 \times a$~: $L_{ef} = a$ (l'entraxe)
+\end{itemize}
+o\`u $a$ est l'entraxe des anti-d\'eversements.
+\end{maitre}

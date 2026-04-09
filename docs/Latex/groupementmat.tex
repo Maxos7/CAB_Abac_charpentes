@@ -1,0 +1,43 @@
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Le groupement par mat\'eriau~: \'eviter les calculs en double}
+% ─────────────────────────────────────────────────────────────────────────────
+
+\begin{maitre}
+Si ton stock contient 50~poutres C24 de 63\texttimes{}175, dois-tu
+les calculer 50 fois~?
+\end{maitre}
+
+\begin{apprenti}
+Non, elles ont toutes les m\^emes propri\'et\'es m\'ecaniques~!
+Il suffit de calculer une fois et de copier le r\'esultat aux 50~produits.
+\end{apprenti}
+
+\begin{maitre}
+C'est exactement ce que fait le code.
+\end{maitre}
+
+\begin{lstlisting}[style=python, caption={Groupement par \py{id\_config\_materiau} --- extrait de \fichier{moteur.py}}]
+# groupes : clé = id matériau, valeur = liste de produits identiques
+groupes: dict[str, list[ProduitValide]] = {}
+
+for produit in produits_valides:
+    # setdefault : si la clé n'existe pas, crée une liste vide d'abord
+    groupes.setdefault(produit.id_config_materiau, []).append(produit)
+
+# Résultat :
+# groupes = {
+#   "C24-063-175-6000": [prod_1, prod_2, prod_3],  # 3 refs 63x175
+#   "C24-075-225-7000": [prod_4],                   # 1 ref  75x225
+# }
+
+for id_mat, produits_groupe in groupes.items():
+    p_rep = produits_groupe[0]     # représentant du groupe pour le calcul
+
+    # ... calculs EC5 (une seule fois pour tout le groupe) ...
+
+    # Réplication : copier le résultat à chaque produit du groupe
+    for produit in produits_groupe:
+        # dataclasses.replace() crée une copie avec un champ modifié
+        r_produit = replace(r_base, id_produit=produit.id_produit)
+        tous.append(r_produit)
+\end{lstlisting}

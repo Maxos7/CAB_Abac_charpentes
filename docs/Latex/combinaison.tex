@@ -1,0 +1,83 @@
+% ─────────────────────────────────────────────────────────────────────────────
+\section{EN 1990~: les combinaisons d'actions}
+% ─────────────────────────────────────────────────────────────────────────────
+
+\begin{maitre}
+Avant de v\'erifier une poutre, il faut savoir sous quelles charges
+on la v\'erifie. Qu'est-ce qui charge une panne de toiture~?
+\end{maitre}
+
+\begin{apprenti}
+Le poids propre du bois, le poids de la couverture, la neige\ldots{}
+et peut-\^etre le vent~?
+\end{apprenti}
+
+\begin{maitre}
+Exactement. Ces charges s'appellent des \textbf{actions} en langage Eurocode.
+Et la norme EN~1990 dit qu'on ne peut pas simplement les additionner~---
+il faut construire des \textbf{combinaisons} avec des coefficients
+de s\'ecurit\'e, parce que la probabilit\'e que toutes les charges
+soient simultan\'ement \`a leur valeur maximale est tr\`es faible.
+\end{maitre}
+
+La formule g\'en\'erale de combinaison ELU (\'Etat Limite Ultime ---
+pour la r\'esistance) selon l'AN France est~:
+
+\begin{equation}
+E_{d} = \underbrace{\gamma_G \cdot G_k}_{\text{permanent}}
+      + \underbrace{\gamma_{Q,1} \cdot Q_{k,1}}_{\text{action principale}}
+      + \underbrace{\sum_{i>1} \psi_{0,i} \cdot \gamma_{Q,i} \cdot Q_{k,i}}_{\text{actions d'accompagnement}}
+\label{eq:elu}
+\end{equation}
+
+\noindent o\`u~:
+\begin{itemize}
+  \item $G_k$ = charge permanente caract\'eristique (kN/m\textsuperscript{2})
+  \item $Q_{k,1}$ = action variable principale (neige, vent ou exploitation)
+  \item $Q_{k,i}$ = actions variables d'accompagnement
+  \item $\gamma_G = 1{,}35$ (charges permanentes d\'efavorables)
+  \item $\gamma_Q = 1{,}50$ (charges variables)
+  \item $\psi_0$ = coefficient de combinaison (r\'eduit les actions secondaires)
+\end{itemize}
+
+Le code g\'en\`ere plusieurs cas~: une fois avec la neige dominante
+(\py{ELU\_S}), une fois avec le vent dominant (\py{ELU\_W}),
+une fois charges permanentes seules (\py{ELU\_G}), etc.
+
+\begin{lstlisting}[style=python, caption={Extrait de \fichier{ec0/combinaisons.py} --- coefficients AN France et génération}]
+# Coefficients réglementaires AN France
+GAMMA_G = 1.35    # charges permanentes défavorables
+GAMMA_Q = 1.50    # charges variables
+
+# Coefficients ψ₀ : réduction des actions d'accompagnement
+PSI_0_S = 0.5     # neige (altitude <= 1000 m)
+PSI_0_W = 0.6     # vent
+PSI_0_Q = 0.7     # exploitation catégorie A/B (habitation)
+
+# Durées de charge (pour le facteur k_mod EC5 Tableau 3.1)
+# G      -> permanent
+# neige  -> court_terme
+# vent   -> instantane
+
+# Génération de la combinaison ELU avec la neige comme action principale
+if s_k > 0:   # seulement s'il y a une charge de neige configurée
+    combinaisons.append(CombinaisonEC0(
+        id_combinaison  = "ELU_S",
+        type_combinaison= "ELU_STR",
+        charge_principale="S",
+        gamma_G         = GAMMA_G,     # 1.35
+        gamma_Q1        = GAMMA_Q,     # 1.50 * neige
+        psi_0_Q2        = PSI_0_W if w_k > 0 else 0.0,  # vent accompagne
+        duree_charge    = "court_terme",
+    ))
+
+# Et de même pour ELU_W (vent principal), ELU_Q (exploitation principale)...
+\end{lstlisting}
+
+Pour les \textbf{ELS} (\'Etats Limites de Service --- pour les fl\`eches),
+les m\^emes actions sont combin\'ees \emph{sans} coefficients partiels~:
+
+\begin{equation}
+E_{d,ELS,car} = G_k + Q_{k,1} + \sum_{i>1} \psi_{0,i} \cdot Q_{k,i}
+\label{eq:els_car}
+\end{equation}

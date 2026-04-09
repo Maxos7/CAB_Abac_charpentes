@@ -1,0 +1,124 @@
+% ─────────────────────────────────────────────────────────────────────────────
+\section{ELS~--- Les fl\`eches (\S{}7.2)}
+% ─────────────────────────────────────────────────────────────────────────────
+
+\begin{maitre}
+Apr\`es avoir v\'erifi\'e que la poutre ne casse pas (ELU),
+que reste-t-il \`a v\'erifier~?
+\end{maitre}
+
+\begin{apprenti}
+Qu'elle ne fl\'echit pas trop~? Une poutre qui tient mais qui fait
+une grande fl\`eche visible, c'est probl\'ematique pour les rev\^etements
+et d\'esagr\'eable visuellement.
+\end{apprenti}
+
+\begin{maitre}
+Exactement. C'est l'objet des \'Etats Limites de Service (ELS).
+Ici on ne v\'erifie plus la r\'esistance, mais la \emph{d\'eformation}.
+\end{maitre}
+
+\subsection{Fl\`eche instantan\'ee}
+
+Pour une poutre simplement appuy\'ee sous charge uniforme~:
+
+\begin{equation}
+w_{inst} = \frac{5 \, q \, L^4}{384 \, E_{0,mean} \, I}
+\label{eq:winst}
+\end{equation}
+
+\begin{lstlisting}[style=python, caption={\fichier{ec5/els.py} --- flèche instantanée}]
+def calculer_w_inst(q_kNm, L_m, E_mean_MPa, I_cm4) -> float:
+    """Flèche instantanée w_inst = 5qL⁴/(384EI) en mm."""
+    # Conversions d'unités :
+    q_Nmm = q_kNm * 1.0     # kN/m = N/mm (numériquement identique !)
+    L_mm  = L_m * 1000.0    # m -> mm
+    I_mm4 = I_cm4 * 1e4     # cm⁴ -> mm⁴
+
+    return 5.0 * q_Nmm * L_mm**4 / (384.0 * E_mean_MPa * I_mm4)
+\end{lstlisting}
+
+\begin{maitre}
+Pourquoi \py{q\_Nmm = q\_kNm * 1.0}~? La conversion est triviale~?
+\end{maitre}
+
+\begin{apprenti}
+Oui~: 1 kN/m $=$ 1000 N / 1000 mm $=$ 1 N/mm, le facteur est 1.
+\end{apprenti}
+
+\begin{maitre}
+Exact. La multiplication par 1{,}0 est gard\'ee pour la
+\textbf{lisibilit\'e}~: le commentaire montre qu'il y a bien une conversion
+d'unit\'e, m\^eme si le facteur num\'erique est 1. C'est le Principe~VI
+du projet~: toujours rendre les unit\'es explicites.
+\end{maitre}
+
+\subsection{Fl\`eche finale~: le fluage}
+
+Le bois flue sous charge permanente.
+La fl\`eche finale tient compte de ce fluage via le facteur $k_{def}$~:
+
+\begin{equation}
+w_{fin} = w_{inst} \cdot (1 + k_{def})
+\label{eq:wfin}
+\end{equation}
+
+\begin{lstlisting}[style=python, caption={\fichier{ec5/els.py} --- flèche finale avec fluage}]
+def calculer_w_fin(w_inst, k_def) -> float:
+    """Flèche finale w_fin = w_inst × (1 + k_def)."""
+    return w_inst * (1.0 + k_def)
+
+# Valeurs typiques de k_def (EC5 Tableau 3.2) :
+# Bois massif, classe de service 1 : k_def = 0.6
+# Bois massif, classe de service 2 : k_def = 0.8
+# Bois lamellé-collé, CS1           : k_def = 0.6
+\end{lstlisting}
+
+\subsection{Limites de fl\`eche et taux ELS}
+
+Les limites admissibles sont lues depuis \fichier{limites\_fleche\_ec5.csv}~:
+
+\begin{center}
+\begin{tabular}{lrrr}
+\toprule
+\textbf{Usage} & \boldmath{$w_{inst} \leq$} & \boldmath{$w_{fin} \leq$} & \boldmath{$w_2 \leq$}\\
+\midrule
+Toiture inaccessible & $L/150$ & $L/100$ & ---\\
+Plancher habitation   & $L/300$ & $L/200$ & $L/300$\\
+Plancher bureaux      & $L/300$ & $L/250$ & $L/350$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Le taux ELS est calcul\'e de fa\c{c}on analogue au taux ELU~:
+
+\begin{equation}
+\text{taux}_{ELS,inst} = \frac{w_{inst}}{w_{inst,lim}}
+\leq 1{,}0
+\end{equation}
+
+\begin{lstlisting}[style=python, caption={Extrait de \fichier{ec5/els.py} --- boucle de vérification ELS}]
+for combi in combinaisons:
+    if combi.type_combinaison not in ("ELS_CAR", "ELS_FREQ", "ELS_QPERM"):
+        continue  # on ne calcule les flèches QUE pour les combi ELS
+
+    # Charges via polymorphisme (comme pour l'ELU)
+    charges = type_poutre.charges_lineaires(config, materiau, longueurs_m, combi)
+
+    for i, L_m in enumerate(longueurs_m):
+        q_d = float(charges["q_d_kNm"][i])
+
+        # Limites depuis le CSV normatif
+        limites = get_limites_fleche(config.usage, L_m)
+        limite_inst_mm = limites["limite_inst_mm"]
+        limite_fin_mm  = limites["limite_fin_mm"]
+
+        # Calcul des flèches
+        w_inst_mm  = calculer_w_inst(q_d, L_m, materiau.E_0_mean_MPa, materiau.I_cm4)
+        w_creep_mm = k_def * w_inst_mm      # composante de fluage
+        w_fin_mm   = calculer_w_fin(w_inst_mm, k_def)
+
+        # Taux de sollicitation ELS
+        taux_inst = w_inst_mm / limite_inst_mm
+        taux_fin  = w_fin_mm  / limite_fin_mm
+\end{lstlisting}

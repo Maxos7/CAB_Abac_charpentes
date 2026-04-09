@@ -1,0 +1,1208 @@
+% ===========================================================================
+%  ABAC-Charpente — Guide Socratique du Code
+%  Comprendre Python et l'EC5 à travers ce logiciel
+% ===========================================================================
+\documentclass[12pt, a4paper, openany]{book}
+
+% ── Encodage & langue ───────────────────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[french]{babel}
+
+% ── Mise en page ────────────────────────────────────────────────────────────
+\usepackage[top=2.5cm, bottom=2.5cm, left=3cm, right=2.5cm]{geometry}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[LE,RO]{\thepage}
+\fancyhead[LO]{\nouppercase{\rightmark}}
+\fancyhead[RE]{\nouppercase{\leftmark}}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ── Mathématiques ───────────────────────────────────────────────────────────
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+% ── Couleurs ────────────────────────────────────────────────────────────────
+\usepackage{xcolor}
+\definecolor{bleuMaitre}{RGB}{13, 71, 161}
+\definecolor{bleuMaitreLight}{RGB}{227, 242, 253}
+\definecolor{ambreApprenti}{RGB}{121, 85, 72}
+\definecolor{ambreApprentiLight}{RGB}{251, 233, 231}
+\definecolor{vertImportant}{RGB}{27, 94, 32}
+\definecolor{vertImportantLight}{RGB}{232, 245, 233}
+\definecolor{greyCodeLight}{RGB}{250, 250, 250}
+\definecolor{orangeDefinition}{RGB}{230, 81, 0}
+\definecolor{orangeDefinitionLight}{RGB}{255, 243, 224}
+
+% ── Boîtes ──────────────────────────────────────────────────────────────────
+\usepackage[most]{tcolorbox}
+
+\newtcolorbox{maitre}[1][]{
+  enhanced,
+  colback=bleuMaitreLight,
+  colframe=bleuMaitre,
+  fonttitle=\bfseries\color{white},
+  title={\textbf{Maître}},
+  attach boxed title to top left={yshift=-2mm, xshift=5mm},
+  boxed title style={colback=bleuMaitre, colframe=bleuMaitre},
+  left=5mm, right=5mm, top=5mm, bottom=3mm,
+  #1
+}
+
+\newtcolorbox{apprenti}[1][]{
+  enhanced,
+  colback=ambreApprentiLight,
+  colframe=ambreApprenti,
+  fonttitle=\bfseries\color{white},
+  title={\textbf{Apprenti}},
+  attach boxed title to top left={yshift=-2mm, xshift=5mm},
+  boxed title style={colback=ambreApprenti, colframe=ambreApprenti},
+  left=5mm, right=5mm, top=5mm, bottom=3mm,
+  #1
+}
+
+\newtcolorbox{important}[1][]{
+  enhanced,
+  colback=vertImportantLight,
+  colframe=vertImportant,
+  fonttitle=\bfseries\color{white},
+  title={Point cl\'e},
+  attach boxed title to top left={yshift=-2mm, xshift=5mm},
+  boxed title style={colback=vertImportant},
+  left=5mm, right=5mm, top=5mm, bottom=3mm,
+  #1
+}
+
+\newtcolorbox{definition}[1][]{
+  enhanced,
+  colback=orangeDefinitionLight,
+  colframe=orangeDefinition,
+  fonttitle=\bfseries\color{white},
+  title={D\'efinition},
+  attach boxed title to top left={yshift=-2mm, xshift=5mm},
+  boxed title style={colback=orangeDefinition},
+  left=5mm, right=5mm, top=5mm, bottom=3mm,
+  #1
+}
+
+% ── Code ────────────────────────────────────────────────────────────────────
+\usepackage{listings}
+
+\lstdefinestyle{python}{
+  language=Python,
+  backgroundcolor=\color{greyCodeLight},
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{blue!80!black}\bfseries,
+  stringstyle=\color{orange!80!black},
+  commentstyle=\color{gray!70}\itshape,
+  numberstyle=\tiny\color{gray},
+  numbers=left,
+  breaklines=true,
+  showstringspaces=false,
+  frame=single,
+  rulecolor=\color{gray!40},
+  xleftmargin=2em,
+  framexleftmargin=2em,
+  literate=%
+    {à}{{\`a}}1   {â}{{\^a}}1
+    {é}{{\'e}}1   {è}{{\`e}}1   {ê}{{\^e}}1   {ë}{{\"e}}1
+    {î}{{\^i}}1   {ï}{{\"i}}1
+    {ô}{{\^o}}1   {ù}{{\`u}}1   {û}{{\^u}}1   {ü}{{\"u}}1
+    {ç}{{\c c}}1
+    {É}{{\'E}}1   {È}{{\`E}}1   {Ê}{{\^E}}1
+    {À}{{\`A}}1   {Â}{{\^A}}1
+    {Î}{{\^I}}1   {Û}{{\^U}}1   {Ç}{{\c C}}1
+    {œ}{{\oe}}1   {æ}{{\ae}}1
+    {²}{{\textsuperscript{2}}}1
+    {³}{{\textsuperscript{3}}}1
+    {⁴}{{\textsuperscript{4}}}1
+    {§}{{\S}}1
+}
+
+\lstdefinestyle{toml}{
+  basicstyle=\ttfamily\footnotesize,
+  backgroundcolor=\color{gray!8},
+  commentstyle=\color{gray}\itshape,
+  frame=single,
+  rulecolor=\color{gray!40},
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  breaklines=true,
+  xleftmargin=2em,
+  framexleftmargin=2em,
+  literate=%
+    {à}{{\`a}}1  {â}{{\^a}}1
+    {é}{{\'e}}1  {è}{{\`e}}1  {ê}{{\^e}}1
+    {î}{{\^i}}1  {ô}{{\^o}}1
+    {ù}{{\`u}}1  {û}{{\^u}}1  {ç}{{\c c}}1
+    {É}{{\'E}}1  {È}{{\`E}}1
+    {À}{{\`A}}1  {Â}{{\^A}}1
+    {²}{{\textsuperscript{2}}}1
+    {³}{{\textsuperscript{3}}}1
+    {⁴}{{\textsuperscript{4}}}1
+    {§}{{\S}}1
+    {│}{{|}}1
+    {├}{{|}}1
+    {└}{{|}}1
+    {─}{{-}}1
+}
+
+% ── Tableaux ────────────────────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{array}
+
+% ── Graphiques & schémas ────────────────────────────────────────────────────
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows, positioning}
+
+% ── Liens (chargé EN DERNIER pour compatibilité) ─────────────────────────────
+\usepackage[colorlinks=true, linkcolor=bleuMaitre, urlcolor=bleuMaitre,
+            citecolor=bleuMaitre]{hyperref}
+
+% ── Divers ──────────────────────────────────────────────────────────────────
+\usepackage{microtype}
+\usepackage{parskip}
+\setlength{\parskip}{6pt}
+
+% ── Commandes personnalisées ─────────────────────────────────────────────────
+\newcommand{\py}[1]{\texttt{#1}}
+\newcommand{\fichier}[1]{\texttt{\textit{#1}}}
+
+% ===========================================================================
+\begin{document}
+% ===========================================================================
+
+% ── Page de titre ───────────────────────────────────────────────────────────
+\begin{titlepage}
+\centering
+\vspace*{1.5cm}
+{\fontsize{28}{34}\bfseries Comprendre ABAC-Charpente}\\[0.6cm]
+{\LARGE Guide Socratique du Code}\\[1.5cm]
+\rule{\textwidth}{1.5pt}\\[0.5cm]
+{\large De Python aux v\'erifications Eurocode 5,\\
+expliqu\'e pas \`a pas comme si tu ne savais rien}\\[0.5cm]
+\rule{\textwidth}{1.5pt}\\[2cm]
+{\large Avril 2026}\\[3cm]
+
+\begin{tcolorbox}[
+  colback=bleuMaitreLight, colframe=bleuMaitre,
+  width=0.85\textwidth, center
+]
+\centering\large\itshape
+\guillemotleft\, Je ne sais qu'une chose,\\
+c'est que je ne sais rien.\,\guillemotright\\[4pt]
+{\normalsize --- Socrate}
+\end{tcolorbox}
+
+\vfill
+{\small Document d'usage personnel --- 2026}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% ===========================================================================
+\chapter*{Avant-propos}
+\addcontentsline{toc}{chapter}{Avant-propos}
+% ===========================================================================
+
+Ce document est un guide p\'edagogique du logiciel \textbf{ABAC-Charpente}
+(\emph{Abaque de Calcul pour Charpentes en Bois}), un outil de calcul
+automatique de port\'ees admissibles pour les structures bois,
+conform\'ement aux normes europ\'eennes EN~1990 et EN~1995 (Eurocode~5).
+
+La m\'ethode p\'edagogique choisie est le \textbf{dialogue socratique}~: plut\^ot
+qu'asséner des d\'efinitions, le Ma\^itre pose des questions qui am\`enent
+l'Apprenti \`a d\'ecouvrir les concepts par lui-m\^eme. Tu trouveras tout au
+long de ce document des \'echanges entre ces deux personnages~:
+
+\begin{maitre}
+Les questions du Ma\^itre t'invitent \`a r\'efl\'echir avant que la r\'eponse
+ne soit donn\'ee.
+\end{maitre}
+
+\begin{apprenti}
+Les r\'eponses de l'Apprenti --- parfois h\'esitantes --- mod\'elisent
+le cheminement naturel d'un ing\'enieur qui d\'ecouvre Python.
+\end{apprenti}
+
+\begin{important}
+Les encadr\'es verts r\'esument les points cl\'es \`a retenir absolument.
+\end{important}
+
+\begin{definition}
+Les encadr\'es oranges d\'efinissent les termes techniques importants
+(Python ou Eurocode).
+\end{definition}
+
+\textbf{Comment lire ce document~?}
+Tu peux le parcourir lin\'eairement pour une compr\'ehension compl\`ete.
+Les exemples de code sont syst\'ematiquement tir\'es de l'application r\'eelle.
+Les num\'eros de fichiers mentionn\'es correspondent \`a la structure du projet telle
+qu'elle existe sur le disque.
+
+% ===========================================================================
+\chapter{Python~: les briques de base}
+% ===========================================================================
+
+Avant d'entrer dans le c\oe{}ur du logiciel, il faut parler le m\^eme
+langage. Ce chapitre t'apprend Python \`a travers les yeux d'un charpentier.
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Les variables~: nommer les choses}
+% ─────────────────────────────────────────────────────────────────────────────
+
+\begin{maitre}
+Quand tu dessines un plan de charpente, tu notes des dimensions.
+Comment tu notes la largeur d'une section de bois~?
+\end{maitre}
+
+\begin{apprenti}
+Je note \guillemotleft\,b = 63 mm\,\guillemotright.
+\end{apprenti}
+
+\begin{maitre}
+Exactement. En Python, c'est presque identique~:
+\end{maitre}
+
+\begin{lstlisting}[style=python, caption={D\'eclaration de variables en Python}]
+b_mm = 63.0      # largeur de section, en millimètres
+h_mm = 175.0     # hauteur de section, en millimètres
+L_max_m = 6.0    # portée maximale, en mètres
+\end{lstlisting}
+
+\begin{definition}
+Une \textbf{variable} est une bo\^ite dans la m\'emoire de l'ordinateur,
+\`a laquelle on donne un nom. Le signe \py{=} ne veut pas dire
+\guillemotleft\,est \'egal\,\guillemotright{} au sens math\'ematique,
+mais \guillemotleft\,re\c{c}oit la valeur\,\guillemotright.
+Autrement dit~: \py{b\_mm = 63.0} se lit
+\guillemotleft\,la bo\^ite nomm\'ee \py{b\_mm} re\c{c}oit la valeur
+\py{63.0}\,\guillemotright.
+\end{definition}
+
+Tu remarques que les noms de variables dans ce code portent l'unit\'e
+(\py{\_mm}, \py{\_m}, \py{\_MPa}, \py{\_kNm}).
+C'est une convention d\'elib\'er\'ee du projet, appel\'ee \textbf{Principe~VI},
+pour \'eviter de confondre m\`etres et millim\`etres ---
+une erreur qui a caus\'e plus d'un probl\`eme structurel dans l'histoire
+de l'ing\'enierie.
+
+\begin{maitre}
+Et si j'\'ecris \py{b\_mm = 63} au lieu de \py{b\_mm = 63.0},
+c'est la m\^eme chose~?
+\end{maitre}
+
+\begin{apprenti}
+Je pense que oui, 63 et 63{,}0 c'est pareil, non~?
+\end{apprenti}
+
+\begin{maitre}
+Presque. Mais Python distingue les types de donn\'ees~: \py{63} est un
+entier (\py{int}), et \py{63.0} est un d\'ecimal (\py{float}).
+En pratique, pour les grandeurs physiques, on utilise toujours \py{float}
+car les calculs comme $\sigma = M / W$ donnent des r\'esultats d\'ecimaux.
+\end{maitre}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Les types de donn\'ees}
+% ─────────────────────────────────────────────────────────────────────────────
+
+Python distingue plusieurs \emph{types} de donn\'ees~:
+
+\begin{center}
+\begin{tabular}{llll}
+\toprule
+\textbf{Type Python} & \textbf{Ce que c'est}    & \textbf{Exemple dans le projet}\\
+\midrule
+\py{int}             & Nombre entier             & \py{classe\_service = 1}\\
+\py{float}           & Nombre d\'ecimal           & \py{f\_m\_k\_MPa = 24.0}\\
+\py{str}             & Texte (cha\^ine)           & \py{classe\_resistance = "C24"}\\
+\py{bool}            & Vrai ou Faux              & \py{double\_flexion = True}\\
+\py{list}            & Liste d'\'el\'ements       & \py{pentes\_deg = [4, 15, 30, 45]}\\
+\py{dict}            & Table cl\'e\,$\rightarrow$\,valeur   & \py{\{"b\_mm": 63, "h\_mm": 175\}}\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{lstlisting}[style=python, caption={Types de données illustrés par des grandeurs charpente}]
+# float : grandeurs physiques avec unité dans le nom
+b_mm = 63.0
+f_m_k_MPa = 24.0        # résistance caractéristique en flexion (MPa)
+
+# str : identifiants et classifications
+classe_resistance = "C24"
+type_poutre = "Panne"
+usage = "TOITURE_INACC"
+
+# bool : options oui/non
+double_flexion = True
+second_oeuvre = False
+
+# list : plusieurs valeurs à tester (expansion cartésienne)
+pentes_deg = [4, 15, 30, 45]      # 4 pentes à calculer
+
+# dict : propriétés regroupées en une seule structure
+section = {
+    "b_mm": 63.0,
+    "h_mm": 175.0,
+    "classe": "C24"
+}
+\end{lstlisting}
+
+\begin{maitre}
+Pourquoi avoir une liste de pentes \py{[4, 15, 30, 45]} plut\^ot qu'une
+seule valeur~?
+\end{maitre}
+
+\begin{apprenti}
+Parce que le logiciel doit calculer pour plusieurs pentes de toiture
+diff\'erentes~?
+\end{apprenti}
+
+\begin{maitre}
+Exactement. Et c'est l\`a qu'intervient l'un des concepts les plus puissants
+de ce logiciel~: on peut donner des listes de param\`etres, et le programme
+g\'en\`ere automatiquement toutes les combinaisons. Mais n'anticipons pas~---
+voyons d'abord les fonctions.
+\end{maitre}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Les fonctions~: des recettes de calcul r\'eutilisables}
+% ─────────────────────────────────────────────────────────────────────────────
+
+\begin{maitre}
+Dans ton travail d'ing\'enieur, tu appliques souvent la m\^eme formule
+\`a des donn\'ees diff\'erentes. Par exemple, le moment d'inertie d'une
+section rectangulaire~:
+$I = bh^3/12$.
+Tu la recalcules \`a chaque fois depuis z\'ero~?
+\end{maitre}
+
+\begin{apprenti}
+Non, je la note une fois dans mon tableur et je change juste les valeurs
+de $b$ et $h$.
+\end{apprenti}
+
+\begin{maitre}
+En Python, on fait pareil avec les \textbf{fonctions}.
+\end{maitre}
+
+\begin{lstlisting}[style=python, caption={Définition et appel d'une fonction Python}]
+# --- Définition : on écrit la "recette" une seule fois ---
+def calculer_inertie(b_mm: float, h_mm: float) -> float:
+    """Moment d'inertie en cm4 d'une section rectangulaire b x h."""
+    I_mm4 = b_mm * h_mm**3 / 12.0    # mm4  (**3 = puissance 3)
+    I_cm4 = I_mm4 / 1e4              # conversion mm4 -> cm4
+    return I_cm4                      # renvoie le résultat
+
+# --- Appel : on "invoque" la recette avec des valeurs ---
+I_A = calculer_inertie(63.0, 175.0)    # -> 28013 cm4
+I_B = calculer_inertie(75.0, 225.0)    # -> 71367 cm4
+\end{lstlisting}
+
+D\'ecortiquons ce code ligne par ligne~:
+
+\begin{itemize}
+  \item \py{def} est le mot-cl\'e Python qui signifie
+        \guillemotleft\,je d\'efinis une fonction\,\guillemotright.
+  \item \py{calculer\_inertie} est le nom qu'on lui donne
+        (en fran\c{c}ais, conforme au Principe~IX du projet).
+  \item \py{b\_mm: float, h\_mm: float} sont les \textbf{param\`etres}
+        (les ingr\'edients de la recette). Le \py{: float} indique le type
+        attendu~: c'est une annotation de type, facultative mais tr\`es lisible.
+  \item \py{-> float} indique ce que la fonction retourne.
+  \item Les triples guillemets \py{"""..."""} sont la \textbf{docstring}~:
+        une documentation int\'egr\'ee, lisible par les outils de d\'eveloppement.
+  \item \py{return} renvoie le r\'esultat au code appelant.
+\end{itemize}
+
+\begin{important}
+L'indentation (les espaces en d\'ebut de ligne) est \textbf{obligatoire}
+en Python. Elle d\'elimite le contenu de la fonction. Si tu oublies de
+l'indenter, Python l\`eve une erreur imm\'ediatement.
+\end{important}
+
+Voici la vraie fonction de calcul de section dans le code~:
+
+\begin{lstlisting}[style=python, caption={Extrait de \fichier{ec5/proprietes.py} --- calcul des propriétés de section}]
+def calculer_section(b_mm: float, h_mm: float) -> dict:
+    """Calcule les propriétés géométriques d'une section rectangulaire.
+
+    Retourne un dictionnaire avec :
+        A_cm2   : aire en cm²
+        I_cm4   : inertie axe fort en cm⁴
+        W_cm3   : module de résistance axe fort en cm³
+        I_z_cm4 : inertie axe faible en cm⁴
+        W_z_cm3 : module de résistance axe faible en cm³
+    """
+    A_mm2   = b_mm * h_mm
+    I_mm4   = b_mm * h_mm**3 / 12.0
+    W_mm3   = b_mm * h_mm**2 / 6.0
+    I_z_mm4 = h_mm * b_mm**3 / 12.0   # axe faible : b et h sont inversés
+    W_z_mm3 = h_mm * b_mm**2 / 6.0
+
+    return {
+        "A_cm2":   A_mm2  / 100.0,
+        "I_cm4":   I_mm4  / 1e4,
+        "W_cm3":   W_mm3  / 1e3,
+        "I_z_cm4": I_z_mm4 / 1e4,
+        "W_z_cm3": W_z_mm3 / 1e3,
+    }
+\end{lstlisting}
+
+\begin{maitre}
+Pourquoi la fonction retourne un \py{dict} plut\^ot que de retourner
+\py{A\_cm2} directement~?
+\end{maitre}
+
+\begin{apprenti}
+Parce qu'on veut r\'ecup\'erer plusieurs valeurs \`a la fois~?
+\end{apprenti}
+
+\begin{maitre}
+Exactement. En Python, une fonction ne peut retourner qu'une seule
+\guillemotleft\,chose\,\guillemotright, mais cette chose peut \^etre un
+dictionnaire qui en contient plusieurs. C'est un idiome tr\`es courant
+dans ce code~: toutes les fonctions de v\'erification EC5 retournent
+un dictionnaire de valeurs interm\'ediaires.
+\end{maitre}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Les listes et les boucles~: travailler en s\'erie}
+% ─────────────────────────────────────────────────────────────────────────────
+
+\begin{maitre}
+Imaginons que tu doives v\'erifier une poutre pour des port\'ees de
+2\,m, 2,5\,m, 3\,m\ldots{} jusqu'\`a 6\,m. Comment tu ferais manuellement~?
+\end{maitre}
+
+\begin{apprenti}
+Je ferais le calcul pour 2\,m, puis pour 2,5\,m, puis pour 3\,m\ldots{}
+Ca fait beaucoup de lignes.
+\end{apprenti}
+
+\begin{maitre}
+Python te permet de l'\'ecrire une seule fois et de le r\'ep\'eter
+automatiquement avec une \textbf{boucle}.
+\end{maitre}
+
+\begin{lstlisting}[style=python, caption={Boucle sur une liste de portées}]
+import numpy as np
+
+# Génération d'un tableau de portées : de 2.0 à 6.0, par pas de 0.5
+longueurs_m = np.arange(2.0, 6.5, 0.5)
+# Résultat : array([2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0])
+
+# Boucle : on répète le bloc indenté pour chaque valeur de L
+for L in longueurs_m:
+    w_inst = 5 * 1.2 * L**4 / (384 * 11000 * 2800)  # formule simplifiée
+    print(f"L = {L:.1f} m  ->  w_inst = {w_inst:.2f} mm")
+\end{lstlisting}
+
+\begin{definition}
+\textbf{numpy} (import\'e sous le nom \py{np}) est une biblioth\`eque externe
+qui ajoute des capacit\'es de calcul scientifique \`a Python.
+\py{np.arange(2.0, 6.5, 0.5)} g\'en\`ere un tableau de nombres de 2,0
+\`a 6,0 (6,5 exclu) avec un pas de 0,5.
+C'est l'\'equivalent Python d'une colonne de tableau dans Excel.
+\end{definition}
+
+Voici le code r\'eel du moteur de calcul~:
+
+\begin{lstlisting}[style=python, caption={Extrait de \fichier{moteur.py} --- génération des portées}]
+# L_min, pas, L_max viennent de la configuration et du produit
+L_min = float(config.L_min_m)
+pas   = float(config.pas_longueur_m)
+L_max = p_rep.L_max_m   # portée max du produit (ex : 6.0 m)
+
+# Génération du tableau de toutes les portées à tester
+longueurs_m = np.arange(L_min, L_max + pas / 2, pas)
+#              ^--- début    ^--- fin (+marge)  ^--- pas
+
+# Note : le "+ pas/2" est une précaution technique.
+# np.arange peut parfois manquer la borne finale à cause des
+# imprécisions des nombres décimaux (6.0 devient 5.999...).
+# En ajoutant la moitié du pas, on s'assure de bien inclure L_max.
+\end{lstlisting}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Les conditions~: prendre des d\'ecisions}
+% ─────────────────────────────────────────────────────────────────────────────
+
+\begin{lstlisting}[style=python, caption={Conditions \py{if/elif/else} --- statut d'une portée}]
+taux_determinant = 0.87   # résultat d'un calcul EC5
+
+# Cas simple : admis ou refusé
+if taux_determinant <= 1.0:
+    statut = "admis"    # la poutre résiste
+else:
+    statut = "refusé"   # la poutre est insuffisante
+
+# Cas avec plusieurs branches (elif = "sinon si")
+if taux_determinant <= 0.80:
+    commentaire = "large marge de sécurité"
+elif taux_determinant <= 1.00:
+    commentaire = "marge de sécurité acceptable"
+else:
+    commentaire = "section insuffisante"
+\end{lstlisting}
+
+Dans le code r\'eel (\fichier{moteur.py}), la d\'ecision est
+l\'eg\`erement plus nuanc\'ee~:
+
+\begin{lstlisting}[style=python, caption={Extrait de \fichier{moteur.py} --- logique de statut}]
+statut_usage = els.get("statut_usage", "ok")
+
+if statut_usage == "rejeté_usage":
+    statut = "rejeté_usage"   # usage non supporté (ex : plancher dalle)
+elif taux_determinant <= 1.0:
+    statut = "admis"
+else:
+    statut = "refusé"
+\end{lstlisting}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Les dictionnaires~: des fiches produit}
+% ─────────────────────────────────────────────────────────────────────────────
+
+\begin{maitre}
+Dans ton catalogue bois, une fiche produit contient le lib\'ell\'e,
+les dimensions, la classe de r\'esistance\ldots{}
+Comment tu organiserais \c{c}a en Python~?
+\end{maitre}
+
+\begin{apprenti}
+Je mettrais tout dans une sorte de tableau avec des \'etiquettes~?
+\end{apprenti}
+
+\begin{maitre}
+Exactement~: c'est un \textbf{dictionnaire} (\py{dict}).
+\end{maitre}
+
+\begin{lstlisting}[style=python, caption={Dictionnaire --- fiche produit bois}]
+produit = {
+    "id_produit":         "EPX-063-175-6000",
+    "b_mm":               63.0,
+    "h_mm":               175.0,
+    "L_max_m":            6.0,
+    "classe_resistance":  "C24",
+    "famille":            "bois_massif",
+    "disponible":         True,
+}
+
+# Lecture d'une valeur par sa clé
+hauteur   = produit["h_mm"]       # -> 175.0
+est_dispo = produit["disponible"] # -> True
+
+# Vérification de l'existence d'une clé
+if "fournisseur" in produit:
+    print(produit["fournisseur"])
+else:
+    print("Pas de fournisseur renseigné")
+\end{lstlisting}
+
+Dans le code r\'eel, les fonctions de v\'erification EC5 retournent
+des dictionnaires avec toutes les valeurs interm\'ediaires du calcul~:
+
+\begin{lstlisting}[style=python, caption={Dictionnaire retourné par \py{calculer\_flexion()}}]
+def calculer_flexion(...):
+    # ... calculs ...
+    return {
+        "f_m_d_MPa":       ...,  # résistance de calcul
+        "sigma_m_MPa":     ...,  # contrainte calculée
+        "taux_flexion_ELU": ..., # ratio de sollicitation (doit être <= 1.0)
+    }
+\end{lstlisting}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Les classes~: mod\'eliser les types de poutres}
+% ─────────────────────────────────────────────────────────────────────────────
+
+C'est ici que Python devient vraiment puissant. Jusqu'ici, on a
+manipul\'e des valeurs et des fonctions isol\'ees. Les \textbf{classes}
+permettent de regrouper des donn\'ees \emph{et} des comportements dans
+une m\^eme entit\'e.
+
+\begin{maitre}
+Pense \`a une panne de toiture et \`a une solive de plancher.
+Elles ont toutes les deux une largeur, une hauteur, une port\'ee\ldots{}
+Mais comment sont calcul\'ees leurs charges~?
+\end{maitre}
+
+\begin{apprenti}
+Diff\'eremment~! La panne subit les charges en biais \`a cause de la
+pente du toit, tandis que la solive est horizontale.
+\end{apprenti}
+
+\begin{maitre}
+Voil\`a exactement pourquoi ce code utilise des classes.
+Regarde comment est d\'efinie la classe abstraite de base.
+\end{maitre}
+
+\begin{lstlisting}[style=python, caption={Extrait de \fichier{types\_poutre/base.py} --- classe abstraite \py{TypePoutre}}]
+from abc import ABC, abstractmethod   # ABC = Abstract Base Class
+import numpy as np
+
+class TypePoutre(ABC):
+    """Classe abstraite représentant un type de poutre bois.
+
+    Toute sous-classe DOIT implémenter charges_lineaires().
+    INTERDIT : if/match sur le type dans elu.py / els.py.
+    """
+
+    @abstractmethod
+    def charges_lineaires(self, config, materiau, longueurs_m, combi):
+        """Calcule les charges linéaires (kN/m) pour chaque portée.
+
+        Cette méthode n'a PAS de code ici : c'est un "contrat".
+        Chaque sous-classe (Panne, Solive, etc.) doit l'implémenter.
+        """
+        ...   # les "..." signifient : pas d'implémentation ici
+
+    def longueur_deversement_m(self, longueur_m, entraxe_antideversement_mm):
+        """Longueur de déversement (méthode COMMUNE à tous les types).
+
+        Règle (EF-024) :
+            pas d'anti-déversement  -> L_ef = L
+            L <= 2 * entraxe        -> L_ef = L / 2
+            L >  2 * entraxe        -> L_ef = entraxe
+        """
+        if entraxe_antideversement_mm <= 0:
+            return longueur_m
+        a_m = entraxe_antideversement_mm / 1000.0   # mm -> m
+        if longueur_m <= 2 * a_m:
+            return longueur_m / 2.0
+        return a_m
+\end{lstlisting}
+
+\begin{definition}
+\textbf{ABC} signifie \emph{Abstract Base Class} (classe de base abstraite).
+Une classe abstraite est un \emph{contrat}~: elle dit
+\guillemotleft\,toute sous-classe doit impl\'ementer ces m\'ethodes\,\guillemotright,
+sans fournir l'impl\'ementation elle-m\^eme.
+Le d\'ecorateur \py{@abstractmethod} marque les m\'ethodes obligatoires.
+\end{definition}
+
+Ensuite, chaque type de poutre h\'erite de cette classe et impl\'emente
+sa propre logique de charges. Voici la classe \py{Panne} simplifi\'ee~:
+
+\begin{lstlisting}[style=python, caption={Classe \py{Panne} --- implémentation pour toiture inclinée (simplifié)}]
+import math
+import numpy as np
+
+class Panne(TypePoutre):
+    """Panne de toiture inclinée.
+
+    Hérite de TypePoutre et implémente charges_lineaires()
+    en tenant compte de la pente.
+    """
+
+    def charges_lineaires(self, config, materiau, longueurs_m, combi):
+        pente_rad = math.radians(config.pente_deg)
+        entraxe_m = config.entraxe_m
+
+        # Charges surfaciques (kN/m²) -> charges linéaires (kN/m)
+        g_kNm2 = config.g_k_kNm2 + materiau.poids_propre_kNm2  # permanent
+        s_kNm2 = config.s_k_kNm2                                # neige
+
+        # Projection : les charges permanentes s'exercent sur la surface
+        # inclinée, donc on les divise par cos(alpha) pour ramener
+        # à la surface projetée horizontale
+        g_inclinee = g_kNm2 / math.cos(pente_rad)
+
+        q_G = g_inclinee * entraxe_m   # kN/m (par mètre de portée)
+        q_S = s_kNm2 * entraxe_m       # kN/m (neige = charge verticale)
+
+        # Combinaison EN 1990 (coefficients venant de "combi")
+        q_d = combi.gamma_G * q_G + combi.gamma_Q1 * q_S
+
+        # Moment et effort tranchant (poutre simplement appuyée)
+        M_d = q_d * longueurs_m**2 / 8.0    # kN.m
+        V_d = q_d * longueurs_m / 2.0       # kN
+
+        return {
+            "q_G_kNm": q_G * np.ones_like(longueurs_m),
+            "q_S_kNm": q_S * np.ones_like(longueurs_m),
+            "q_d_kNm": q_d * np.ones_like(longueurs_m),
+            "M_d_kNm": M_d,
+            "V_d_kN":  V_d,
+        }
+
+    def decomposer(self, charges_kNm, pente_rad):
+        q_y = charges_kNm * math.cos(pente_rad)  # axe fort
+        q_z = charges_kNm * math.sin(pente_rad)  # axe faible
+        return q_y, q_z
+\end{lstlisting}
+
+\begin{important}
+C'est le \textbf{polymorphisme}~: les modules de calcul EC5
+(\fichier{elu.py}, \fichier{els.py}) appellent toujours
+\py{type\_poutre.charges\_lineaires()} sans savoir si c'est une Panne,
+une Solive ou un Chevron. Chaque sous-classe r\'epond \`a sa fa\c{c}on.
+C'est \'el\'egant et extensible~: ajouter un nouveau type de poutre
+ne n\'ecessite de modifier \emph{que} la nouvelle classe, sans toucher
+aux calculs EC5.
+\end{important}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Les modules et les imports}
+% ─────────────────────────────────────────────────────────────────────────────
+
+\begin{maitre}
+On voit souvent \py{import numpy as np}, \py{import pandas as pd}\ldots{}
+C'est quoi ces imports~?
+\end{maitre}
+
+\begin{apprenti}
+Ce sont des biblioth\`eques ext\'erieures qu'on charge~?
+\end{apprenti}
+
+\begin{maitre}
+Exactement. Imagine que tu travailles sur un chantier.
+Tu n'emportes pas tous tes outils chaque matin~---
+tu charges seulement ce dont tu as besoin pour la journ\'ee.
+Les imports, c'est pareil.
+\end{maitre}
+
+\begin{lstlisting}[style=python, caption={Imports typiques dans ce projet}]
+import numpy as np          # calcul numérique (tableaux, maths)
+import pandas as pd         # manipulation de tableaux de données CSV
+from pathlib import Path    # gestion propre des chemins de fichiers
+import math                 # fonctions mathématiques (sin, cos, sqrt...)
+from loguru import logger   # affichage de messages de log
+
+# Import depuis un sous-module du projet lui-même
+from abac_charpente.ec5.elu import verifier_elu
+from abac_charpente.ec0.combinaisons import generer_combinaisons
+\end{lstlisting}
+
+Les biblioth\`eques cl\'es de ce projet sont~:
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+\textbf{Biblioth\`eque} & \textbf{R\^ole}\\
+\midrule
+\py{numpy}    & Calcul num\'erique vectoris\'e (tableaux, maths)\\
+\py{pandas}   & Lecture/\'ecriture CSV, manipulation de donn\'ees\\
+\py{click}    & Interface ligne de commande\\
+\py{pydantic} & Validation automatique des donn\'ees de configuration\\
+\py{loguru}   & Affichage de messages (info, avertissement, erreur)\\
+\py{matplotlib} & G\'en\'eration de graphiques (module \py{abac\_visuel})\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% ===========================================================================
+\chapter{L'architecture du projet}
+% ===========================================================================
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Vue d'ensemble~: trois modules ind\'ependants}
+% ─────────────────────────────────────────────────────────────────────────────
+
+Le projet est d\'ecoup\'e en trois sous-packages ind\'ependants~:
+
+\begin{center}
+\begin{tikzpicture}[
+    box/.style={
+        draw, rounded corners=4pt,
+        fill=bleuMaitreLight,
+        minimum width=4.2cm, minimum height=1.4cm,
+        align=center, font=\small\bfseries
+    },
+    arrow/.style={->, thick, color=bleuMaitre},
+    label/.style={font=\scriptsize\itshape, color=gray}
+]
+\node[box] (sapeg) at (0,0)
+    {\py{sapeg\_regen\_stock}\\[3pt]\small Ingestion du stock};
+
+\node[box] (abac) at (5.5,0)
+    {\py{abac\_charpente}\\[3pt]\small Calcul EC5};
+
+\node[box] (visuel) at (11,0)
+    {\py{abac\_visuel}\\[3pt]\small Graphiques};
+
+\draw[arrow] (sapeg) -- (abac)
+    node[midway, above, label] {stock\_enrichi.csv};
+\draw[arrow] (abac) -- (visuel)
+    node[midway, above, label] {portees\_admissibles.csv};
+\end{tikzpicture}
+\end{center}
+
+\vspace{0.5em}
+
+Cette s\'eparation suit un principe fondamental en informatique~:
+chaque module a une \textbf{responsabilit\'e unique}.
+Comme en charpente, on s\'epare les corps d'\'etat~---
+le charpentier, le couvreur, le plaquiste~---
+chacun fait son travail de fa\c{c}on autonome.
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Structure des fichiers}
+% ─────────────────────────────────────────────────────────────────────────────
+
+\begin{lstlisting}[style=toml, language={}, caption={Arborescence du projet (simplifiée)}]
+CAB_Chapente/
+│
+├── config.toml               <- Configuration principale
+├── configs_calcul.toml       <- Scénarios de calcul EC5
+├── configs_filtre.toml       <- Règles de filtrage du stock
+├── ALL_PRODUIT_*.csv         <- Stock bois (export SAPEG)
+│
+├── src/
+│   ├── abac_charpente/
+│   │   ├── cli.py            <- Point d'entrée (ligne de commande)
+│   │   ├── moteur.py         <- Orchestrateur principal
+│   │   ├── config.py         <- Lecture de la configuration TOML
+│   │   ├── registre.py       <- Cache de calculs (registre incrémental)
+│   │   ├── ec0/
+│   │   │   └── combinaisons.py  <- EN 1990 : combinaisons d'actions
+│   │   ├── ec1/
+│   │   │   ├── neige.py      <- EN 1991 : charges de neige
+│   │   │   └── vent.py       <- EN 1991 : charges de vent
+│   │   ├── ec5/
+│   │   │   ├── elu.py        <- Etats Limites Ultimes (§6.1.x, §6.3.x)
+│   │   │   ├── els.py        <- Etats Limites de Service (§7.2)
+│   │   │   ├── double_flexion.py  <- Flexion biaxiale (§6.1.6)
+│   │   │   ├── proprietes.py <- Tables kmod, kdef, gamma_M, EN 338
+│   │   │   └── types_poutre/ <- Panne, Solive, Chevron, Sommier
+│   │   └── data/             <- Tables normatives (CSV)
+│   │       ├── materiaux_bois.csv    <- EN 338 : propriétés des classes
+│   │       ├── kmod.csv              <- EC5 Tableau 3.1
+│   │       ├── kdef.csv              <- EC5 Tableau 3.2
+│   │       ├── gamma_m.csv           <- EC5 §2.4
+│   │       └── limites_fleche_ec5.csv <- EC5 §7.2
+│   │
+│   ├── sapeg_regen_stock/    <- Pipeline stock SAPEG
+│   └── abac_visuel/          <- Génération de graphiques
+│
+└── resultats/                <- Sorties (créées automatiquement)
+    ├── portees_admissibles.csv
+    ├── stock_enrichi.csv
+    └── registre_calcul.csv
+\end{lstlisting}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Le point d'entr\'ee~: la ligne de commande}
+% ─────────────────────────────────────────────────────────────────────────────
+
+Le programme se lance avec~:
+
+\begin{lstlisting}[style=toml, language={}, caption={Lancement du logiciel}]
+uv run abac calculer --config config.toml
+\end{lstlisting}
+
+\begin{maitre}
+Comment Python sait-il quoi faire quand on tape cette commande~?
+\end{maitre}
+
+\begin{apprenti}
+Il doit y avoir un fichier qui dit~:
+\guillemotleft\,si on appelle la commande \py{abac}, d\'emarre ici\,\guillemotright~?
+\end{apprenti}
+
+\begin{maitre}
+Oui. Ce fichier s'appelle \fichier{cli.py} et utilise la biblioth\`eque
+\py{Click}. Les d\'ecorateurs \py{@click.command} et \py{@click.option}
+transforment une fonction Python ordinaire en commande de terminal.
+\end{maitre}
+
+\begin{lstlisting}[style=python, caption={Extrait de \fichier{cli.py} --- point d'entrée simplifié}]
+import click
+
+@click.group()
+def abac():
+    """ABAC-Charpente : calcul de portées admissibles EC5."""
+    pass
+
+@abac.command("calculer")
+@click.option("--config", default="config.toml",
+              help="Fichier de configuration principal")
+@click.option("--recalcul-complet", is_flag=True, default=False,
+              help="Forcer le recalcul (ignorer le registre)")
+def calculer(config, recalcul_complet):
+    """Lance le calcul complet."""
+    app_config = charger_config(config)
+    moteur.lancer_calcul(app_config, recalcul_complet=recalcul_complet)
+\end{lstlisting}
+
+\begin{definition}
+Un \textbf{d\'ecorateur} (le \py{@} devant une fonction) est une fa\c{c}on
+d'enrober une fonction existante avec du comportement suppl\'ementaire,
+sans modifier son code interne. Ici, \py{@click.command("calculer")} dit
+\`a Click~: \guillemotleft\,la fonction suivante r\'epond \`a la
+sous-commande \py{calculer}\,\guillemotright.
+\end{definition}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Les mod\`eles de donn\'ees~: Pydantic}
+% ─────────────────────────────────────────────────────────────────────────────
+
+\begin{maitre}
+Imagine que quelqu'un \'ecrit \py{g\_k\_kNm2 = "quarante"} dans le fichier
+de configuration au lieu de \py{40.0}. Comment le programme sait-il que
+c'est une erreur~?
+\end{maitre}
+
+\begin{apprenti}
+Il faut qu'il v\'erifie les types des donn\'ees \`a la lecture~?
+\end{apprenti}
+
+\begin{maitre}
+Exactement. C'est le r\^ole de \textbf{Pydantic}. Chaque configuration
+est d\'ecrite par un mod\`ele de donn\'ees qui d\'efinit les types
+attendus. Si un fichier TOML contient une valeur du mauvais type,
+Pydantic l\`eve une erreur claire avant m\^eme que les calculs commencent.
+\end{maitre}
+
+\begin{lstlisting}[style=python, caption={\fichier{modeles/config\_calcul.py} --- modèle Pydantic (simplifié)}]
+from pydantic import BaseModel
+
+class ConfigCalcul(BaseModel):
+    """Configuration d'un scénario de calcul EC5."""
+
+    id_config_calcul: str          # identifiant unique (ex : "PANNE_INACC")
+    type_poutre: str               # "Panne", "Solive", "Chevron", "Sommier"
+    usage: str                     # "TOITURE_INACC", "PLANCHER_HAB", etc.
+
+    L_min_m: float = 2.0           # portée minimale (m)
+    pas_longueur_m: float = 0.5    # pas de calcul (m)
+
+    pente_deg: float = 0.0         # pente toiture (degrés)
+    entraxe_m: float = 1.0         # entraxe des poutres (m)
+    classe_service: int = 1        # classe de service EC5 (1, 2 ou 3)
+
+    g_k_kNm2: float                # charge permanente hors poids propre
+    s_k_kNm2: float = 0.0          # neige (kN/m²)
+    w_k_kNm2: float = 0.0          # vent (kN/m²)
+    q_k_kNm2: float = 0.0          # exploitation (kN/m²)
+
+    double_flexion: bool = False
+    second_oeuvre: bool = False
+    marge_securite: float = 0.0    # marge supplémentaire (0 à 1)
+\end{lstlisting}
+
+% ===========================================================================
+\chapter{Les donn\'ees d'entr\'ee}
+% ===========================================================================
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Le stock bois~: le fichier ALL\_PRODUIT}
+% ─────────────────────────────────────────────────────────────────────────────
+
+Le stock est fourni par le logiciel SAPEG sous forme d'un fichier CSV
+(valeurs s\'epar\'ees par des \py{|}). Chaque ligne est un produit disponible~:
+
+\begin{lstlisting}[style=toml, language={}, caption={Exemple de lignes du fichier ALL\_PRODUIT}]
+id_produit|libelle|b_mm|h_mm|L_max_m|classe_resistance
+EPX-063-175|Epicéa C24 63x175|63.0|175.0|6.0|C24
+EPX-075-225|Epicéa C24 75x225|75.0|225.0|7.0|C24
+GL24H-160-320|GL24h 160x320|160.0|320.0|12.0|GL24h
+\end{lstlisting}
+
+\begin{maitre}
+Pourquoi appelle-t-on ce format \guillemotleft\,CSV\,\guillemotright{}
+si le s\'eparateur est \py{|} et non une virgule~?
+\end{maitre}
+
+\begin{apprenti}
+C'est une bonne question\ldots{} CSV veut dire
+\emph{Comma-Separated Values} mais en pratique on utilise
+n'importe quel s\'eparateur~?
+\end{apprenti}
+
+\begin{maitre}
+Oui, le terme CSV est devenu g\'en\'erique. SAPEG utilise le pipe
+(\py{|}) car les lib\'ell\'es de produits peuvent contenir des virgules
+ou des points-virgules. C'est un choix pratique pour \'eviter les
+ambigu\"it\'es lors de la lecture.
+\end{maitre}
+
+Le code lit ce CSV avec Pandas~:
+
+\begin{lstlisting}[style=python, caption={Lecture du stock CSV --- extrait de \fichier{sapeg\_regen\_stock/chargeur.py}}]
+import pandas as pd
+
+def charger_stock(chemin_csv: str) -> pd.DataFrame:
+    """Charge le fichier ALL_PRODUIT CSV exporté par SAPEG."""
+    df = pd.read_csv(
+        chemin_csv,
+        sep="|",            # séparateur pipe (pas une virgule !)
+        encoding="latin-1"  # encodage SAPEG (attention aux accents !)
+    )
+    return df
+\end{lstlisting}
+
+\begin{definition}
+Un \textbf{DataFrame Pandas} est l'\'equivalent Python d'une feuille Excel~:
+un tableau avec des noms de colonnes, o\`u chaque ligne est un enregistrement.
+On peut filtrer, trier, calculer sur des colonnes enti\`eres en une seule
+instruction. Contrairement \`a une boucle Python, ces op\'erations sont
+tr\`es rapides car Pandas les ex\'ecute en C interne.
+\end{definition}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{La configuration TOML}
+% ─────────────────────────────────────────────────────────────────────────────
+
+\begin{lstlisting}[style=toml, caption={config.toml --- configuration principale}]
+[stock]
+repertoire = "."              # répertoire contenant ALL_PRODUIT_*.csv
+filtre_calcul = "charpente"   # nom du filtre stock à utiliser
+
+[sortie]
+fichier_csv    = "resultats/portees_admissibles.csv"
+registre       = "resultats/registre_calcul.csv"
+stock_enrichi  = "resultats/stock_enrichi.csv"
+
+[calcul]
+fichier_configs_calcul = "configs_calcul.toml"
+
+[calcul.defaults]
+longueur_appui_mm = 50.0    # longueur d'appui par défaut (mm)
+k_c90             = 1.0     # facteur compression perp. au fil
+taux_cible_appui  = 0.80    # taux cible pour calcul longueur appui min
+\end{lstlisting}
+
+Le fichier \fichier{configs\_calcul.toml} d\'efinit les sc\'enarios de calcul~:
+
+\begin{lstlisting}[style=toml, caption={configs\_calcul.toml --- scénario panne de toiture}]
+[[config_calcul]]
+id_config_calcul = "PANNE_TOITURE_INACC"
+type_poutre      = "Panne"
+usage            = "TOITURE_INACC"
+L_min_m          = 2.0
+pas_longueur_m   = 0.5
+# Listes -> expansion cartésienne automatique
+pente_deg        = [4, 15, 30, 35, 40, 45]   # 6 pentes
+entraxe_m        = [1.2, 1.7]                 # 2 entraxes
+g_k_kNm2         = [0.4, 0.5, 0.6, 0.7, 0.8] # 5 charges perm.
+# Total : 6 x 2 x 5 = 60 configurations générées !
+s_k_kNm2         = 0.36
+classe_service   = 1
+double_flexion   = true
+marge_securite   = 0
+\end{lstlisting}
+
+\begin{maitre}
+Tu remarques que \py{pente\_deg} est une liste \py{[4, 15, 30, 35, 40, 45]}.
+Qu'est-ce que l'\guillemotleft\,expansion cart\'esienne\,\guillemotright~?
+\end{maitre}
+
+\begin{apprenti}
+Le programme cr\'ee une configuration distincte pour chaque combinaison
+de pente, d'entraxe et de charge permanente~?
+\end{apprenti}
+
+\begin{maitre}
+Exactement. Avec 6 pentes \texttimes{} 2 entraxes \texttimes{} 5 charges
+permanentes, on obtient $6 \times 2 \times 5 = 60$ configurations \`a
+partir d'une seule entr\'ee TOML. C'est un gain de temps consid\'erable.
+\end{maitre}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Les tables normatives~: les CSV EC5}
+% ─────────────────────────────────────────────────────────────────────────────
+
+Le dossier \fichier{data/} contient les tables normatives de l'Eurocode~5
+sous forme CSV, charg\'ees une seule fois au d\'emarrage~:
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+\textbf{Fichier} & \textbf{Source} & \textbf{Contenu}\\
+\midrule
+\fichier{materiaux\_bois.csv} & EN~338 & Classes C16--C50, GL24--GL32\\
+\fichier{kmod.csv}     & EC5 Tab.~3.1 & Facteurs $k_{mod}$ par famille/classe/dur\'ee\\
+\fichier{kdef.csv}     & EC5 Tab.~3.2 & Facteurs de fluage $k_{def}$\\
+\fichier{gamma\_m.csv} & EC5 \S{}2.4  & Coefficients partiels mat\'eriau $\gamma_M$\\
+\fichier{limites\_fleche\_ec5.csv} & EC5 \S{}7.2 & Limites de fl\`eche par usage\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{lstlisting}[style=toml, language={}, caption={Extrait de \fichier{materiaux\_bois.csv} (EN 338)}]
+classe;famille;f_m_k_MPa;f_v_k_MPa;f_c90_k_MPa;E_0_mean_MPa;E_0_05_MPa
+C16;bois_massif;16.0;1.8;2.2;8000;5400
+C24;bois_massif;24.0;2.5;2.5;11000;7400
+C30;bois_massif;30.0;3.0;2.7;12000;8000
+GL24h;bois_lamelle_colle;24.0;2.7;2.5;11500;9600
+\end{lstlisting}
+
+\begin{maitre}
+Pourquoi stocker ces tables dans des fichiers CSV plut\^ot que les coder
+directement dans le programme~?
+\end{maitre}
+
+\begin{apprenti}
+Parce que si la norme est mise \`a jour, on n'a qu'\`a modifier le fichier
+CSV sans retoucher au code Python~?
+\end{apprenti}
+
+\begin{maitre}
+Exactement. C'est la s\'eparation entre le \emph{code} (la logique) et
+les \emph{donn\'ees} (les valeurs). Un principe fondamental de conception
+logicielle.
+\end{maitre}
+
+% ===========================================================================
+\chapter{Le moteur de calcul EC5}
+% ===========================================================================
+
+C'est le c\oe{}ur du logiciel. Ce chapitre explique comment le programme
+passe d'un stock de poutres \`a des port\'ees admissibles v\'erifi\'ees
+selon l'Eurocode.
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Vue d'ensemble~: la boucle principale}
+% ─────────────────────────────────────────────────────────────────────────────
+
+Voici le flux de calcul complet, de haut en bas~:
+
+\begin{center}
+\begin{tikzpicture}[
+    etape/.style={
+        draw, rounded corners=3pt,
+        fill=bleuMaitreLight,
+        minimum width=8cm, minimum height=0.75cm,
+        align=center, font=\small
+    },
+    arrow/.style={->, thick, color=bleuMaitre}
+]
+\node[etape] (e1) at (0,0)     {1. Charger le stock filtr\'e (CSV)};
+\node[etape] (e2) at (0,-1.0)  {2. Grouper les produits par \py{id\_config\_materiau}};
+\node[etape] (e3) at (0,-2.0)  {3. Pour chaque groupe $\times$ configuration EC5};
+\node[etape] (e4) at (0,-3.0)  {4. G\'en\'erer tableau de port\'ees [L\_min \ldots L\_max]};
+\node[etape] (e5) at (0,-4.0)  {5. G\'en\'erer combinaisons EN 1990 (ELU, ELS)};
+\node[etape] (e6) at (0,-5.0)  {6. V\'erifier ELU (\S{}6.1.5, 6.1.6, 6.1.7, 6.3.3)};
+\node[etape] (e7) at (0,-6.0)  {7. V\'erifier ELS --- fl\`eches (\S{}7.2)};
+\node[etape] (e8) at (0,-7.0)  {8. Statut~: admis / refus\'e / rejet\'e\_usage};
+\node[etape] (e9) at (0,-8.0)  {9. \'Ecrire CSV de sortie + mettre \`a jour le registre};
+
+\draw[arrow] (e1) -- (e2); \draw[arrow] (e2) -- (e3);
+\draw[arrow] (e3) -- (e4); \draw[arrow] (e4) -- (e5);
+\draw[arrow] (e5) -- (e6); \draw[arrow] (e6) -- (e7);
+\draw[arrow] (e7) -- (e8); \draw[arrow] (e8) -- (e9);
+\end{tikzpicture}
+\end{center}
+
+
+
+
+\include{groupementmat}
+\include{combinaison}
+\include{facteur}
+\include{ELU}
+\include{ELS}
+\include{doubleflexion}
+\include{lasecurite}
+\include{lessorties}
+\include{regeistreincremental}
+\include{lesgraphiques}
+\include{conclusion}
+
+\end{document}
