@@ -1,0 +1,13 @@
+# Limites de flèche EC5 §7.2 — valeurs recommandées (NF EN 1995-1-1/NA)
+# w_inst : flèche instantanée sous charges variables (L/x)
+# w_fin  : flèche finale totale incluant fluage (L/x)
+# w_2    : flèche nette sous second oeuvre (L/x)
+usage;w_inst;w_fin;w_2
+plancher_courant;300;250;350
+plancher_accessible;350;250;400
+toiture_sans_second_oeuvre;200;150;0
+toiture_avec_second_oeuvre;300;200;350
+panne_standard;250;200;300
+chevron;250;200;0
+solive;300;250;350
+sommier;400;300;400

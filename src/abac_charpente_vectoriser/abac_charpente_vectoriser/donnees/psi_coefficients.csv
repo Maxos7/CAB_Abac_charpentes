@@ -1,0 +1,15 @@
+# Coefficients de combinaison ψ — EN 1990 Annexe Nationale France (NF EN 1990/NA)
+# categorie : catégorie de charge variable (EN 1990 Tableau NA.A1.1)
+# psi_0 : coefficient de combinaison (valeur de combinaison)
+# psi_1 : coefficient de valeur fréquente
+# psi_2 : coefficient de valeur quasi-permanente
+categorie;psi_0;psi_1;psi_2;description
+A;0.7;0.5;0.3;Habitation et zones résidentielles
+B;0.7;0.5;0.3;Bureaux
+C;0.7;0.7;0.6;Zones de réunion (sans surcharges lourdes)
+D;0.7;0.7;0.6;Zones commerciales
+E;1.0;0.9;0.8;Zones de stockage
+H;0.0;0.0;0.0;Toitures (inaccessibles sauf entretien)
+neige;0.5;0.2;0.0;Neige (altitude ≤ 1000 m, AN France)
+neige_altitude;0.7;0.5;0.2;Neige (altitude > 1000 m, AN France)
+vent;0.6;0.2;0.0;Vent

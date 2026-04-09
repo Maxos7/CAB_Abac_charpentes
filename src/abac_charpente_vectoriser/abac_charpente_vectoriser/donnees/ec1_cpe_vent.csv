@@ -1,0 +1,7 @@
+# Coefficient de pression extérieure c_pe — EN 1991-1-4 + Annexe Nationale France
+# Simplification AN France : c_pe global par type de toiture (valeur de pression maximale)
+# En pratique : c_pe = 0.8 (pression) retenu pour le calcul des poutres (côté conservateur)
+type_toiture;c_pe;commentaire
+1_pan;0.80;Toiture 1 pan — AN France simplification (pression)
+2_pans;0.80;Toiture 2 pans — AN France simplification (pression)
+terrasse;0.80;Toiture terrasse — AN France simplification (pression)
