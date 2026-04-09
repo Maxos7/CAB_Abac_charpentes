@@ -1,0 +1,5 @@
+# Coefficients partiels de matériau γ_M — Annexe Nationale France (NF EN 1995-1-1/NA)
+famille;gamma_M
+bois_massif;1.30
+bois_lamelle_colle;1.25
+bois_reconstitue;1.25

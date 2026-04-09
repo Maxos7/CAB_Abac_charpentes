@@ -1,0 +1,33 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "abac-charpente-vectoriser"
+version = "0.1.0"
+description = "Pipeline EC5 vectorisé (numpy) pour abaques paramétriques — programme autonome"
+requires-python = ">=3.13"
+dependencies = [
+    "numpy>=1.26",
+    "pydantic>=2.0",
+    "pandas>=2.2",
+    "tomllib>=1.0 ; python_version < '3.11'",
+    "loguru>=0.7",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov",
+]
+zarr = ["zarr>=2.18"]
+duckdb = ["duckdb>=0.10"]
+
+[project.scripts]
+abac-vect = "abac_charpente_vectoriser.moteur_vect:cli"
+
+[tool.hatch.build.targets.wheel]
+packages = ["abac_charpente_vectoriser"]
+
+[tool.hatch.build.targets.wheel.shared-data]
+"abac_charpente_vectoriser/donnees" = "abac_charpente_vectoriser/donnees"

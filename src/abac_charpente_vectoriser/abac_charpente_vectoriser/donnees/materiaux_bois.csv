@@ -1,0 +1,32 @@
+# Propriétés caractéristiques du bois — EN 338:2016 (massif) + EN 14080:2013 (lamellé-collé)
+# Colonnes : classe;famille;f_m_k_MPa;f_v_k_MPa;f_c90_k_MPa;f_t0_k_MPa;f_c0_k_MPa;E_0_mean_MPa;E_0_05_MPa;rho_k_kgm3
+# f_t0_k et f_c0_k : EN 338:2016 Table 1 (massif), EN 14080:2013 Table 5 (lamellé-collé)
+# E_0_05 : EN 338:2016 Table 1 (massif), EN 14080:2013 Table 5 (lamellé-collé)
+classe;famille;f_m_k_MPa;f_v_k_MPa;f_c90_k_MPa;f_t0_k_MPa;f_c0_k_MPa;E_0_mean_MPa;E_0_05_MPa;rho_k_kgm3
+C16;bois_massif;16;1.8;2.2;10;17;8000;5400;310
+C18;bois_massif;18;2.0;2.2;11;18;9000;6000;320
+C20;bois_massif;20;2.2;2.3;12;19;9500;6400;330
+C22;bois_massif;22;2.4;2.4;13;20;10000;6700;340
+C24;bois_massif;24;2.5;2.5;14;21;11000;7400;350
+C27;bois_massif;27;2.8;2.6;16;22;11500;7700;370
+C30;bois_massif;30;3.0;2.7;18;23;12000;8000;380
+C35;bois_massif;35;3.4;2.8;21;25;13000;8700;400
+C40;bois_massif;40;3.8;2.9;24;26;14000;9400;420
+D18;bois_massif;18;3.4;7.5;11;18;9500;6400;475
+D24;bois_massif;24;4.0;7.8;14;21;10000;6700;485
+D30;bois_massif;30;5.0;8.0;18;23;11000;7400;530
+D35;bois_massif;35;6.0;8.1;21;25;12000;8000;560
+D40;bois_massif;40;6.3;8.3;24;26;13000;8700;590
+D50;bois_massif;50;7.8;9.3;30;29;14000;9400;650
+D60;bois_massif;60;9.0;10.5;36;32;17000;11400;700
+D70;bois_massif;70;10.5;13.5;42;34;20000;13400;900
+GL24h;bois_lamelle_colle;24;2.7;2.5;16.5;24;11600;9400;365
+GL28h;bois_lamelle_colle;28;3.2;2.5;19.5;26.5;12600;10200;380
+GL32h;bois_lamelle_colle;32;3.6;2.5;22.5;29;13700;11100;430
+GL36h;bois_lamelle_colle;36;4.0;2.5;26;31;14700;12600;450
+GL24c;bois_lamelle_colle;24;2.7;2.5;14;21;11500;9400;355
+GL28c;bois_lamelle_colle;28;3.2;2.5;16.5;24;12500;10200;380
+GL32c;bois_lamelle_colle;32;3.6;2.5;19.5;26.5;13500;11100;410
+GL36c;bois_lamelle_colle;36;4.0;2.5;22.5;29;14500;12600;450
+GT18;bois_reconstitue;18;1.8;2.2;11;18;9000;6000;320
+GT24;bois_reconstitue;24;2.5;2.5;14;21;11000;7400;350

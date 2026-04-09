@@ -1,0 +1,10 @@
+# Paramètres EC5 — constantes normatives issues de la norme
+# k_cr       : facteur de réduction de section pour cisaillement (EC5 §6.1.7(2))
+# k_m        : facteur de redistribution en double flexion (EC5 §6.1.6(2)) — section rectangulaire
+# lambda_rel_m_0 : seuil inférieur λ_rel,m pour déversement (EC5 §6.3.3(4))
+# lambda_rel_m_1 : seuil supérieur λ_rel,m pour déversement (EC5 §6.3.3(4))
+parametre;valeur;commentaire
+k_cr;0.67;EC5 §6.1.7(2) — bois massif/lamellé-collé AN France
+k_m;0.70;EC5 §6.1.6(2) — section rectangulaire
+lambda_rel_m_0;0.75;EC5 §6.3.3(4) — en-dessous : k_crit=1.0
+lambda_rel_m_1;1.40;EC5 §6.3.3(4) — au-dessus : zone instable
