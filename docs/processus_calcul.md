@@ -2,9 +2,10 @@
 
 ```mermaid
 flowchart TD
-    A([Démarrage CLI]) --> B
+    A([Démarrage CLI]) --> PHASE1
 
     subgraph PHASE1["Phase 1 — Initialisation & configuration"]
+        direction LR
         B[Parse arguments CLI\n--config --stock --sortie --recalcul-complet --verbose]
         B --> C[Charger config.toml\nchemins, encodage, taux_cible_appui, longueur_appui_mm]
         C --> D[Charger configs_calcul.toml\nblocs config_calcul avec défauts appliqués]
@@ -12,9 +13,10 @@ flowchart TD
         E --> F[Charger configs_filtre.toml\nrègles de filtrage produits]
     end
 
-    F --> G
+    PHASE1 --> PHASE2
 
     subgraph PHASE2["Phase 2 — Traitement du stock"]
+        direction LR
         G[Exécuter pipeline sapeg_regen_stock\ncharger ALL_PRODUIT_*.csv]
         G --> H[Appliquer règles de filtrage\n→ CSVs filtrés par règle]
         H --> I[Générer stock_enrichi.csv\nassignation id_config_materiau]
@@ -23,7 +25,7 @@ flowchart TD
         K --> L[Grouper par id_config_materiau EF-004\nune seule calc par matériau, résultats répliqués]
     end
 
-    L --> M
+    PHASE2 --> PHASE3
 
     subgraph PHASE3["Phase 3 — Registre incrémental EF-006/EF-007"]
         M[Charger registre_calcul.csv\nid_config_materiau × id_config_calcul → statut]
@@ -32,14 +34,14 @@ flowchart TD
         N -->|Non ou forcé| P[Procéder au calcul complet]
     end
 
-    P --> Q
+    PHASE3 --> PHASE4
 
     subgraph PHASE4["Phase 4 — Dérivation matériau"]
         Q[Charger propriétés classe_resistance\ndepuis materiaux_bois.csv\nf_m_k f_v_k f_c90_k E_0_mean rho_k]
         Q --> R[Calculer propriétés de section\nA = b×h\nI = b×h³/12\nW = I/h×2\nI_z = h×b³/12\nW_z = I_z/b×2\npoids_propre = ρ_k×A×9.81/1000\nE_005 = E_mean/1.65  EC5 §3.3.3]
     end
 
-    R --> S
+    PHASE4 --> PHASE5
 
     subgraph PHASE5["Phase 5 — Combinaisons EN 1990"]
         S[Générer combinaisons EN 1990]
@@ -48,13 +50,13 @@ flowchart TD
         S1 & S2 --> T[Durée de charge associée EC5 Tab 3.1\nG→permanente  Q→moyen terme  S W→court terme]
     end
 
-    T --> U
+    PHASE5 --> PHASE6
 
     subgraph PHASE6["Phase 6 — Génération des portées"]
         U[Créer tableau de portées numpy\nL = arange L_min .. L_max  pas pas_longueur_m]
     end
 
-    U --> V
+    PHASE6 --> PHASE7
 
     subgraph PHASE7["Phase 7 — Vérifications pour chaque combinaison × portée"]
 
@@ -107,7 +109,7 @@ flowchart TD
         AQ[Appliquer marge_securite si > 0\ntaux_effectif = taux × 1 + marge_securite\nappliqué à tous les champs taux]
     end
 
-    AQ --> AR
+    PHASE8 --> PHASE9
 
     subgraph PHASE9["Phase 9 — Agrégation & détermination du statut"]
         AR[Collecter tous les taux\nELU : flexion cisaillement appui déversement\nELS : inst fin second-œuvre\nDouble flexion si activé]
@@ -119,32 +121,32 @@ flowchart TD
         AU & AV & AW --> AX[Identifier clause déterminante\n§6.1.6 §6.1.7 §6.1.5 §6.3.3 §7.2]
     end
 
-    AX --> AY
+    PHASE9 --> PHASE10
 
     subgraph PHASE10["Phase 10 — Réplication par produit EF-004"]
         AY[Pour chaque produit du groupe id_config_materiau\ncréer RésultatPortée avec\npropriétés matériau calc et statut]
     end
 
-    AY --> AZ
+    PHASE10 --> PHASE11
 
     subgraph PHASE11["Phase 11 — Écriture CSV de sortie  sortie.py"]
         AZ[Formater résultats\nUTF-8  séparateur ;\nmode append ou création\n111 colonnes schéma v1.2.0]
         AZ --> BA[Écrire dans portees_admissibles.csv\nidentification géométrie propriétés\nrésistances charges efforts ELU ELS]
     end
 
-    BA --> BB
+    PHASE11 --> PHASE12
 
     subgraph PHASE12["Phase 12 — Mise à jour registre"]
         BB[Enregistrer paire id_mat × id_calc\nstatut=calcule horodatage_iso\nflush immédiat sur disque]
     end
 
-    BB --> BC
+    PHASE12 --> PHASE13
 
     subgraph PHASE13["Phase 13 — Finalisation"]
         BC[Logger bilan\nnombre de lignes écrites\nchemin du fichier de sortie]
     end
 
-    BC --> BD([Fin])
+    PHASE13 --> FIN([Fin])
 ```
 
 ---
