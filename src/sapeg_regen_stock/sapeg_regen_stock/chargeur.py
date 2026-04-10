@@ -40,7 +40,7 @@ def _trouver_colonne(df: pd.DataFrame, candidats: list[str]) -> str | None:
     return None
 
 
-def _lire_unite(row: pd.Series, col: str, df_columns: pd.Index) -> str:
+def _lire_unite(row: dict, col: str, df_columns: pd.Index) -> str:
     """Retourne l'unité depuis la colonne '{col}_unite' si disponible, sinon 'mm'."""
     unite_col = f"{col}_unite"
     if unite_col in df_columns:
@@ -120,7 +120,7 @@ def charger_stock(chemin: Path, config: ConfigIngestion) -> list[ProduitStock]:
     from sapeg_regen_stock.derivateur import extraire_classe_resistance
     produits: list[ProduitStock] = []
 
-    for idx, row in df.iterrows():
+    for idx, row in enumerate(df.to_dict("records")):
         id_produit = str(row.get(col_code, f"LIGNE_{idx}")).strip()
 
         # Extraction dimensions avec détection d'unité
