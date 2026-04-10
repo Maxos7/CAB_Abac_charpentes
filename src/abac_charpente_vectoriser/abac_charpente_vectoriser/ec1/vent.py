@@ -25,8 +25,8 @@ def _charger_cpe_table() -> dict[str, float]:
     dict[str, float]
         Dictionnaire ``{type_toiture: c_pe}``.
     """
-    chemin_csv = files("abac_charpente_vectoriser.donnees").joinpath("ec1_cpe_vent.csv")
-    df = pd.read_csv(str(chemin_csv), sep=";", comment="#")
+    chemin: str = str(files("abac_charpente_vectoriser.donnees").joinpath("ec1_cpe_vent.csv"))
+    df: pd.DataFrame = pd.read_csv(chemin, sep=";", comment="#")
     return dict(zip(df["type_toiture"], df["c_pe"]))
 
 
@@ -48,7 +48,7 @@ def c_pe(type_toiture: str) -> float:
     KeyError
         Si ``type_toiture`` n'est pas dans la table normative.
     """
-    table = _charger_cpe_table()
+    table: dict[str, float] = _charger_cpe_table()
     if type_toiture not in table:
         raise KeyError(
             f"type_toiture '{type_toiture}' non trouvé dans ec1_cpe_vent.csv. "
@@ -84,4 +84,5 @@ def charge_vent_kNm(
     float
         Charge linéique caractéristique de vent en kN/m.
     """
-    return abs(w_k_kNm2 * c_pe(type_toiture) * entraxe_m)
+    c_pe_val: float = c_pe(type_toiture)
+    return abs(w_k_kNm2 * c_pe_val * entraxe_m)

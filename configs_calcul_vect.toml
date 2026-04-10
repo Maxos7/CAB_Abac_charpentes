@@ -1,0 +1,180 @@
+# =============================================================================
+# configs_calcul_vect.toml
+# Configuration du pipeline EC5 vectorisé — abac_charpente_vectoriser
+#
+# Usage CLI :
+#   uv run abac-vect --toml configs_calcul_vect.toml --stock stock.csv
+#
+# Champs multi-valués (liste) → produit cartésien automatique.
+# Résultats écrits dans ./resultats/ par défaut.
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# Panne standard — section perpendiculaire au rampant
+# -----------------------------------------------------------------------------
+#[[config_calcul]]
+#id_config_calcul = "PANNE_STD"
+#type_poutre       = "Panne"
+#usage             = "panne_standard"
+#
+#L_min_m           = 2.0
+#L_max_m           = 8.0
+#pas_longueur_m    = 0.25
+#
+#pente_deg         = [15, 30, 45]
+#entraxe_m         = [1.0, 1.2, 1.7]
+#classe_service    = 1
+#
+#g_k_kNm2          = 0.40       # couverture hors poids propre
+#q_k_kNm2          = 0.0
+#categorie_q       = "H"
+#s_k_kNm2          = 0.36       # neige sur sol (projection horiz.)
+#w_k_kNm2          = 0.0
+#
+#double_flexion             = true
+#entraxe_antideversement_mm = 0.0
+#longueur_appui_mm          = 60.0
+#
+#  [[config_calcul.filtres]]
+#  champ     = "classe_resistance"
+#  operateur = "in"
+#  valeur    = ["C24", "C30", "GL24H"]
+
+
+# -----------------------------------------------------------------------------
+# Panne aplomb — section verticale (âme verticale)
+# Double flexion intrinsèque — pas besoin de double_flexion = true
+# -----------------------------------------------------------------------------
+[[config_calcul]]
+id_config_calcul = "PANNE_APLOMB"
+type_poutre       = "PanneAplomb"
+usage             = "panne_standard"
+
+L_min_m           = 2.0
+L_max_m           = 8.0
+pas_longueur_m    = 0.25
+
+pente_deg         = [30, 45]
+entraxe_m         = [1.2]
+classe_service    = 1
+
+g_k_kNm2          = 0.40
+q_k_kNm2          = 0.0
+categorie_q       = "H"
+s_k_kNm2          = 0.36
+w_k_kNm2          = 0.0
+
+entraxe_antideversement_mm = 0.0
+longueur_appui_mm          = 60.0
+
+  [[config_calcul.filtres]]
+  champ     = "classe_resistance"
+  operateur = "in"
+  valeur    = ["C24", "GL24h"]
+
+  [[config_calcul.filtres]]
+  champ     = "h_mm"
+  operateur = ">="
+  valeur    = 160
+
+
+# -----------------------------------------------------------------------------
+# Panne déversée — section tournée d'un angle β (versage)
+# β = 0° → identique Panne ; β = 90° → identique PanneAplomb
+# -----------------------------------------------------------------------------
+[[config_calcul]]
+id_config_calcul = "PANNE_DEVERSEE"
+type_poutre       = "PanneDeversee"
+usage             = "panne_standard"
+
+L_min_m           = 2.0
+L_max_m           = 8.0
+pas_longueur_m    = 0.25
+
+pente_deg         = [30, 45]
+entraxe_m         = [1.2]
+classe_service    = 1
+
+g_k_kNm2          = 0.40
+q_k_kNm2          = 0.0
+categorie_q       = "H"
+s_k_kNm2          = 0.36
+w_k_kNm2          = 0.0
+
+entraxe_antideversement_mm = 0.0
+longueur_appui_mm          = 60.0
+
+  [[config_calcul.filtres]]
+  champ     = "classe_resistance"
+  operateur = "in"
+  valeur    = ["C24", "GL24h"]
+
+
+# -----------------------------------------------------------------------------
+# Chevron — portée sur rampant, charges perpendiculaires au rampant
+# -----------------------------------------------------------------------------
+#[[config_calcul]]
+#id_config_calcul = "CHEVRON"
+#type_poutre       = "Chevron"
+#usage             = "chevron"
+#
+#L_min_m           = 1.0
+#L_max_m           = 5.0
+#pas_longueur_m    = 0.25
+#
+#pente_deg         = [30, 45]
+#entraxe_m         = [0.5, 0.6, 0.7]
+#classe_service    = 1
+#
+#g_k_kNm2          = 0.30       # couverture légère (tuiles, ardoises)
+#q_k_kNm2          = 0.0
+#categorie_q       = "H"
+#s_k_kNm2          = 0.36
+#w_k_kNm2          = 0.0
+#
+#longueur_appui_mm = 40.0
+#
+#  [[config_calcul.filtres]]
+#  champ     = "classe_resistance"
+#  operateur = "in"
+#  valeur    = ["C24", "C30"]
+#
+#  [[config_calcul.filtres]]
+#  champ     = "h_mm"
+#  operateur = "<="
+#  valeur    = 200
+
+
+# -----------------------------------------------------------------------------
+# Solive de plancher — chargement vertical, pas de pente
+# -----------------------------------------------------------------------------
+#[[config_calcul]]
+#id_config_calcul = "SOLIVE_PLANCHER"
+#type_poutre       = "Solive"
+#usage             = "plancher_courant"
+#
+#L_min_m           = 2.0
+#L_max_m           = 6.0
+#pas_longueur_m    = 0.25
+#
+#pente_deg         = 0.0
+#entraxe_m         = [0.40, 0.50, 0.60]
+#classe_service    = 1
+#
+#g_k_kNm2          = 0.50       # chape + revêtement
+#g2_k_kNm2         = 0.20       # cloisons légères (charge fragile)
+#q_k_kNm2          = 1.50       # habitation (catégorie A)
+#categorie_q       = "A"
+#s_k_kNm2          = 0.0
+#w_k_kNm2          = 0.0
+#
+#second_oeuvre              = true
+#longueur_appui_mm          = 50.0
+#entraxe_antideversement_mm = 0.0
+#
+#  [[config_calcul.filtres]]
+#  champ     = "classe_resistance"
+#  operateur = "in"
+#  valeur    = ["C24", "C30"]
+#

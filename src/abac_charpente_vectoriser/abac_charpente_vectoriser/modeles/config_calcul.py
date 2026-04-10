@@ -105,12 +105,7 @@ class ConfigCalculVect(BaseModel):
         Facteur d'appui k_c90 (EC5 §6.1.5(4)). Scalaire ou multi-valué.
     double_flexion:
         Si True, active les vérifications de double flexion (ELU §6.1.6 + ELS).
-        Automatiquement forcé à True pour PanneAplombVect et PanneDeverseeVect.
-    angle_versage_deg:
-        Angle de versage β en degrés pour PanneDeverseeVect.
-        0° = section ⊥ au rampant (identique à PanneVect).
-        90° = section verticale (identique à PanneAplombVect).
-        Ignoré pour les autres types de poutres.
+        Automatiquement forcé à True pour PanneAplombVect.
     entraxe_antideversement_mm:
         Entraxe entre contreventements anti-déversement en mm.
         0 → longueur de déversement = portée complète.
@@ -149,7 +144,6 @@ class ConfigCalculVect(BaseModel):
     k_c90: float | list[float] = 1.0
 
     double_flexion: bool = False
-    angle_versage_deg: float | list[float] = 0.0
     entraxe_antideversement_mm: float = 0.0
 
     filtres: list[RegleFiltre] = Field(default_factory=list)

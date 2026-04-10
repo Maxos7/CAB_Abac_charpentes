@@ -94,3 +94,7 @@ class ConfigMatériauVect:
 
     # Masse volumique [kg/m³]
     rho_k_kgm3: float
+
+    # Identifiants SAPEG (optionnels — renseignés si le stock provient de sapeg_regen_stock)
+    id_produit: str = ""
+    libelle: str = ""

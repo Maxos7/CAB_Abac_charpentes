@@ -30,14 +30,12 @@ Durées de charge associées (EC5 Table 3.1) :
 from __future__ import annotations
 
 from importlib.resources import files
-from pathlib import Path
 
 import pandas as pd
 
 from ..modeles.combinaison import CombinaisonEC0Vect
 from ..modeles.config_calcul import ConfigCalculVect
 
-# Durée de charge par type de charge variable (EC5 AN France)
 _DUREE_CHARGE: dict[str, str] = {
     "Q": "moyen_terme",
     "S": "court_terme",
@@ -60,12 +58,12 @@ def _charger_psi(categorie_q: str, categorie_s: str = "neige") -> dict[str, dict
     dict[str, dict[str, float]]
         Dictionnaire ``{type_charge: {"psi_0": ..., "psi_1": ..., "psi_2": ...}}``.
     """
-    chemin_csv = files("abac_charpente_vectoriser.donnees").joinpath("psi_coefficients.csv")
-    df = pd.read_csv(str(chemin_csv), sep=";", comment="#")
+    chemin: str = str(files("abac_charpente_vectoriser.donnees").joinpath("psi_coefficients.csv"))
+    df: pd.DataFrame = pd.read_csv(chemin, sep=";", comment="#")
     df = df.set_index("categorie")
 
     def _psi(cat: str) -> dict[str, float]:
-        row = df.loc[cat]
+        row: pd.Series = df.loc[cat]
         return {"psi_0": float(row["psi_0"]), "psi_1": float(row["psi_1"]), "psi_2": float(row["psi_2"])}
 
     return {
@@ -92,12 +90,11 @@ def generer_combinaisons(config: ConfigCalculVect) -> list[CombinaisonEC0Vect]:
     list[CombinaisonEC0Vect]
         Liste des combinaisons EC0, ordonnée ELU puis ELS.
     """
-    psi = _charger_psi(config.categorie_q)
+    psi: dict[str, dict[str, float]] = _charger_psi(config.categorie_q)
 
-    # Résolution des charges scalaires (en cas de multi-valeurs, le moteur passe des scalaires)
-    q_actif = _scalaire(config.q_k_kNm2) > 0
-    s_actif = _scalaire(config.s_k_kNm2) > 0
-    w_actif = _scalaire(config.w_k_kNm2) > 0
+    q_actif: bool = _scalaire(config.q_k_kNm2) > 0
+    s_actif: bool = _scalaire(config.s_k_kNm2) > 0
+    w_actif: bool = _scalaire(config.w_k_kNm2) > 0
 
     combinaisons: list[CombinaisonEC0Vect] = []
 
@@ -111,8 +108,7 @@ def generer_combinaisons(config: ConfigCalculVect) -> list[CombinaisonEC0Vect]:
         charges_principales_elu.append("W")
 
     for ch_princ in charges_principales_elu:
-        # Charges d'accompagnement : toutes les charges variables sauf la principale
-        psi_0_accomp = max(
+        psi_0_accomp: float = max(
             (psi[ch]["psi_0"] for ch in ("Q", "S", "W") if ch != ch_princ and _charge_active(ch, config)),
             default=0.0,
         )
@@ -128,7 +124,6 @@ def generer_combinaisons(config: ConfigCalculVect) -> list[CombinaisonEC0Vect]:
             duree_charge=_DUREE_CHARGE[ch_princ],
         ))
 
-    # Cas G seul si aucune charge variable (ou toujours ajouté pour robustesse)
     if not charges_principales_elu:
         combinaisons.append(CombinaisonEC0Vect(
             id_combinaison="ELU_STR_G",
@@ -144,7 +139,7 @@ def generer_combinaisons(config: ConfigCalculVect) -> list[CombinaisonEC0Vect]:
 
     # ── ELS CAR ──────────────────────────────────────────────────────────────────
     for ch_princ in charges_principales_elu or ["Q"]:
-        psi_1_accomp = max(
+        psi_1_accomp: float = max(
             (psi[ch]["psi_1"] for ch in ("Q", "S", "W") if ch != ch_princ and _charge_active(ch, config)),
             default=0.0,
         )
@@ -160,11 +155,11 @@ def generer_combinaisons(config: ConfigCalculVect) -> list[CombinaisonEC0Vect]:
             duree_charge=_DUREE_CHARGE[ch_princ],
         ))
 
-    # ── ELS FREQ (Q principale uniquement) ───────────────────────────────────────
+    # ── ELS FREQ ─────────────────────────────────────────────────────────────────
     if q_actif:
-        psi_1_q = psi["Q"]["psi_1"]
-        psi_2_s = psi["S"]["psi_2"] if s_actif else 0.0
-        psi_2_w = psi["W"]["psi_2"] if w_actif else 0.0
+        psi_1_q: float = psi["Q"]["psi_1"]
+        psi_2_s: float = psi["S"]["psi_2"] if s_actif else 0.0
+        psi_2_w: float = psi["W"]["psi_2"] if w_actif else 0.0
         combinaisons.append(CombinaisonEC0Vect(
             id_combinaison="ELS_FREQ_G+Q",
             type_etat_limite="ELS",
@@ -177,9 +172,9 @@ def generer_combinaisons(config: ConfigCalculVect) -> list[CombinaisonEC0Vect]:
             duree_charge=_DUREE_CHARGE["Q"],
         ))
 
-    # ── ELS QPERM (quasi-permanente) ─────────────────────────────────────────────
-    psi_2_q = psi["Q"]["psi_2"] if q_actif else 0.0
-    psi_2_s = psi["S"]["psi_2"] if s_actif else 0.0
+    # ── ELS QPERM ────────────────────────────────────────────────────────────────
+    psi_2_q: float = psi["Q"]["psi_2"] if q_actif else 0.0
+    psi_2_s_qp: float = psi["S"]["psi_2"] if s_actif else 0.0
     combinaisons.append(CombinaisonEC0Vect(
         id_combinaison="ELS_QPERM",
         type_etat_limite="ELS",
@@ -187,7 +182,7 @@ def generer_combinaisons(config: ConfigCalculVect) -> list[CombinaisonEC0Vect]:
         gamma_G=1.0,
         gamma_G2=1.0,
         gamma_Q1=psi_2_q,
-        gamma_Q_accomp=psi_2_s,
+        gamma_Q_accomp=psi_2_s_qp,
         type_charge_principale="Q",
         duree_charge="permanent",
     ))
@@ -202,5 +197,9 @@ def _scalaire(v: float | list[float]) -> float:
 
 def _charge_active(type_charge: str, config: ConfigCalculVect) -> bool:
     """Vérifie si une charge variable est active dans la configuration."""
-    mapping = {"Q": config.q_k_kNm2, "S": config.s_k_kNm2, "W": config.w_k_kNm2}
+    mapping: dict[str, float | list[float]] = {
+        "Q": config.q_k_kNm2,
+        "S": config.s_k_kNm2,
+        "W": config.w_k_kNm2,
+    }
     return _scalaire(mapping[type_charge]) > 0

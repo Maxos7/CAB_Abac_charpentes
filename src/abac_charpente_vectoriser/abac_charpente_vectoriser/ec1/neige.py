@@ -29,8 +29,8 @@ def _charger_mu1_table() -> tuple[np.ndarray, np.ndarray]:
     tuple[np.ndarray, np.ndarray]
         (pentes_deg, mu1_values) — vecteurs pour ``np.interp``.
     """
-    chemin_csv = files("abac_charpente_vectoriser.donnees").joinpath("ec1_mu1_neige.csv")
-    df = pd.read_csv(str(chemin_csv), sep=";", comment="#")
+    chemin: str = str(files("abac_charpente_vectoriser.donnees").joinpath("ec1_mu1_neige.csv"))
+    df: pd.DataFrame = pd.read_csv(chemin, sep=";", comment="#")
     return df["pente_deg"].to_numpy(float), df["mu1"].to_numpy(float)
 
 
@@ -50,6 +50,8 @@ def mu1(pente_deg_arr: np.ndarray) -> np.ndarray:
     np.ndarray
         Coefficients μ₁ de même forme que ``pente_deg_arr``.
     """
+    xp: np.ndarray
+    fp: np.ndarray
     xp, fp = _charger_mu1_table()
     return np.interp(pente_deg_arr, xp, fp).clip(0.0)
 
@@ -84,6 +86,6 @@ def charge_neige_kNm(
     float
         Charge linéique caractéristique de neige en kN/m.
     """
-    mu_1 = float(mu1(np.array([pente_deg]))[0])
-    s_d_kNm2 = mu_1 * c_e * c_t * s_k_kNm2
+    mu_1: float = float(mu1(np.array([pente_deg]))[0])
+    s_d_kNm2: float = mu_1 * c_e * c_t * s_k_kNm2
     return s_d_kNm2 * entraxe_m

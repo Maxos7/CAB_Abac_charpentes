@@ -1,0 +1,158 @@
+# =============================================================================
+# configs_sortie_vect.toml
+# Configuration des exports dérivés depuis abaque_complet_global.csv
+#
+# Usage CLI :
+#   uv run abac-vect   (configs_sortie_vect.toml chargé automatiquement)
+#   uv run abac-vect --toml-sortie autre_configs_sortie.toml
+#
+# Chaque [[vue]] produit un fichier CSV indépendant.
+#
+# Types disponibles :
+#   agregation  — longueur max admissible par groupe [agrégation]
+#                 Champs obligatoires : groupby (liste de colonnes)
+#                 Champs optionnels  : colonnes, trier_par, filtres
+#   filtre      — sélection de lignes + colonnes sans agrégation
+#                 Champs optionnels  : colonnes, trier_par, filtres
+#
+# Colonnes calculées automatiquement par l'agrégation :
+#   longueur_max_admissible_m  — portée max vérifiée (taux_global ≤ 1.0)
+#   verif_determinante         — vérification au taux le plus élevé
+#   taux_determinant           — valeur de ce taux
+#
+# Opérateurs de filtres :
+#   egal, different, inferieur, superieur, inferieur_egal, superieur_egal,
+#   contient (sous-chaîne, insensible à la casse), in (liste de valeurs)
+# =============================================================================
+
+
+# ── Vue synthétique ────────────────────────────────────────────────────────────
+
+[[vue]]
+nom            = "synthetique"
+description    = "Longueur max admissible par couple (matériau × config) — dimensionnement rapide"
+fichier_sortie = "abaque_synthetique_global.csv"
+type           = "agregation"
+groupby        = ["id_config_materiau", "id_config_calcul"]
+colonnes       = [
+    "id_produit",
+    "id_config_materiau",
+    "id_config_calcul",
+    "classe_resistance",
+    "b_mm",
+    "h_mm",
+    "longueur_max_admissible_m",
+    "taux_determinant",
+    "verif_determinante",
+]
+trier_par      = ["id_config_calcul", "classe_resistance", "b_mm", "h_mm"]
+
+
+# ── Vue réduite ────────────────────────────────────────────────────────────────
+
+[[vue]]
+nom            = "reduit"
+description    = "Format compact — usage BE externe, sans IDs internes du moteur"
+fichier_sortie = "abaque_reduit_global.csv"
+type           = "agregation"
+groupby        = ["id_config_calcul", "id_config_materiau"]
+colonnes       = [
+    "classe_resistance",
+    "b_mm",
+    "h_mm",
+    "id_config_calcul",
+    "longueur_max_admissible_m",
+    "verif_determinante",
+    "taux_determinant",
+]
+trier_par      = ["id_config_calcul", "classe_resistance", "b_mm", "h_mm"]
+
+
+# ── Exemples de vues personnalisées ───────────────────────────────────────────
+# Décommenter et adapter selon les besoins.
+
+# Toutes les portées vérifiées (taux ≤ 1.0) — données brutes filtrées
+#[[vue]]
+#nom            = "verifie"
+#description    = "Toutes les lignes vérifiées (taux_global ≤ 1.0) — export brut"
+#fichier_sortie = "abaque_verifie.csv"
+#type           = "filtre"
+#colonnes       = ["id_config_calcul", "id_config_materiau", "classe_resistance",
+#                  "b_mm", "h_mm", "longueur_m", "taux_global"]
+#trier_par      = ["id_config_calcul", "classe_resistance", "b_mm", "h_mm", "longueur_m"]
+#
+#  [[vue.filtres]]
+#  champ     = "verifie"
+#  operateur = "egal"
+#  valeur    = true
+
+
+# Bois massif C uniquement — longueur max admissible
+#[[vue]]
+#nom            = "massif"
+#description    = "Bois massif C uniquement — longueur max admissible"
+#fichier_sortie = "abaque_massif_global.csv"
+#type           = "agregation"
+#groupby        = ["id_config_materiau", "id_config_calcul"]
+#colonnes       = ["classe_resistance", "b_mm", "h_mm", "id_config_calcul",
+#                  "longueur_max_admissible_m", "verif_determinante", "taux_determinant"]
+#trier_par      = ["classe_resistance", "b_mm", "h_mm"]
+#
+#  [[vue.filtres]]
+#  champ     = "classe_resistance"
+#  operateur = "contient"
+#  valeur    = "C"
+
+
+# Bois lamellé-collé GL uniquement — longueur max admissible
+#[[vue]]
+#nom            = "GL"
+#description    = "Bois lamellé-collé GL uniquement — longueur max admissible"
+#fichier_sortie = "abaque_GL_global.csv"
+#type           = "agregation"
+#groupby        = ["id_config_materiau", "id_config_calcul"]
+#colonnes       = ["classe_resistance", "b_mm", "h_mm", "id_config_calcul",
+#                  "longueur_max_admissible_m", "verif_determinante", "taux_determinant"]
+#trier_par      = ["classe_resistance", "b_mm", "h_mm"]
+#
+#  [[vue.filtres]]
+#  champ     = "classe_resistance"
+#  operateur = "contient"
+#  valeur    = "GL"
+
+
+# Détail complet d'une config — tous les taux ELU/ELS
+#[[vue]]
+#nom            = "detail_P30"
+#description    = "Détail complet config pente 30° — tous les taux ELU/ELS"
+#fichier_sortie = "abaque_detail_P30.csv"
+#type           = "filtre"
+#colonnes       = []    # vide = toutes les colonnes
+#trier_par      = ["id_config_materiau", "longueur_m"]
+#
+#  [[vue.filtres]]
+#  champ     = "id_config_calcul"
+#  operateur = "contient"
+#  valeur    = "_P30_"
+
+
+# Grandes sections vérifiées — export métreur
+#[[vue]]
+#nom            = "grandes_sections"
+#description    = "Sections b≥100 et h≥200 — longueur max admissible"
+#fichier_sortie = "abaque_grandes_sections.csv"
+#type           = "agregation"
+#groupby        = ["id_config_materiau", "id_config_calcul"]
+#colonnes       = ["classe_resistance", "b_mm", "h_mm", "id_config_calcul",
+#                  "longueur_max_admissible_m", "verif_determinante", "taux_determinant"]
+#trier_par      = ["b_mm", "h_mm"]
+#
+#  [[vue.filtres]]
+#  champ     = "b_mm"
+#  operateur = "superieur_egal"
+#  valeur    = 100.0
+#
+#  [[vue.filtres]]
+#  champ     = "h_mm"
+#  operateur = "superieur_egal"
+#  valeur    = 200.0
