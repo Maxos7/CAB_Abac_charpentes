@@ -27,10 +27,13 @@ def construire_df_complet(
     taux_els: dict[str, np.ndarray],
     materiaux: list[ConfigMatériauVect],
     config: ConfigCalculVect,
+    combo_elu: dict[str, np.ndarray] | None = None,
+    combo_els: dict[str, np.ndarray] | None = None,
 ) -> pd.DataFrame:
     """Construit le DataFrame de l'abaque complet sans l'écrire.
 
-    Une ligne par couple (matériau × longueur). Contient tous les taux ELU et ELS.
+    Une ligne par couple (matériau × longueur). Contient tous les taux ELU et ELS,
+    ainsi que la combinaison EC0 déterminante pour chaque vérification.
 
     Parameters
     ----------
@@ -44,6 +47,12 @@ def construire_df_complet(
         Liste des configurations matériau ``(n_M,)``.
     config:
         Configuration de calcul (``id_config_calcul`` doit être l'ID unique du combo).
+    combo_elu:
+        Combinaisons ELU déterminantes ``{id_verif: (n_L, n_M)}`` de strings
+        (ex. ``"ELU_STR_G+S"``). Ajoutées en colonne ``elu_<verif>_combo`` si fourni.
+    combo_els:
+        Combinaisons ELS déterminantes ``{id_verif: (n_L, n_M)}`` de strings
+        (ex. ``"ELS_CAR_G+Q"``). Ajoutées en colonne ``els_<verif>_combo`` si fourni.
 
     Returns
     -------
@@ -67,12 +76,31 @@ def construire_df_complet(
             }
             for id_v, taux in taux_elu.items():
                 ligne[f"elu_{id_v}"] = round(float(taux[l_idx, m]), 4)
+                if combo_elu is not None:
+                    ligne[f"elu_{id_v}_combo"] = str(combo_elu[id_v][l_idx, m])
             for id_v, taux in taux_els.items():
                 ligne[f"els_{id_v}"] = round(float(taux[l_idx, m]), 4)
+                if combo_els is not None:
+                    ligne[f"els_{id_v}_combo"] = str(combo_els[id_v][l_idx, m])
 
-            tous: list[float] = [float(t[l_idx, m]) for t in {**taux_elu, **taux_els}.values()]
-            ligne["taux_global"] = round(max(tous), 4)
-            ligne["verifie"] = max(tous) <= 1.0
+            tous_taux_items: dict[str, float] = {
+                id_v: float(t[l_idx, m])
+                for id_v, t in {**taux_elu, **taux_els}.items()
+            }
+            id_verif_win: str = max(tous_taux_items, key=tous_taux_items.__getitem__)
+            taux_global_val: float = tous_taux_items[id_verif_win]
+
+            tous_combos: dict[str, np.ndarray] = {
+                **(combo_elu or {}), **(combo_els or {})
+            }
+            ligne["taux_global"] = round(taux_global_val, 4)
+            ligne["verif_globale"] = id_verif_win
+            ligne["combo_global"] = (
+                str(tous_combos[id_verif_win][l_idx, m])
+                if tous_combos and id_verif_win in tous_combos
+                else ""
+            )
+            ligne["verifie"] = taux_global_val <= 1.0
 
             lignes.append(ligne)
 

@@ -46,39 +46,39 @@
 # Panne aplomb — section verticale (âme verticale)
 # Double flexion intrinsèque — pas besoin de double_flexion = true
 # -----------------------------------------------------------------------------
-[[config_calcul]]
-id_config_calcul = "PANNE_APLOMB"
-type_poutre       = "PanneAplomb"
-usage             = "panne_standard"
-
-L_min_m           = 2.0
-L_max_m           = 8.0
-pas_longueur_m    = 0.25
-
-pente_deg         = [30, 45]
-entraxe_m         = [1.2]
-classe_service    = 1
-
-g_k_kNm2          = 0.40
-q_k_kNm2          = 0.0
-categorie_q       = "H"
-s_k_kNm2          = 0.36
-w_k_kNm2          = 0.0
-
-entraxe_antideversement_mm = 0.0
-longueur_appui_mm          = 60.0
-
-  [[config_calcul.filtres]]
-  champ     = "classe_resistance"
-  operateur = "in"
-  valeur    = ["C24", "GL24h"]
-
-  [[config_calcul.filtres]]
-  champ     = "h_mm"
-  operateur = ">="
-  valeur    = 160
-
-
+#[[config_calcul]]
+#id_config_calcul = "PANNE_APLOMB"
+#type_poutre       = "PanneAplomb"
+#usage             = "panne_standard"
+#
+#L_min_m           = 2.0
+#L_max_m           = 8.0
+#pas_longueur_m    = 0.25
+#
+#pente_deg         = [30, 45]
+#entraxe_m         = [1.2]
+#classe_service    = 1
+#
+#g_k_kNm2          = 0.40
+#q_k_kNm2          = 0.0
+#categorie_q       = "H"
+#s_k_kNm2          = 0.36
+#w_k_kNm2          = 0.0
+#
+#entraxe_antideversement_mm = 0.0
+#longueur_appui_mm          = 60.0
+#
+#  [[config_calcul.filtres]]
+#  champ     = "classe_resistance"
+#  operateur = "in"
+#  valeur    = ["C24", "GL24h"]
+#
+#  [[config_calcul.filtres]]
+#  champ     = "h_mm"
+#  operateur = ">="
+#  valeur    = 160
+#
+#
 # -----------------------------------------------------------------------------
 # Panne déversée — section tournée d'un angle β (versage)
 # β = 0° → identique Panne ; β = 90° → identique PanneAplomb
@@ -92,24 +92,33 @@ L_min_m           = 2.0
 L_max_m           = 8.0
 pas_longueur_m    = 0.25
 
-pente_deg         = [30, 45]
+pente_deg         = [45]
 entraxe_m         = [1.2]
 classe_service    = 1
 
 g_k_kNm2          = 0.40
+g2_k_kNm2         = 0.17
 q_k_kNm2          = 0.0
 categorie_q       = "H"
 s_k_kNm2          = 0.36
 w_k_kNm2          = 0.0
 
+double_flexion             = true
+fleches_double             = true   # calcul bi-axe ELS flèche (implicite si double_flexion=true)
+contre_fleche_mm           = 0.0    # pré-cambrure à soustraire de w_fin et w_2 [mm]
+second_oeuvre              = true
 entraxe_antideversement_mm = 0.0
-longueur_appui_mm          = 60.0
+longueur_appui_mm          = 50.0
+
+# Surcharge limites flèche (facultatif — sinon valeurs de limites_fleche_ec5.csv)
+# limite_fleche_inst = 300.0   # Winst(Q) ≤ L/300
+# limite_fleche_fin  = 200.0   # Wnet,fin ≤ L/200
+# limite_fleche_2    = 500.0   # Wtot,2   ≤ L/500
 
   [[config_calcul.filtres]]
   champ     = "classe_resistance"
   operateur = "in"
-  valeur    = ["C24", "GL24h"]
-
+  valeur    = ["C24","GT24", "GL24h"]
 
 # -----------------------------------------------------------------------------
 # Chevron — portée sur rampant, charges perpendiculaires au rampant

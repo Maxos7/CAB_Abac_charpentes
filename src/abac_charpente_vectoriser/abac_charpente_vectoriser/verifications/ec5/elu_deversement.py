@@ -6,10 +6,10 @@ Vérification ELU au déversement — EC5 §6.3.3.
 Le taux de déversement est directement k_crit (pré-calculé dans l'espace).
 Le taux d'utilisation combine flexion et déversement :
 
-    σ_m,d / f_m,d est déjà réduit par k_crit dans FlexionSimple.
+    σ_m,d / f_m,d est déjà réduit par k_crit dans FlexionAxeFort.
     Cette vérification reporte k_crit comme indicateur de risque de déversement.
 
-    Taux = σ_m,d / (k_crit × f_m,d)   (identique à FlexionSimple)
+    Taux = σ_m,d / (k_crit × f_m,d)   (identique à FlexionAxeFort)
 
 Note : en EC5, la vérification de déversement est intégrée dans la vérification
 de flexion via la réduction k_crit. Cette classe est conservée comme vérification

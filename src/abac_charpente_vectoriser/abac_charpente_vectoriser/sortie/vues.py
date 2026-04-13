@@ -140,7 +140,11 @@ def _produire_agregation(
         Une ligne par groupe. Si aucune portée n'est vérifiée pour un groupe,
         la ligne est exclue.
     """
-    taux_cols: list[str] = [c for c in df.columns if c.startswith(("elu_", "els_"))]
+    # Exclure les colonnes *_combo (strings) — seules les colonnes numériques de taux
+    taux_cols: list[str] = [
+        c for c in df.columns
+        if c.startswith(("elu_", "els_")) and not c.endswith("_combo")
+    ]
 
     df_ok: pd.DataFrame = df[df["verifie"]].copy() if "verifie" in df.columns else df.copy()
     if df_ok.empty:
@@ -155,6 +159,9 @@ def _produire_agregation(
             .str.replace(r"^(elu_|els_)", "", regex=True)
         )
         df_max["taux_determinant"] = df_max[taux_cols].max(axis=1).round(4)
+        # combo_determinante : récupérée depuis combo_global (déjà calculée par ligne)
+        if "combo_global" in df_max.columns:
+            df_max["combo_determinante"] = df_max["combo_global"]
 
     df_max = df_max.rename(columns={"longueur_m": "longueur_max_admissible_m"})
     df_max = df_max.reset_index(drop=True)

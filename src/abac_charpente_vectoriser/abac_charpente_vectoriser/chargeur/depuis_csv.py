@@ -119,6 +119,7 @@ def charger_depuis_csv(
             f_c90_k_MPa=float(props_mat["f_c90_k_MPa"]),
             f_t0_k_MPa=float(props_mat["f_t0_k_MPa"]),
             f_c0_k_MPa=float(props_mat["f_c0_k_MPa"]),
+            f_t90_k_MPa=float(props_mat["f_t90_k_MPa"]),
             E_0_mean_MPa=float(props_mat["E_0_mean_MPa"]),
             E_0_05_MPa=float(props_mat["E_0_05_MPa"]),
             rho_k_kgm3=float(props_mat["rho_k_kgm3"]),

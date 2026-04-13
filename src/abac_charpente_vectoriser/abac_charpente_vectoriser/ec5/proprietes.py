@@ -191,12 +191,15 @@ def calculer_resistances_CM(
 
     facteur_CM: np.ndarray = k_mod_CM / gamma_m_arr[np.newaxis, :]
 
+    f_t90_k: np.ndarray = np.array([m.f_t90_k_MPa for m in materiaux], dtype=float)
+
     return {
         "f_m_d_CM":   facteur_CM * f_m_k,
         "f_v_d_CM":   facteur_CM * f_v_k,
         "f_c90_d_CM": facteur_CM * f_c90_k,
         "f_t0_d_CM":  facteur_CM * f_t0_k,
         "f_c0_d_CM":  facteur_CM * f_c0_k,
+        "f_t90_d_CM": facteur_CM * f_t90_k,
     }
 
 
@@ -256,3 +259,66 @@ def calculer_k_crit_LM(
     )
 
     return k_crit.clip(0.0, 1.0)
+
+
+def calculer_k_c_LM(
+    longueurs_m: np.ndarray,
+    materiaux: list[ConfigMatériauVect],
+) -> tuple[np.ndarray, np.ndarray]:
+    """Calcule les facteurs de flambement k_c,y et k_c,z — EC5 §6.3.2.
+
+    Pour un élément bi-appuyé, la longueur de flambement vaut la portée (L_0 = L).
+
+    Parameters
+    ----------
+    longueurs_m:
+        Vecteur de portées en mètres ``(n_L,)``.
+    materiaux:
+        Liste des configurations matériau ``(n_M,)``.
+
+    Returns
+    -------
+    tuple[np.ndarray, np.ndarray]
+        ``(k_c_y_LM, k_c_z_LM)`` — tableaux ``(n_L, n_M)``, valeurs dans ]0, 1].
+    """
+    params: dict[str, float] = _charger_params_ec5()
+    beta_c_massif: float = params.get("beta_c_massif", 0.20)
+    beta_c_lamelle: float = params.get("beta_c_lamelle", 0.10)
+
+    E_0_05: np.ndarray = np.array([m.E_0_05_MPa  for m in materiaux], dtype=float)  # (n_M,)
+    f_c0_k: np.ndarray = np.array([m.f_c0_k_MPa  for m in materiaux], dtype=float)  # (n_M,)
+    I_y:    np.ndarray = np.array([m.I_y_cm4      for m in materiaux], dtype=float)  # (n_M,)
+    I_z:    np.ndarray = np.array([m.I_z_cm4      for m in materiaux], dtype=float)  # (n_M,)
+    A:      np.ndarray = np.array([m.A_cm2         for m in materiaux], dtype=float)  # (n_M,)
+
+    beta_c: np.ndarray = np.array(
+        [beta_c_lamelle if m.famille == "bois_lamelle_colle" else beta_c_massif
+         for m in materiaux],
+        dtype=float,
+    )  # (n_M,)
+
+    # Rayons de giration [cm]
+    i_y: np.ndarray = np.sqrt(I_y / A)  # (n_M,)
+    i_z: np.ndarray = np.sqrt(I_z / A)  # (n_M,)
+
+    # Longueur de flambement [cm] — bi-appui simple : L_0 = L
+    L0_cm: np.ndarray = longueurs_m[:, np.newaxis] * 100.0  # (n_L, 1)
+
+    # Élancements géométriques
+    lambda_y: np.ndarray = L0_cm / i_y[np.newaxis, :]  # (n_L, n_M)
+    lambda_z: np.ndarray = L0_cm / i_z[np.newaxis, :]  # (n_L, n_M)
+
+    # Élancements relatifs EC5 §6.3.2(1) : λ_rel = (λ/π) × √(f_c0,k / E_0,05)
+    ratio: np.ndarray = np.sqrt(f_c0_k / E_0_05)[np.newaxis, :]  # (1, n_M)
+    lambda_rel_y: np.ndarray = lambda_y / np.pi * ratio           # (n_L, n_M)
+    lambda_rel_z: np.ndarray = lambda_z / np.pi * ratio           # (n_L, n_M)
+
+    def _k_c(lam_rel: np.ndarray) -> np.ndarray:
+        """k_c = 1 / (k + √(k²−λ²))  avec k = 0.5(1 + β_c(λ−0.3) + λ²)."""
+        beta_11M: np.ndarray = beta_c[np.newaxis, :]
+        k: np.ndarray = 0.5 * (1.0 + beta_11M * (lam_rel - 0.3) + lam_rel ** 2)
+        denom: np.ndarray = k + np.sqrt(np.maximum(k ** 2 - lam_rel ** 2, 0.0))
+        # Si λ_rel ≤ 0.3 → pas d'effet de flambement (EC5 §6.3.2 condition)
+        return np.where(lam_rel <= 0.3, 1.0, (1.0 / denom).clip(0.0, 1.0))
+
+    return _k_c(lambda_rel_y), _k_c(lambda_rel_z)

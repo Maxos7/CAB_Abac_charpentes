@@ -81,7 +81,7 @@ class EspaceCombinaisonTenseur:
     ───────────────────────────────────────
     k_mod_CM:
         Facteur de modification k_mod (EC5 Table 3.1).
-    f_m_d_CM, f_v_d_CM, f_c90_d_CM, f_t0_d_CM, f_c0_d_CM:
+    f_m_d_CM, f_v_d_CM, f_c90_d_CM, f_t0_d_CM, f_c0_d_CM, f_t90_d_CM:
         Résistances de calcul en MPa.
 
     Propriétés EC5 — format ``(n_M,)``
@@ -90,6 +90,10 @@ class EspaceCombinaisonTenseur:
         Facteur de fluage k_def (EC5 Table 3.2).
     k_crit_LM:
         Facteur de déversement k_crit ``(n_L, n_M)`` (EC5 §6.3.3).
+    k_c_y_LM:
+        Facteur de flambement axe fort k_c,y ``(n_L, n_M)`` (EC5 §6.3.2).
+    k_c_z_LM:
+        Facteur de flambement axe faible k_c,z ``(n_L, n_M)`` (EC5 §6.3.2).
     A_eff_cis_cm2_arr:
         Section efficace pour le cisaillement en cm² (EC5 §6.1.7).
     W_y_cm3_arr:
@@ -106,11 +110,16 @@ class EspaceCombinaisonTenseur:
     Limites ELS — scalaires
     ────────────────────────
     limite_fleche_inst:
-        Limite L/x pour la flèche instantanée.
+        Limite L/x pour Winst,Q (flèche instanée sous variables seules).
+        None = vérification désactivée (ex. Chevron simple).
+    limite_fleche_fin_brut:
+        Limite L/x pour Wfin (flèche finale BRUTE, avant contre-flèche).
+        Toujours vérifiée. Référence MD Bat : L/125.
     limite_fleche_fin:
-        Limite L/x pour la flèche finale.
+        Limite L/x pour Wnet,fin (flèche nette, après contre-flèche).
+        Référence MD Bat : L/200 (pannes), L/150 (chevrons).
     limite_fleche_2:
-        Limite L/x pour la flèche second-œuvre (None si ``second_oeuvre=False``).
+        Limite L/x pour Wtot,2 (flèche second-œuvre). None = désactivée.
 
     Paramètres de vérification à l'appui
     ──────────────────────────────────────
@@ -118,6 +127,13 @@ class EspaceCombinaisonTenseur:
         Longueur d'appui en mm (scalaire).
     k_c90:
         Facteur k_c90 pour la vérification à l'appui (EC5 §6.1.5).
+
+    Paramètres ELS flèche avancés
+    ──────────────────────────────
+    fleches_double:
+        True si calcul bi-axe ELS flèche actif (config.fleches_double OR config.double_flexion).
+    contre_fleche_mm:
+        Pré-cambrure en mm soustraite de w_fin et w_2 (pas de FlecheInst).
     """
 
     # Méta-données
@@ -149,10 +165,13 @@ class EspaceCombinaisonTenseur:
     f_c90_d_CM: np.ndarray
     f_t0_d_CM: np.ndarray
     f_c0_d_CM: np.ndarray
+    f_t90_d_CM: np.ndarray
 
     # Propriétés EC5 (n_M,)
     k_def_arr: np.ndarray
-    k_crit_LM: np.ndarray  # (n_L, n_M)
+    k_crit_LM: np.ndarray   # (n_L, n_M)
+    k_c_y_LM: np.ndarray    # (n_L, n_M) — facteur de flambement axe fort (EC5 §6.3.2)
+    k_c_z_LM: np.ndarray    # (n_L, n_M) — facteur de flambement axe faible (EC5 §6.3.2)
     A_eff_cis_cm2_arr: np.ndarray
     W_y_cm3_arr: np.ndarray
     W_z_cm3_arr: np.ndarray
@@ -161,10 +180,15 @@ class EspaceCombinaisonTenseur:
     E_mean_MPa_arr: np.ndarray
 
     # Limites ELS
-    limite_fleche_inst: float
-    limite_fleche_fin: float
-    limite_fleche_2: float | None
+    limite_fleche_inst: float | None   # None = Winst,Q désactivée (ex. Chevron)
+    limite_fleche_fin_brut: float      # Wfin brut (avant contre-flèche) — toujours actif
+    limite_fleche_fin: float           # Wnet,fin (après contre-flèche)
+    limite_fleche_2: float | None      # None = W2 désactivée
 
     # Paramètres vérification appui
     longueur_appui_mm: float
     k_c90: float
+
+    # Paramètres ELS flèche avancés
+    fleches_double: bool        # config.fleches_double OR config.double_flexion
+    contre_fleche_mm: float     # pré-cambrure à soustraire de w_fin et w_2 [mm]

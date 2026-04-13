@@ -106,6 +106,14 @@ class ConfigCalculVect(BaseModel):
     double_flexion:
         Si True, active les vérifications de double flexion (ELU §6.1.6 + ELS).
         Automatiquement forcé à True pour PanneAplombVect.
+        Implique fleches_double=True pour les vérifications ELS flèche.
+    fleches_double:
+        Si True, active le calcul bi-axe dans les trois vérifications ELS flèche
+        (FlecheInst, FlecheFin, FlecheSecondOeuvre). Automatiquement forcé à True
+        si double_flexion=True. Indépendant de double_flexion pour les vérifications ELU.
+    contre_fleche_mm:
+        Pré-cambrure en mm soustraite à w_fin (Wnet,fin) et w_2 (Wtot,2).
+        Ne s'applique pas à FlecheInst (EC5 §7.2). 0.0 = sans contre-flèche.
     entraxe_antideversement_mm:
         Entraxe entre contreventements anti-déversement en mm.
         0 → longueur de déversement = portée complète.
@@ -144,6 +152,8 @@ class ConfigCalculVect(BaseModel):
     k_c90: float | list[float] = 1.0
 
     double_flexion: bool = False
+    fleches_double: bool = False
+    contre_fleche_mm: float = 0.0
     entraxe_antideversement_mm: float = 0.0
 
     filtres: list[RegleFiltre] = Field(default_factory=list)

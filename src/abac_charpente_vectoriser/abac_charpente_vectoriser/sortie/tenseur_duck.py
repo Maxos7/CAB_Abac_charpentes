@@ -29,7 +29,7 @@ Schéma
         FROM taux
         JOIN materiaux_combo USING (id_combo)
         WHERE taux.id_combo = 'PANNE_APLOMB_P30_E1.2'
-          AND verif_id = 'FlexionSimple'
+          AND verif_id = 'FlexionAxeFort'
           AND longueur_m = 4.0
           AND id_config_materiau = 'MAT_748238e9';
 
@@ -62,10 +62,13 @@ CREATE TABLE IF NOT EXISTS taux (
     verif_id    VARCHAR  NOT NULL,
     longueur_m  FLOAT    NOT NULL,
     taux        FLOAT[]  NOT NULL,
+    combo       VARCHAR[],
     horodatage  TIMESTAMP NOT NULL,
     PRIMARY KEY (id_combo, verif_id, longueur_m)
 )
 """
+
+_DDL_MIGRATION_COMBO = "ALTER TABLE taux ADD COLUMN IF NOT EXISTS combo VARCHAR[]"
 
 _DDL_MATERIAUX = """
 CREATE TABLE IF NOT EXISTS materiaux_combo (
@@ -103,6 +106,8 @@ class TenseurDuck:
         self._conn = duckdb.connect(chemin_str)
         self._conn.execute(_DDL_TAUX)
         self._conn.execute(_DDL_MATERIAUX)
+        # Migration : ajoute la colonne combo si elle n'existe pas (fichiers DuckDB existants)
+        self._conn.execute(_DDL_MIGRATION_COMBO)
 
     def sauvegarder(
         self,
@@ -111,12 +116,16 @@ class TenseurDuck:
         taux_elu: dict[str, np.ndarray],
         taux_els: dict[str, np.ndarray],
         materiaux: list[ConfigMatériauVect],
+        combo_elu: dict[str, np.ndarray] | None = None,
+        combo_els: dict[str, np.ndarray] | None = None,
     ) -> None:
         """Sauvegarde les tenseurs de taux d'un combo dans DuckDB.
 
         Chaque vérification (ELU ou ELS) génère ``n_L`` lignes dans la table
         ``taux``. Le vecteur ``taux`` de chaque ligne contient les ``n_M`` taux
         correspondant aux matériaux (même ordre que ``materiaux``).
+        La colonne ``combo`` stocke l'``id_combinaison`` EC0 déterminante pour
+        chaque matériau ``(n_M,)`` — ex. ``["ELU_STR_G+S", "ELU_STR_G+S", ...]``.
 
         Si le combo existe déjà (PRIMARY KEY), les lignes sont remplacées.
 
@@ -132,6 +141,10 @@ class TenseurDuck:
             Résultats ELS ``{verif_id: (n_L, n_M)}``.
         materiaux:
             Liste des configurations matériau ``(n_M,)``.
+        combo_elu:
+            Combinaisons ELU déterminantes ``{verif_id: (n_L, n_M)}`` de strings.
+        combo_els:
+            Combinaisons ELS déterminantes ``{verif_id: (n_L, n_M)}`` de strings.
         """
         horodatage: datetime = datetime.now(timezone.utc)
 
@@ -161,20 +174,26 @@ class TenseurDuck:
         # Tenseurs taux — une ligne par (verif, longueur)
         taux_rows: list[tuple] = []
         for verif_id, arr in taux_elu.items():
+            arr_combo = combo_elu[verif_id] if combo_elu is not None else None
             for l_idx, L in enumerate(longueurs_m):
                 taux_rows.append((
                     id_combo, "ELU", verif_id, float(L),
-                    arr[l_idx].tolist(), horodatage,
+                    arr[l_idx].tolist(),
+                    arr_combo[l_idx].tolist() if arr_combo is not None else None,
+                    horodatage,
                 ))
         for verif_id, arr in taux_els.items():
+            arr_combo = combo_els[verif_id] if combo_els is not None else None
             for l_idx, L in enumerate(longueurs_m):
                 taux_rows.append((
                     id_combo, "ELS", verif_id, float(L),
-                    arr[l_idx].tolist(), horodatage,
+                    arr[l_idx].tolist(),
+                    arr_combo[l_idx].tolist() if arr_combo is not None else None,
+                    horodatage,
                 ))
 
         self._conn.executemany(
-            "INSERT INTO taux VALUES (?, ?, ?, ?, ?, ?)",
+            "INSERT INTO taux VALUES (?, ?, ?, ?, ?, ?, ?)",
             taux_rows,
         )
 

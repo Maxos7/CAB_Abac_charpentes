@@ -57,6 +57,8 @@ class ConfigMatériauVect:
         Résistance caractéristique en traction parallèle au fil (EN 338 Table 1).
     f_c0_k_MPa:
         Résistance caractéristique en compression parallèle au fil (EN 338 Table 1).
+    f_t90_k_MPa:
+        Résistance caractéristique en traction perpendiculaire au fil (EN 338 Table 1).
     E_0_mean_MPa:
         Module d'élasticité moyen parallèle au fil (ELS).
     E_0_05_MPa:
@@ -87,6 +89,7 @@ class ConfigMatériauVect:
     f_c90_k_MPa: float
     f_t0_k_MPa: float
     f_c0_k_MPa: float
+    f_t90_k_MPa: float
 
     # Rigidité [MPa]
     E_0_mean_MPa: float
