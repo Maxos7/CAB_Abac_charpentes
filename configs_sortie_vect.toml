@@ -26,47 +26,47 @@
 # =============================================================================
 
 
-# ── Vue synthétique ────────────────────────────────────────────────────────────
-
-[[vue]]
-nom            = "synthetique"
-description    = "Longueur max admissible par couple (matériau × config) — dimensionnement rapide"
-fichier_sortie = "abaque_synthetique_global.csv"
-type           = "agregation"
-groupby        = ["id_config_materiau", "id_config_calcul"]
-colonnes       = [
-    "id_produit",
-    "id_config_materiau",
-    "id_config_calcul",
-    "classe_resistance",
-    "b_mm",
-    "h_mm",
-    "longueur_max_admissible_m",
-    "taux_determinant",
-    "verif_determinante",
-]
-trier_par      = ["id_config_calcul", "classe_resistance", "b_mm", "h_mm"]
-
-
-# ── Vue réduite ────────────────────────────────────────────────────────────────
-
-[[vue]]
-nom            = "reduit"
-description    = "Format compact — usage BE externe, sans IDs internes du moteur"
-fichier_sortie = "abaque_reduit_global.csv"
-type           = "agregation"
-groupby        = ["id_config_calcul", "id_config_materiau"]
-colonnes       = [
-    "classe_resistance",
-    "b_mm",
-    "h_mm",
-    "id_config_calcul",
-    "longueur_max_admissible_m",
-    "verif_determinante",
-    "taux_determinant",
-]
-trier_par      = ["id_config_calcul", "classe_resistance", "b_mm", "h_mm"]
-
+## ── Vue synthétique ────────────────────────────────────────────────────────────
+#
+#[[vue]]
+#nom            = "synthetique"
+#description    = "Longueur max admissible par couple (matériau × config) — dimensionnement rapide"
+#fichier_sortie = "abaque_synthetique_global.csv"
+#type           = "agregation"
+#groupby        = ["id_config_materiau", "id_config_calcul"]
+#colonnes       = [
+#    "id_produit",
+#    "id_config_materiau",
+#    "id_config_calcul",
+#    "classe_resistance",
+#    "b_mm",
+#    "h_mm",
+#    "longueur_max_admissible_m",
+#    "taux_determinant",
+#    "verif_determinante",
+#]
+#trier_par      = ["id_config_calcul", "classe_resistance", "b_mm", "h_mm"]
+#
+#
+## ── Vue réduite ────────────────────────────────────────────────────────────────
+#
+#[[vue]]
+#nom            = "reduit"
+#description    = "Format compact — usage BE externe, sans IDs internes du moteur"
+#fichier_sortie = "abaque_reduit_global.csv"
+#type           = "agregation"
+#groupby        = ["id_config_calcul", "id_config_materiau"]
+#colonnes       = [
+#    "classe_resistance",
+#    "b_mm",
+#    "h_mm",
+#    "id_config_calcul",
+#    "longueur_max_admissible_m",
+#    "verif_determinante",
+#    "taux_determinant",
+#]
+#trier_par      = ["id_config_calcul", "classe_resistance", "b_mm", "h_mm"]
+#
 
 # ── Exemples de vues personnalisées ───────────────────────────────────────────
 # Décommenter et adapter selon les besoins.

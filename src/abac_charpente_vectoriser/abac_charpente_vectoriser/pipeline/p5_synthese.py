@@ -50,6 +50,7 @@ class ResultatPortee:
     longueur_max_admissible_m: float | None
     taux_determinant: float
     verif_determinante: str
+    combinaison_determinante: str = ""
     taux_par_verif: dict[str, float] = field(default_factory=dict)
 
 
@@ -59,6 +60,8 @@ def synthetiser(
     taux_els: dict[str, np.ndarray],
     materiaux: list[ConfigMatériauVect],
     config: ConfigCalculVect,
+    combo_elu: dict[str, np.ndarray] | None = None,
+    combo_els: dict[str, np.ndarray] | None = None,
 ) -> list[ResultatPortee]:
     """Synthétise les taux ELU/ELS en résultats finaux par matériau.
 
@@ -74,6 +77,10 @@ def synthetiser(
         Liste des configurations matériau ``(n_M,)``.
     config:
         Configuration de calcul.
+    combo_elu:
+        Combinaisons ELU déterminantes ``{id_verif: (n_L, n_M)}`` de strings.
+    combo_els:
+        Combinaisons ELS déterminantes ``{id_verif: (n_L, n_M)}`` de strings.
 
     Returns
     -------
@@ -81,9 +88,7 @@ def synthetiser(
         Un ``ResultatPortee`` par matériau.
     """
     tous_taux: dict[str, np.ndarray] = {**taux_elu, **taux_els}
-    taux_stack: np.ndarray = np.stack(
-        list(tous_taux.values()), axis=0
-    )  # (n_verif, n_L, n_M)
+    taux_stack: np.ndarray = np.stack(list(tous_taux.values()), axis=0)  # (n_verif, n_L, n_M)
     ids_verif: list[str] = list(tous_taux.keys())
 
     n_M: int = len(materiaux)
@@ -104,19 +109,23 @@ def synthetiser(
         idx_verif_det: int = int(np.argmax(np.max(taux_stack[:, :, m], axis=1)))
         verif_det: str = ids_verif[idx_verif_det]
 
+        # Combinaison déterminante : longueur à laquelle la vérif déterminante est max
+        combo_det: str = ""
+        if tous_combos and verif_det in tous_combos:
+            idx_L_det: int = int(np.argmax(taux_stack[idx_verif_det, :, m]))
+            combo_det = str(tous_combos[verif_det][idx_L_det, m])
+
         taux_par_verif: dict[str, float] = {
             id_v: float(np.max(taux_stack[i, :, m])) for i, id_v in enumerate(ids_verif)
         }
 
-        resultats.append(
-            ResultatPortee(
-                id_config_materiau=materiaux[m].id_config_materiau,
-                id_config_calcul=config.id_config_calcul,
-                longueur_max_admissible_m=L_max,
-                taux_determinant=taux_det,
-                verif_determinante=verif_det,
-                taux_par_verif=taux_par_verif,
-            )
-        )
+        resultats.append(ResultatPortee(
+            id_config_materiau=materiaux[m].id_config_materiau,
+            id_config_calcul=config.id_config_calcul,
+            longueur_max_admissible_m=L_max,
+            taux_determinant=taux_det,
+            verif_determinante=verif_det,
+            taux_par_verif=taux_par_verif,
+        ))
 
     return resultats

@@ -1,13 +1,28 @@
-# Limites de flèche EC5 §7.2 — valeurs recommandées (NF EN 1995-1-1/NA)
-# w_inst : flèche instantanée sous charges variables (L/x)
-# w_fin  : flèche finale totale incluant fluage (L/x)
-# w_2    : flèche nette sous second oeuvre (L/x)
-usage;w_inst;w_fin;w_2
-plancher_courant;300;250;350
-plancher_accessible;350;250;400
-toiture_sans_second_oeuvre;200;150;0
-toiture_avec_second_oeuvre;300;200;350
-panne_standard;250;200;300
-chevron;250;200;0
-solive;300;250;350
-sommier;400;300;400
+# Limites de flèche EC5 §7.2 — valeurs logiciel de référence MD Bat (Poutr M)
+#
+# Colonnes :
+#   w_inst     : Winst,Q  — flèche instantanée sous charges VARIABLES SEULES (L/x)
+#                0 = vérification désactivée (ex. Chevron simple)
+#   w_fin_brut : Wfin     — flèche finale BRUTE avant soustraction contre-flèche (L/x)
+#                Toujours vérifiée, indépendamment de la contre-flèche.
+#   w_fin      : Wnet,fin — flèche nette finale = Wfin − Wc (L/x)
+#   w_2        : Wtot,2   — flèche second-oeuvre (L/x), 0 = vérification désactivée
+#
+# Source : MD Bat Poutr M — Aide flèche — Normes courantes (AN française)
+# Vérification : NF EN 1995-1-1/NA + CODIFAB N°1951 (rev4, 2022)
+#
+# Toitures :
+#   Chevron                  : Wnet,fin=L/150, Winst,Q=désactivé, Wfin=L/125, W2=L/200
+#   Panne/Arbalétrier/Arêtier: Wnet,fin=L/200, Winst,Q=L/300,    Wfin=L/125, W2=L/500
+# Planchers :
+#   Fragile portée ≤5m       : Wnet,fin=L/200, Winst,Q=L/300,    Wfin=L/125, W2=L/500
+#   Courant portée ≤3,5m     : Wnet,fin=L/200, Winst,Q=L/300,    Wfin=L/125, W2=L/350
+usage;w_inst;w_fin_brut;w_fin;w_2
+chevron;0;125;150;200
+panne_standard;300;125;200;500
+toiture_avec_second_oeuvre;300;125;200;500
+toiture_sans_second_oeuvre;300;125;200;0
+plancher_courant;300;125;200;350
+plancher_accessible;300;125;200;400
+solive;300;125;200;350
+sommier;300;125;200;400

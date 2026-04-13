@@ -1,14 +1,10 @@
 [tool.uv.workspace]
-members = [
-    "src/abac_charpente",
-    "src/sapeg_regen_stock",
-    "src/abac_visuel",
-    "CWDock",
-]
+members = ["src/abac_charpente", "src/sapeg_regen_stock", "src/abac_visuel"]
 
 [tool.uv.sources]
 sapeg-regen-stock = { workspace = true }
 abac-charpente = { workspace = true }
+abac-charpente-vectoriser = { workspace = true }
 
 [dependency-groups]
 dev = [

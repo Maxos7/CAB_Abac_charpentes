@@ -65,7 +65,9 @@ def calculer_charges_caracteristiques(
     w_k: float = _sc(config.w_k_kNm2)
 
     g_pp_kNm: np.ndarray = type_poutre.poids_propre_kNm(materiaux)
-    g_kNm: float = g_k * entraxe_m
+    # g_k dans le TOML = G_total (G1 + G2). On extrait G1 = G_total − G2 pour éviter le
+    # double-compte dans la formule ELU : γ_G×(g_pp+G1) + γ_G2×G2 + γ_Q×S.
+    g_kNm: float = (g_k - g2_k) * entraxe_m
     g2_kNm: float = g2_k * entraxe_m
     q_kNm: float = q_k * entraxe_m
     s_kNm: float = charge_neige_kNm(s_k, pente_deg, entraxe_m) if s_k > 0 else 0.0

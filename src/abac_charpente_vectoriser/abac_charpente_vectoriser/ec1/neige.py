@@ -13,6 +13,7 @@ thermique c_t sont pris à 1.0 (AN France, valeur par défaut).
 
 from __future__ import annotations
 
+import math
 from functools import lru_cache
 from importlib.resources import files
 
@@ -90,4 +91,6 @@ def charge_neige_kNm(
     """
     mu_1: float = float(mu1(np.array([pente_deg]))[0])
     s_d_kNm2: float = mu_1 * c_e * c_t * s_k_kNm2
-    return s_d_kNm2 * entraxe_m
+    # s_k est défini sur la projection horizontale (EN 1991-1-3 §5.2).
+    # Si l'entraxe est mesuré sur le rampant, la largeur tributaire horizontale = entraxe × cos(α).
+    return s_d_kNm2 * entraxe_m * math.cos(math.radians(pente_deg))

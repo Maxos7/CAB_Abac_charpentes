@@ -115,6 +115,20 @@ def generer_combinaisons(config: ConfigCalculVect) -> list[CombinaisonEC0Vect]:
     if w_actif:
         charges_principales_elu.append("W")
 
+    # Combinaison permanente seule — toujours générée (EC5 : k_mod=0.60 pour charges permanentes,
+    # ce qui peut rendre cette combinaison déterminante même avec une charge plus faible).
+    combinaisons.append(CombinaisonEC0Vect(
+        id_combinaison="ELU_STR_G",
+        type_etat_limite="ELU",
+        type_combinaison="STR",
+        gamma_G=1.35,
+        gamma_G2=1.35,
+        gamma_Q1=0.0,
+        gamma_Q_accomp=0.0,
+        type_charge_principale="Q",
+        duree_charge="permanent",
+    ))
+
     for ch_princ in charges_principales_elu:
         psi_0_accomp: float = max(
             (
@@ -139,19 +153,17 @@ def generer_combinaisons(config: ConfigCalculVect) -> list[CombinaisonEC0Vect]:
         )
 
     if not charges_principales_elu:
-        combinaisons.append(
-            CombinaisonEC0Vect(
-                id_combinaison="ELU_STR_G",
-                type_etat_limite="ELU",
-                type_combinaison="STR",
-                gamma_G=1.35,
-                gamma_G2=1.35,
-                gamma_Q1=0.0,
-                gamma_Q_accomp=0.0,
-                type_charge_principale="Q",
-                duree_charge="permanent",
-            )
-        )
+        combinaisons.append(CombinaisonEC0Vect(
+            id_combinaison="ELU_STR_G",
+            type_etat_limite="ELU",
+            type_combinaison="STR",
+            gamma_G=1.35,
+            gamma_G2=1.35,
+            gamma_Q1=0.0,
+            gamma_Q_accomp=0.0,
+            type_charge_principale="Q",
+            duree_charge="permanent",
+        ))
 
     # ── ELS CAR ──────────────────────────────────────────────────────────────────
     for ch_princ in charges_principales_elu or ["Q"]:

@@ -3,13 +3,17 @@ verifications.ec5.elu_flexion
 =============================
 Vérifications ELU de flexion — EC5 §6.1.6.
 
-Trois vérifications :
-- ``FlexionSimple``      : taux σ_m,y / (k_crit × f_m,d) ≤ 1  (Eq. 6.11)
-- ``DoubleFlexionForte`` : Eq. (6.19) — condition déterminante axe fort
-- ``DoubleFlexionFaible``: Eq. (6.20) — condition déterminante axe faible
+Quatre vérifications :
+- ``FlexionAxeFort``     : Eq.(6.11) — σ_m,y / (k_crit × f_m,d) ≤ 1 (retombée — toujours actif)
+- ``FlexionAxeFaible``   : Eq.(6.12) — σ_m,z / f_m,d ≤ 1 (rampant — double flexion seulement)
+- ``DoubleFlexionForte`` : Eq.(6.19) — taux combiné, axe fort déterminant (double flexion)
+- ``DoubleFlexionFaible``: Eq.(6.20) — taux combiné, axe faible déterminant (double flexion)
 
 La double flexion n'est active que si ``EspaceCombinaisonTenseur.M_y_kNm`` et
 ``M_z_kNm`` sont non ``None`` (ce qui est le cas si ``TypePoutreVect.double_flexion_active``).
+
+``FlexionAxeFort`` utilise ``M_y_kNm`` quand la double flexion est active (composante
+axe fort seule) et ``M_d_kNm`` sinon (flexion simple — tous les moments sur l'axe fort).
 
 Le coefficient k_m = 0.7 (section rectangulaire, EC5 §6.1.6(2)) est lu depuis
 ``donnees/params_ec5.csv`` via le module ``ec5.proprietes``.
@@ -36,24 +40,28 @@ def _k_m() -> float:
     return float(df.set_index("parametre").loc["k_m", "valeur"])
 
 
-class FlexionSimple(VerificationELU):
-    """Flexion simple — EC5 §6.1.6 Eq.(6.11).
+class FlexionAxeFort(VerificationELU):
+    """Flexion axe fort (retombée) — EC5 §6.1.6 Eq.(6.11).
 
     σ_m,y,d / (k_crit × f_m,d) ≤ 1.0
+
+    En flexion simple : σ_m,y = M_d / W_y (tout le moment sur l'axe fort).
+    En double flexion : σ_m,y = M_y / W_y (composante axe fort uniquement).
     """
 
     @property
     def id_verification(self) -> str:
-        return "FlexionSimple"
+        return "FlexionAxeFort"
 
     @property
     def article_ec5(self) -> str:
         return "EC5 §6.1.6 Eq.(6.11)"
 
     def calculer(self, espace) -> ResultatVerification:
-        """Calcule le taux de flexion simple.
+        """Calcule le taux de flexion axe fort.
 
-        σ_m,y,d = M_d / W_y   [MPa]
+        Utilise M_y_kNm si la double flexion est active, M_d_kNm sinon.
+        σ_m,y,d = M_y / W_y   [MPa]
         Taux = σ_m,y,d / (k_crit × f_m,d)
 
         Shapes :
@@ -63,14 +71,53 @@ class FlexionSimple(VerificationELU):
             f_m_d_CM : (n_C, n_M) → (1, n_C, n_M)
         """
         # M en kN·m → σ en MPa : (kN·m) / (cm³) × 1e3 = MPa
-        W_y: np.ndarray = espace.W_y_cm3_arr[np.newaxis, np.newaxis, :]  # (1, 1, n_M)
-        sigma_m_y: np.ndarray = espace.M_d_kNm / W_y * 1e3  # (n_L, n_C, n_M) [MPa]
+        W_y: np.ndarray = espace.W_y_cm3_arr[np.newaxis, np.newaxis, :]        # (1, 1, n_M)
+        sigma_m_y: np.ndarray = espace.M_d_kNm / W_y * 1e3                    # (n_L, n_C, n_M) [MPa]
 
-        k_crit: np.ndarray = espace.k_crit_LM[:, np.newaxis, :]  # (n_L, 1, n_M)
-        f_m_d: np.ndarray = espace.f_m_d_CM[np.newaxis, :, :]  # (1, n_C, n_M)
+        k_crit: np.ndarray = espace.k_crit_LM[:, np.newaxis, :]               # (n_L, 1, n_M)
+        f_m_d: np.ndarray = espace.f_m_d_CM[np.newaxis, :, :]                 # (1, n_C, n_M)
 
         taux: np.ndarray = sigma_m_y / (k_crit * f_m_d)
         active: np.ndarray = np.ones_like(taux, dtype=bool)
+
+        return ResultatVerification(self.id_verification, taux, active)
+
+
+class FlexionAxeFaible(VerificationELU):
+    """Flexion axe faible (rampant) — EC5 §6.1.6 Eq.(6.12).
+
+    σ_m,z,d / f_m,d ≤ 1.0
+
+    Active uniquement si la double flexion est activée (M_z_kNm non None).
+    Pas de réduction k_crit sur l'axe faible (déversement hors plan non applicable).
+    """
+
+    @property
+    def id_verification(self) -> str:
+        return "FlexionAxeFaible"
+
+    @property
+    def article_ec5(self) -> str:
+        return "EC5 §6.1.6 Eq.(6.12)"
+
+    def calculer(self, espace) -> ResultatVerification:
+        """Active uniquement si M_z_kNm est non None.
+
+        σ_m,z,d = M_z / W_z   [MPa]
+        Taux = σ_m,z,d / f_m,d
+        """
+        if espace.M_z_kNm is None:
+            n_L, n_C, n_M = espace.M_d_kNm.shape
+            zeros: np.ndarray = np.zeros((n_L, n_C, n_M))
+            active: np.ndarray = np.zeros((n_L, n_C, n_M), dtype=bool)
+            return ResultatVerification(self.id_verification, zeros, active)
+
+        W_z: np.ndarray = espace.W_z_cm3_arr[np.newaxis, np.newaxis, :]    # (1, 1, n_M)
+        f_m_d: np.ndarray = espace.f_m_d_CM[np.newaxis, :, :]              # (1, n_C, n_M)
+
+        sigma_m_z: np.ndarray = espace.M_z_kNm / W_z * 1e3                # (n_L, n_C, n_M) [MPa]
+        taux: np.ndarray = sigma_m_z / f_m_d
+        active = np.ones_like(taux, dtype=bool)
 
         return ResultatVerification(self.id_verification, taux, active)
 

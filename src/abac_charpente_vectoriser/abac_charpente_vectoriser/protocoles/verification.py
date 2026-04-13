@@ -35,11 +35,20 @@ class ResultatVerification:
         0.0 = vérification inactive pour cette combinaison/matériau.
     active_LCM:
         Masque booléen ``(n_L, n_C, n_M)`` — True si la vérification s'applique.
+    valeur_intermediaire:
+        Valeur physique associée au taux, de même forme ``(n_L, n_C, n_M)``.
+        ELU : contrainte déterminante en MPa.
+        ELS : flèche en mm.
+        None si la vérification ne renseigne pas de valeur intermédiaire.
+    unite_intermediaire:
+        Unité de ``valeur_intermediaire`` (ex: "MPa", "mm", "—"). None si absent.
     """
 
     id_verification: str
     taux_LCM: np.ndarray
     active_LCM: np.ndarray
+    valeur_intermediaire: np.ndarray | None = None
+    unite_intermediaire: str | None = None
 
 
 class VerificationELU(ABC):

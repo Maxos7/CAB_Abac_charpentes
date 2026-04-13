@@ -31,6 +31,7 @@ import numpy as np
 import pandas as pd
 
 from ..ec5.proprietes import (
+    calculer_k_c_LM,
     calculer_k_crit_LM,
     calculer_kdef_arr,
     calculer_resistances_CM,
@@ -61,9 +62,14 @@ def _charger_limites_fleche(usage: str) -> dict[str, float | None]:
             f"Valeurs disponibles : {list(df.index)}"
         )
     row: pd.Series = df.loc[usage]
+    # w_inst=0 → vérification Winst,Q désactivée (ex. Chevron simple)
+    w_inst_raw: float = float(row["w_inst"])
+    w_inst: float | None = w_inst_raw if w_inst_raw > 0 else None
+    # w_2=0 → vérification W2 désactivée
     w2: float | None = float(row["w_2"]) if float(row["w_2"]) > 0 else None
     return {
-        "w_inst": float(row["w_inst"]),
+        "w_inst": w_inst,
+        "w_fin_brut": float(row["w_fin_brut"]),
         "w_fin": float(row["w_fin"]),
         "w_2": w2,
     }
@@ -103,6 +109,11 @@ def construire_espace(
     n_C: int = len(combinaisons)
     n_M: int = len(materiaux)
 
+    # Masque ELS : True pour les combinaisons ELS (γ=1.0), False pour ELU.
+    els_mask: np.ndarray = np.array(
+        [c.type_etat_limite == "ELS" for c in combinaisons], dtype=bool
+    )
+
     # Scalaires depuis charges_k
     g_pp_kNm: np.ndarray = charges_k["g_pp_kNm"]  # type: ignore[assignment]
     g_kNm: float = charges_k["g_kNm"]  # type: ignore[assignment]
@@ -122,6 +133,9 @@ def construire_espace(
 
     l_dev_m: np.ndarray = type_poutre.longueur_deversement_m(longueurs_m)
     k_crit_LM: np.ndarray = calculer_k_crit_LM(longueurs_m, materiaux, l_dev_m)
+    k_c_y_LM: np.ndarray
+    k_c_z_LM: np.ndarray
+    k_c_y_LM, k_c_z_LM = calculer_k_c_LM(longueurs_m, materiaux)
 
     # ── Tenseur des charges de calcul (n_L, n_C, n_M) ───────────────────────────
     # Shapes pour broadcast :
@@ -187,17 +201,13 @@ def construire_espace(
     N_d_LCM: np.ndarray | None = type_poutre.effort_normal_kN(longueurs_m, n_C, n_M)
 
     # ── Charge permanente quasi-permanente pour ELS fluage ───────────────────────
-    q_G_qperm_LCM: np.ndarray = (g_pp_kNm[np.newaxis, np.newaxis, :] + g_kNm) * np.ones(
-        (n_L, 1, n_M)
-    )
+    q_G_qperm_LCM: np.ndarray = (g_pp_kNm[np.newaxis, np.newaxis, :] + g_kNm) * np.ones((n_L, 1, n_M))
 
     # ── Limites ELS ──────────────────────────────────────────────────────────────
     limites: dict[str, float | None] = _charger_limites_fleche(config.usage)
-    lim_inst: float = config.limite_fleche_inst or limites["w_inst"]  # type: ignore[assignment]
-    lim_fin: float = config.limite_fleche_fin or limites["w_fin"]  # type: ignore[assignment]
-    lim_2: float | None = config.limite_fleche_2 or (
-        limites["w_2"] if config.second_oeuvre else None
-    )
+    lim_inst: float = config.limite_fleche_inst or limites["w_inst"]   # type: ignore[assignment]
+    lim_fin: float = config.limite_fleche_fin or limites["w_fin"]      # type: ignore[assignment]
+    lim_2: float | None = config.limite_fleche_2 or (limites["w_2"] if config.second_oeuvre else None)
 
     # ── Propriétés de section en vecteurs ────────────────────────────────────────
     A_eff_arr: np.ndarray = np.array(
@@ -234,19 +244,26 @@ def construire_espace(
         f_c90_d_CM=resistances["f_c90_d_CM"],
         f_t0_d_CM=resistances["f_t0_d_CM"],
         f_c0_d_CM=resistances["f_c0_d_CM"],
+        f_t90_d_CM=resistances["f_t90_d_CM"],
         k_def_arr=k_def_arr,
         k_crit_LM=k_crit_LM,
+        k_c_y_LM=k_c_y_LM,
+        k_c_z_LM=k_c_z_LM,
         A_eff_cis_cm2_arr=A_eff_arr,
         W_y_cm3_arr=W_y_arr,
         W_z_cm3_arr=W_z_arr,
         I_y_cm4_arr=I_y_arr,
         I_z_cm4_arr=I_z_arr,
         E_mean_MPa_arr=E_arr,
-        limite_fleche_inst=float(lim_inst),
+        limite_fleche_inst=float(lim_inst) if lim_inst is not None else None,
+        limite_fleche_fin_brut=lim_fin_brut,
         limite_fleche_fin=float(lim_fin),
         limite_fleche_2=float(lim_2) if lim_2 is not None else None,
         longueur_appui_mm=float(_sc(config.longueur_appui_mm)),
         k_c90=float(_sc(config.k_c90)),
+        fleches_double=config.fleches_double or config.double_flexion,
+        contre_fleche_mm=float(config.contre_fleche_mm),
+        els_mask=els_mask,
     )
 
 
