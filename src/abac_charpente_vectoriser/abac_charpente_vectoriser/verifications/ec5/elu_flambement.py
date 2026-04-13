@@ -55,7 +55,7 @@ class FlambementAxeFort(VerificationELU):
 
         A: np.ndarray = np.array([m.A_cm2 for m in espace.materiaux], dtype=float)
         A_11M: np.ndarray = A[np.newaxis, np.newaxis, :]
-        k_c_y: np.ndarray = espace.k_c_y_LM[:, np.newaxis, :]    # (n_L, 1, n_M)
+        k_c_y: np.ndarray = espace.k_c_y_LM[:, np.newaxis, :]  # (n_L, 1, n_M)
         f_c0_d: np.ndarray = espace.f_c0_d_CM[np.newaxis, :, :]  # (1, n_C, n_M)
 
         N_d: np.ndarray = espace.N_d_kN
@@ -99,7 +99,7 @@ class FlambementAxeFaible(VerificationELU):
 
         A: np.ndarray = np.array([m.A_cm2 for m in espace.materiaux], dtype=float)
         A_11M: np.ndarray = A[np.newaxis, np.newaxis, :]
-        k_c_z: np.ndarray = espace.k_c_z_LM[:, np.newaxis, :]    # (n_L, 1, n_M)
+        k_c_z: np.ndarray = espace.k_c_z_LM[:, np.newaxis, :]  # (n_L, 1, n_M)
         f_c0_d: np.ndarray = espace.f_c0_d_CM[np.newaxis, :, :]  # (1, n_C, n_M)
 
         N_d: np.ndarray = espace.N_d_kN

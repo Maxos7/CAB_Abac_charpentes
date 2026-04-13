@@ -508,21 +508,33 @@ def run(
                 )
 
             # Synthèse
-            resultats = synthetiser(longueurs_m, taux_elu, taux_els, materiaux_filtres, config)
+            resultats = synthetiser(
+                longueurs_m, taux_elu, taux_els, materiaux_filtres, config
+            )
             resultats_config.extend(resultats)
 
             # Accumulation abaque complet (global)
             df_combo: pd.DataFrame = construire_df_complet(
-                longueurs_m, taux_elu, taux_els, materiaux_filtres, config,
-                combo_elu=combo_elu, combo_els=combo_els,
+                longueurs_m,
+                taux_elu,
+                taux_els,
+                materiaux_filtres,
+                config,
+                combo_elu=combo_elu,
+                combo_els=combo_els,
             )
             tous_df_complet.append(df_combo)
 
             # Sauvegarde tenseurs DuckDB optionnelle
             if store_tenseurs is not None:
                 store_tenseurs.sauvegarder(
-                    id_unique, longueurs_m, taux_elu, taux_els, materiaux_filtres,
-                    combo_elu=combo_elu, combo_els=combo_els,
+                    id_unique,
+                    longueurs_m,
+                    taux_elu,
+                    taux_els,
+                    materiaux_filtres,
+                    combo_elu=combo_elu,
+                    combo_els=combo_els,
                 )
                 logger.debug(f"    Tenseurs sauvegardés dans tenseurs.duckdb")
 

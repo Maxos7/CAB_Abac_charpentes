@@ -57,8 +57,8 @@ def verifier_elu(
     for verif in VERIFICATIONS_ELU:
         res = verif.calculer(espace)
         # Sélection des combinaisons ELU et max sur l'axe 1
-        taux_elu: np.ndarray = res.taux_LCM[:, idx_elu, :]          # (n_L, n_C_elu, n_M)
-        taux_max: np.ndarray = np.max(taux_elu, axis=1)              # (n_L, n_M)
+        taux_elu: np.ndarray = res.taux_LCM[:, idx_elu, :]  # (n_L, n_C_elu, n_M)
+        taux_max: np.ndarray = np.max(taux_elu, axis=1)  # (n_L, n_M)
         resultats[verif.id_verification] = taux_max
 
     return taux_resultats, combo_resultats

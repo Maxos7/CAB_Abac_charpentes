@@ -62,7 +62,9 @@ class CompressionOblique(VerificationELU):
         zeros: np.ndarray = np.zeros((n_L, n_C, n_M))
         false_mask: np.ndarray = np.zeros((n_L, n_C, n_M), dtype=bool)
 
-        if espace.pente_rad is None or math.isclose(espace.pente_rad, 0.0, abs_tol=1e-6):
+        if espace.pente_rad is None or math.isclose(
+            espace.pente_rad, 0.0, abs_tol=1e-6
+        ):
             return ResultatVerification(self.id_verification, zeros, false_mask)
 
         alpha: float = espace.pente_rad
@@ -71,8 +73,12 @@ class CompressionOblique(VerificationELU):
 
         # Largeur de section [mm] par matériau
         b_arr: np.ndarray = np.array(
-            [m.b_mm if m.b_mm is not None else (m.A_cm2 * 100.0 / (m.h_mm if m.h_mm else 100.0))
-             for m in espace.materiaux],
+            [
+                m.b_mm
+                if m.b_mm is not None
+                else (m.A_cm2 * 100.0 / (m.h_mm if m.h_mm else 100.0))
+                for m in espace.materiaux
+            ],
             dtype=float,
         )  # (n_M,)
 
@@ -81,10 +87,12 @@ class CompressionOblique(VerificationELU):
         A_appui_11M: np.ndarray = A_appui_mm2[np.newaxis, np.newaxis, :]  # (1, 1, n_M)
 
         # Contrainte de compression oblique à l'appui [MPa]
-        sigma_c_alpha: np.ndarray = espace.V_d_kN * 1000.0 / A_appui_11M  # (n_L, n_C, n_M)
+        sigma_c_alpha: np.ndarray = (
+            espace.V_d_kN * 1000.0 / A_appui_11M
+        )  # (n_L, n_C, n_M)
 
         # Résistance Hankinson [MPa]
-        f_c0_d: np.ndarray = espace.f_c0_d_CM[np.newaxis, :, :]   # (1, n_C, n_M)
+        f_c0_d: np.ndarray = espace.f_c0_d_CM[np.newaxis, :, :]  # (1, n_C, n_M)
         f_c90_d: np.ndarray = espace.f_c90_d_CM[np.newaxis, :, :]  # (1, n_C, n_M)
         f_c_alpha_d: np.ndarray = (f_c0_d * f_c90_d) / (f_c0_d * sin2 + f_c90_d * cos2)
 

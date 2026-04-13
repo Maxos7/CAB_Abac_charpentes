@@ -169,9 +169,9 @@ class EspaceCombinaisonTenseur:
 
     # Propriétés EC5 (n_M,)
     k_def_arr: np.ndarray
-    k_crit_LM: np.ndarray   # (n_L, n_M)
-    k_c_y_LM: np.ndarray    # (n_L, n_M) — facteur de flambement axe fort (EC5 §6.3.2)
-    k_c_z_LM: np.ndarray    # (n_L, n_M) — facteur de flambement axe faible (EC5 §6.3.2)
+    k_crit_LM: np.ndarray  # (n_L, n_M)
+    k_c_y_LM: np.ndarray  # (n_L, n_M) — facteur de flambement axe fort (EC5 §6.3.2)
+    k_c_z_LM: np.ndarray  # (n_L, n_M) — facteur de flambement axe faible (EC5 §6.3.2)
     A_eff_cis_cm2_arr: np.ndarray
     W_y_cm3_arr: np.ndarray
     W_z_cm3_arr: np.ndarray
@@ -180,18 +180,18 @@ class EspaceCombinaisonTenseur:
     E_mean_MPa_arr: np.ndarray
 
     # Limites ELS
-    limite_fleche_inst: float | None   # None = Winst,Q désactivée (ex. Chevron)
-    limite_fleche_fin_brut: float      # Wfin brut (avant contre-flèche) — toujours actif
-    limite_fleche_fin: float           # Wnet,fin (après contre-flèche)
-    limite_fleche_2: float | None      # None = W2 désactivée
+    limite_fleche_inst: float | None  # None = Winst,Q désactivée (ex. Chevron)
+    limite_fleche_fin_brut: float  # Wfin brut (avant contre-flèche) — toujours actif
+    limite_fleche_fin: float  # Wnet,fin (après contre-flèche)
+    limite_fleche_2: float | None  # None = W2 désactivée
 
     # Paramètres vérification appui
     longueur_appui_mm: float
     k_c90: float
 
     # Paramètres ELS flèche avancés
-    fleches_double: bool        # config.fleches_double OR config.double_flexion
-    contre_fleche_mm: float     # pré-cambrure à soustraire de w_fin et w_2 [mm]
+    fleches_double: bool  # config.fleches_double OR config.double_flexion
+    contre_fleche_mm: float  # pré-cambrure à soustraire de w_fin et w_2 [mm]
 
     # Masque ELS — (n_C,) bool — True pour les combinaisons ELS (γ=1.0), False pour ELU
     # Utilisé dans els_fleche.py pour ne calculer q_Q que sur les combinaisons ELS caractéristiques.

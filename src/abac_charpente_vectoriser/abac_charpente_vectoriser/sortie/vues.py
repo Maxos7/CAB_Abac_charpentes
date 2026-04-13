@@ -144,7 +144,8 @@ def _produire_agregation(
     """
     # Exclure les colonnes *_combo (strings) — seules les colonnes numériques de taux
     taux_cols: list[str] = [
-        c for c in df.columns
+        c
+        for c in df.columns
         if c.startswith(("elu_", "els_")) and not c.endswith("_combo")
     ]
 

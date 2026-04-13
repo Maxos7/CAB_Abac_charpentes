@@ -85,12 +85,12 @@ def _fleche_inst_bi_appui(
         Flèche instantanée en mm — broadcast vers ``(n_L, n_C, n_M)``.
     """
     # Conversions vers unités cohérentes [N, mm]
-    q_Nmm: np.ndarray = q_kNm * 1000.0 / 1000.0    # kN/m → N/mm
-    L_mm: np.ndarray = L_m[:, np.newaxis, np.newaxis] * 1000.0   # m → mm, (n_L, 1, 1)
-    E_Nmm2: np.ndarray = E_MPa[np.newaxis, np.newaxis, :]         # MPa = N/mm², (1, 1, n_M)
-    I_mm4: np.ndarray = I_cm4[np.newaxis, np.newaxis, :] * 1e4   # cm⁴ → mm⁴, (1, 1, n_M)
+    q_Nmm: np.ndarray = q_kNm * 1000.0 / 1000.0  # kN/m → N/mm
+    L_mm: np.ndarray = L_m[:, np.newaxis, np.newaxis] * 1000.0  # m → mm, (n_L, 1, 1)
+    E_Nmm2: np.ndarray = E_MPa[np.newaxis, np.newaxis, :]  # MPa = N/mm², (1, 1, n_M)
+    I_mm4: np.ndarray = I_cm4[np.newaxis, np.newaxis, :] * 1e4  # cm⁴ → mm⁴, (1, 1, n_M)
 
-    return 5.0 * q_Nmm * L_mm**4 / (384.0 * E_Nmm2 * I_mm4)   # [mm]
+    return 5.0 * q_Nmm * L_mm**4 / (384.0 * E_Nmm2 * I_mm4)  # [mm]
 
 
 class FlecheInst(VerificationELS):
@@ -129,8 +129,11 @@ class FlecheInst(VerificationELS):
         active: np.ndarray = np.ones_like(taux, dtype=bool)
 
         return ResultatVerification(
-            self.id_verification, taux, active,
-            valeur_intermediaire=w_comb, unite_intermediaire="mm",
+            self.id_verification,
+            taux,
+            active,
+            valeur_intermediaire=w_comb,
+            unite_intermediaire="mm",
         )
 
 
@@ -168,8 +171,11 @@ class FlecheInstY(VerificationELS):
         active: np.ndarray = np.ones_like(taux, dtype=bool)
 
         return ResultatVerification(
-            self.id_verification, taux, active,
-            valeur_intermediaire=w_y, unite_intermediaire="mm",
+            self.id_verification,
+            taux,
+            active,
+            valeur_intermediaire=w_y,
+            unite_intermediaire="mm",
         )
 
 
@@ -210,8 +216,11 @@ class FlecheInstZ(VerificationELS):
         active: np.ndarray = np.ones_like(taux, dtype=bool)
 
         return ResultatVerification(
-            self.id_verification, taux, active,
-            valeur_intermediaire=w_z, unite_intermediaire="mm",
+            self.id_verification,
+            taux,
+            active,
+            valeur_intermediaire=w_z,
+            unite_intermediaire="mm",
         )
 
 
@@ -246,8 +255,11 @@ class FlecheFinBrute(VerificationELS):
         active: np.ndarray = np.ones_like(taux, dtype=bool)
 
         return ResultatVerification(
-            self.id_verification, taux, active,
-            valeur_intermediaire=w_fin_comb, unite_intermediaire="mm",
+            self.id_verification,
+            taux,
+            active,
+            valeur_intermediaire=w_fin_comb,
+            unite_intermediaire="mm",
         )
 
 
@@ -269,9 +281,9 @@ class FlecheFinBruteY(VerificationELS):
 
     def calculer(self, espace) -> ResultatVerification:
         L_m: np.ndarray = espace.longueurs_m
-        E: np.ndarray = espace.E_mean_MPa_arr          # (n_M,)
-        I_y: np.ndarray = espace.I_y_cm4_arr           # (n_M,)
-        lim: float = espace.limite_fleche_inst         # L/x
+        E: np.ndarray = espace.E_mean_MPa_arr  # (n_M,)
+        I_y: np.ndarray = espace.I_y_cm4_arr  # (n_M,)
+        lim: float = espace.limite_fleche_inst  # L/x
 
         # Charge sur axe fort (ou totale si pas de double flexion)
         q_y: np.ndarray = (
@@ -280,11 +292,15 @@ class FlecheFinBruteY(VerificationELS):
             else espace.q_d_kNm
         )
 
-        w_y: np.ndarray = _fleche_inst_bi_appui(q_y, L_m, E, I_y)  # (n_L, n_C, n_M) [mm]
+        w_y: np.ndarray = _fleche_inst_bi_appui(
+            q_y, L_m, E, I_y
+        )  # (n_L, n_C, n_M) [mm]
 
         if espace.M_z_kNm is not None:
             I_z: np.ndarray = espace.I_z_cm4_arr
-            q_z: np.ndarray = espace.M_z_kNm * 8.0 / (L_m[:, np.newaxis, np.newaxis] ** 2)
+            q_z: np.ndarray = (
+                espace.M_z_kNm * 8.0 / (L_m[:, np.newaxis, np.newaxis] ** 2)
+            )
             w_z: np.ndarray = _fleche_inst_bi_appui(q_z, L_m, E, I_z)
             w_inst: np.ndarray = np.sqrt(w_y**2 + w_z**2)
         else:
@@ -297,13 +313,18 @@ class FlecheFinBruteY(VerificationELS):
         else:
             L_ref = L_m
 
-        limite_mm: np.ndarray = (L_ref * 1000.0 / lim)[:, np.newaxis, np.newaxis]   # (n_L, 1, 1) [mm]
+        limite_mm: np.ndarray = (L_ref * 1000.0 / lim)[
+            :, np.newaxis, np.newaxis
+        ]  # (n_L, 1, 1) [mm]
         taux: np.ndarray = w_inst / limite_mm
         active: np.ndarray = np.ones_like(taux, dtype=bool)
 
         return ResultatVerification(
-            self.id_verification, taux, active,
-            valeur_intermediaire=w_fin_z, unite_intermediaire="mm",
+            self.id_verification,
+            taux,
+            active,
+            valeur_intermediaire=w_fin_z,
+            unite_intermediaire="mm",
         )
 
 
@@ -343,8 +364,11 @@ class FlecheFin(VerificationELS):
         active: np.ndarray = np.ones_like(taux, dtype=bool)
 
         return ResultatVerification(
-            self.id_verification, taux, active,
-            valeur_intermediaire=w_net, unite_intermediaire="mm",
+            self.id_verification,
+            taux,
+            active,
+            valeur_intermediaire=w_net,
+            unite_intermediaire="mm",
         )
 
 
@@ -368,7 +392,7 @@ class FlecheFinY(VerificationELS):
         L_m: np.ndarray = espace.longueurs_m
         E: np.ndarray = espace.E_mean_MPa_arr
         I_y: np.ndarray = espace.I_y_cm4_arr
-        k_def: np.ndarray = espace.k_def_arr           # (n_M,)
+        k_def: np.ndarray = espace.k_def_arr  # (n_M,)
         lim: float = espace.limite_fleche_fin
 
         q_y: np.ndarray = (
@@ -382,9 +406,13 @@ class FlecheFinY(VerificationELS):
 
         if espace.M_z_kNm is not None:
             I_z: np.ndarray = espace.I_z_cm4_arr
-            q_z: np.ndarray = espace.M_z_kNm * 8.0 / (L_m[:, np.newaxis, np.newaxis] ** 2)
+            q_z: np.ndarray = (
+                espace.M_z_kNm * 8.0 / (L_m[:, np.newaxis, np.newaxis] ** 2)
+            )
             w_z: np.ndarray = _fleche_inst_bi_appui(q_z, L_m, E, I_z)
-            w_fin: np.ndarray = np.sqrt((w_y * (1.0 + k_def_11M))**2 + (w_z * (1.0 + k_def_11M))**2)
+            w_fin: np.ndarray = np.sqrt(
+                (w_y * (1.0 + k_def_11M)) ** 2 + (w_z * (1.0 + k_def_11M)) ** 2
+            )
         else:
             w_fin = w_y * (1.0 + k_def_11M)
 
@@ -399,8 +427,11 @@ class FlecheFinY(VerificationELS):
         active: np.ndarray = np.ones_like(taux, dtype=bool)
 
         return ResultatVerification(
-            self.id_verification, taux, active,
-            valeur_intermediaire=w_net_z, unite_intermediaire="mm",
+            self.id_verification,
+            taux,
+            active,
+            valeur_intermediaire=w_net_z,
+            unite_intermediaire="mm",
         )
 
 
@@ -446,8 +477,11 @@ class FlecheSecondOeuvre(VerificationELS):
         active: np.ndarray = np.ones((n_L, n_C, n_M), dtype=bool)
 
         return ResultatVerification(
-            self.id_verification, taux, active,
-            valeur_intermediaire=w2_net, unite_intermediaire="mm",
+            self.id_verification,
+            taux,
+            active,
+            valeur_intermediaire=w2_net,
+            unite_intermediaire="mm",
         )
 
 
@@ -484,9 +518,17 @@ class FlecheSecondOeuvreY(VerificationELS):
         w_G: np.ndarray = _fleche_inst_bi_appui(q_G_LCM, L_m, E, I_y)
 
         # Flèche due à G2 (scalaire → broadcast)
-        q_G2_Nmm: float = float(espace.q_G2_kNm)   # kN/m → N/mm (déjà linéique)
-        w_G2: np.ndarray = 5.0 * q_G2_Nmm * (L_m[:, np.newaxis, np.newaxis] * 1000.0)**4 / (
-            384.0 * E[np.newaxis, np.newaxis, :] * I_y[np.newaxis, np.newaxis, :] * 1e4
+        q_G2_Nmm: float = float(espace.q_G2_kNm)  # kN/m → N/mm (déjà linéique)
+        w_G2: np.ndarray = (
+            5.0
+            * q_G2_Nmm
+            * (L_m[:, np.newaxis, np.newaxis] * 1000.0) ** 4
+            / (
+                384.0
+                * E[np.newaxis, np.newaxis, :]
+                * I_y[np.newaxis, np.newaxis, :]
+                * 1e4
+            )
         )
 
         # Flèche due aux charges variables (quasi-permanente pour w_Q,fin)
@@ -517,6 +559,9 @@ class FlecheSecondOeuvreY(VerificationELS):
         active: np.ndarray = np.ones((n_L, n_C, n_M), dtype=bool)
 
         return ResultatVerification(
-            self.id_verification, taux, active,
-            valeur_intermediaire=w2_net_z, unite_intermediaire="mm",
+            self.id_verification,
+            taux,
+            active,
+            valeur_intermediaire=w2_net_z,
+            unite_intermediaire="mm",
         )

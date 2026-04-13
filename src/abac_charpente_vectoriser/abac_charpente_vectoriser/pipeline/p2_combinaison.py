@@ -201,13 +201,17 @@ def construire_espace(
     N_d_LCM: np.ndarray | None = type_poutre.effort_normal_kN(longueurs_m, n_C, n_M)
 
     # ── Charge permanente quasi-permanente pour ELS fluage ───────────────────────
-    q_G_qperm_LCM: np.ndarray = (g_pp_kNm[np.newaxis, np.newaxis, :] + g_kNm) * np.ones((n_L, 1, n_M))
+    q_G_qperm_LCM: np.ndarray = (g_pp_kNm[np.newaxis, np.newaxis, :] + g_kNm) * np.ones(
+        (n_L, 1, n_M)
+    )
 
     # ── Limites ELS ──────────────────────────────────────────────────────────────
     limites: dict[str, float | None] = _charger_limites_fleche(config.usage)
-    lim_inst: float = config.limite_fleche_inst or limites["w_inst"]   # type: ignore[assignment]
-    lim_fin: float = config.limite_fleche_fin or limites["w_fin"]      # type: ignore[assignment]
-    lim_2: float | None = config.limite_fleche_2 or (limites["w_2"] if config.second_oeuvre else None)
+    lim_inst: float = config.limite_fleche_inst or limites["w_inst"]  # type: ignore[assignment]
+    lim_fin: float = config.limite_fleche_fin or limites["w_fin"]  # type: ignore[assignment]
+    lim_2: float | None = config.limite_fleche_2 or (
+        limites["w_2"] if config.second_oeuvre else None
+    )
 
     # ── Propriétés de section en vecteurs ────────────────────────────────────────
     A_eff_arr: np.ndarray = np.array(

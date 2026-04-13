@@ -54,8 +54,8 @@ def verifier_els(
     for verif in VERIFICATIONS_ELS:
         res = verif.calculer(espace)
         # Sélection des combinaisons ELS et max sur l'axe 1
-        taux_els: np.ndarray = res.taux_LCM[:, idx_els, :]          # (n_L, n_C_els, n_M)
-        taux_max: np.ndarray = np.max(taux_els, axis=1)              # (n_L, n_M)
+        taux_els: np.ndarray = res.taux_LCM[:, idx_els, :]  # (n_L, n_C_els, n_M)
+        taux_max: np.ndarray = np.max(taux_els, axis=1)  # (n_L, n_M)
         resultats[verif.id_verification] = taux_max
 
     return taux_resultats, combo_resultats

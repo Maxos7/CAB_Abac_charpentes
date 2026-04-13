@@ -71,11 +71,11 @@ class FlexionAxeFort(VerificationELU):
             f_m_d_CM : (n_C, n_M) → (1, n_C, n_M)
         """
         # M en kN·m → σ en MPa : (kN·m) / (cm³) × 1e3 = MPa
-        W_y: np.ndarray = espace.W_y_cm3_arr[np.newaxis, np.newaxis, :]        # (1, 1, n_M)
-        sigma_m_y: np.ndarray = espace.M_d_kNm / W_y * 1e3                    # (n_L, n_C, n_M) [MPa]
+        W_y: np.ndarray = espace.W_y_cm3_arr[np.newaxis, np.newaxis, :]  # (1, 1, n_M)
+        sigma_m_y: np.ndarray = espace.M_d_kNm / W_y * 1e3  # (n_L, n_C, n_M) [MPa]
 
-        k_crit: np.ndarray = espace.k_crit_LM[:, np.newaxis, :]               # (n_L, 1, n_M)
-        f_m_d: np.ndarray = espace.f_m_d_CM[np.newaxis, :, :]                 # (1, n_C, n_M)
+        k_crit: np.ndarray = espace.k_crit_LM[:, np.newaxis, :]  # (n_L, 1, n_M)
+        f_m_d: np.ndarray = espace.f_m_d_CM[np.newaxis, :, :]  # (1, n_C, n_M)
 
         taux: np.ndarray = sigma_m_y / (k_crit * f_m_d)
         active: np.ndarray = np.ones_like(taux, dtype=bool)
@@ -112,10 +112,10 @@ class FlexionAxeFaible(VerificationELU):
             active: np.ndarray = np.zeros((n_L, n_C, n_M), dtype=bool)
             return ResultatVerification(self.id_verification, zeros, active)
 
-        W_z: np.ndarray = espace.W_z_cm3_arr[np.newaxis, np.newaxis, :]    # (1, 1, n_M)
-        f_m_d: np.ndarray = espace.f_m_d_CM[np.newaxis, :, :]              # (1, n_C, n_M)
+        W_z: np.ndarray = espace.W_z_cm3_arr[np.newaxis, np.newaxis, :]  # (1, 1, n_M)
+        f_m_d: np.ndarray = espace.f_m_d_CM[np.newaxis, :, :]  # (1, n_C, n_M)
 
-        sigma_m_z: np.ndarray = espace.M_z_kNm / W_z * 1e3                # (n_L, n_C, n_M) [MPa]
+        sigma_m_z: np.ndarray = espace.M_z_kNm / W_z * 1e3  # (n_L, n_C, n_M) [MPa]
         taux: np.ndarray = sigma_m_z / f_m_d
         active = np.ones_like(taux, dtype=bool)
 

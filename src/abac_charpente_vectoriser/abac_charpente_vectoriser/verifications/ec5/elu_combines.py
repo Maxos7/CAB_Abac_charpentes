@@ -193,13 +193,14 @@ class FlexionDevComprimeeForte(VerificationELU):
             return ResultatVerification(self.id_verification, zeros, false_mask)
 
         from ..ec5.elu_flexion import _k_m
+
         km: float = _k_m()
 
         A: np.ndarray = np.array([m.A_cm2 for m in espace.materiaux], dtype=float)
         A_11M: np.ndarray = A[np.newaxis, np.newaxis, :]
         W_y: np.ndarray = espace.W_y_cm3_arr[np.newaxis, np.newaxis, :]
         W_z: np.ndarray = espace.W_z_cm3_arr[np.newaxis, np.newaxis, :]
-        k_c_y: np.ndarray = espace.k_c_y_LM[:, np.newaxis, :]    # (n_L, 1, n_M)
+        k_c_y: np.ndarray = espace.k_c_y_LM[:, np.newaxis, :]  # (n_L, 1, n_M)
         f_c0_d: np.ndarray = espace.f_c0_d_CM[np.newaxis, :, :]
         f_m_d: np.ndarray = espace.f_m_d_CM[np.newaxis, :, :]
 
@@ -245,13 +246,14 @@ class FlexionDevComprimeeFaible(VerificationELU):
             return ResultatVerification(self.id_verification, zeros, false_mask)
 
         from ..ec5.elu_flexion import _k_m
+
         km: float = _k_m()
 
         A: np.ndarray = np.array([m.A_cm2 for m in espace.materiaux], dtype=float)
         A_11M: np.ndarray = A[np.newaxis, np.newaxis, :]
         W_y: np.ndarray = espace.W_y_cm3_arr[np.newaxis, np.newaxis, :]
         W_z: np.ndarray = espace.W_z_cm3_arr[np.newaxis, np.newaxis, :]
-        k_c_z: np.ndarray = espace.k_c_z_LM[:, np.newaxis, :]    # (n_L, 1, n_M)
+        k_c_z: np.ndarray = espace.k_c_z_LM[:, np.newaxis, :]  # (n_L, 1, n_M)
         f_c0_d: np.ndarray = espace.f_c0_d_CM[np.newaxis, :, :]
         f_m_d: np.ndarray = espace.f_m_d_CM[np.newaxis, :, :]
 

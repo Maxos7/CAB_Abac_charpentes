@@ -176,17 +176,29 @@ class TenseurDuck:
         for verif_id, arr in taux_elu.items():
             arr_combo = combo_elu[verif_id] if combo_elu is not None else None
             for l_idx, L in enumerate(longueurs_m):
-                taux_rows.append((
-                    id_combo, "ELU", verif_id, float(L),
-                    arr[l_idx].tolist(), horodatage,
-                ))
+                taux_rows.append(
+                    (
+                        id_combo,
+                        "ELU",
+                        verif_id,
+                        float(L),
+                        arr[l_idx].tolist(),
+                        horodatage,
+                    )
+                )
         for verif_id, arr in taux_els.items():
             arr_combo = combo_els[verif_id] if combo_els is not None else None
             for l_idx, L in enumerate(longueurs_m):
-                taux_rows.append((
-                    id_combo, "ELS", verif_id, float(L),
-                    arr[l_idx].tolist(), horodatage,
-                ))
+                taux_rows.append(
+                    (
+                        id_combo,
+                        "ELS",
+                        verif_id,
+                        float(L),
+                        arr[l_idx].tolist(),
+                        horodatage,
+                    )
+                )
 
         self._conn.executemany(
             "INSERT INTO taux VALUES (?, ?, ?, ?, ?, ?, ?)",
