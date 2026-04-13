@@ -107,6 +107,11 @@ def construire_espace(
     n_C: int = len(combinaisons)
     n_M: int = len(materiaux)
 
+    # Masque ELS : True pour les combinaisons ELS (γ=1.0), False pour ELU.
+    els_mask: np.ndarray = np.array(
+        [c.type_etat_limite == "ELS" for c in combinaisons], dtype=bool
+    )
+
     # Scalaires depuis charges_k
     g_pp_kNm: np.ndarray = charges_k["g_pp_kNm"]  # type: ignore[assignment]
     g_kNm: float = charges_k["g_kNm"]              # type: ignore[assignment]
@@ -186,10 +191,10 @@ def construire_espace(
     N_d_LCM: np.ndarray | None = type_poutre.effort_normal_kN(longueurs_m, n_C, n_M)
 
     # ── Charge permanente quasi-permanente pour ELS fluage ───────────────────────
-    # g2_kNm est inclus dans g_kNm (second œuvre compris dans la charge G totale).
-    # On retranche g2 pour obtenir la part premier œuvre seule (w_G),
-    # g2 étant traité séparément via q_G2_kNm dans la formule w_2.
-    q_G_qperm_LCM: np.ndarray = (g_pp_kNm[np.newaxis, np.newaxis, :] + g_kNm - g2_kNm) * np.ones((n_L, 1, n_M))
+    # q_G = poids propre + charges permanentes couverture G (sans G2).
+    # g_kNm = g_k × entraxe (couverture seule — p1_charges.py L68, SANS G2).
+    # g2_kNm est traité séparément via espace.q_G2_kNm dans FlecheSecondOeuvre.
+    q_G_qperm_LCM: np.ndarray = (g_pp_kNm[np.newaxis, np.newaxis, :] + g_kNm) * np.ones((n_L, 1, n_M))
 
     # ── Limites ELS ──────────────────────────────────────────────────────────────
     limites: dict[str, float | None] = _charger_limites_fleche(config.usage)
@@ -254,6 +259,7 @@ def construire_espace(
         k_c90=float(_sc(config.k_c90)),
         fleches_double=config.fleches_double or config.double_flexion,
         contre_fleche_mm=float(config.contre_fleche_mm),
+        els_mask=els_mask,
     )
 
 

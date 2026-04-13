@@ -158,32 +158,31 @@ longueur_appui_mm          = 50.0
 # -----------------------------------------------------------------------------
 # Solive de plancher — chargement vertical, pas de pente
 # -----------------------------------------------------------------------------
-#[[config_calcul]]
-#id_config_calcul = "SOLIVE_PLANCHER"
-#type_poutre       = "Solive"
-#usage             = "plancher_courant"
-#
-#L_min_m           = 2.0
-#L_max_m           = 6.0
-#pas_longueur_m    = 0.25
-#
-#pente_deg         = 0.0
-#entraxe_m         = [0.40, 0.50, 0.60]
-#classe_service    = 1
-#
-#g_k_kNm2          = 0.50       # chape + revêtement
-#g2_k_kNm2         = 0.20       # cloisons légères (charge fragile)
-#q_k_kNm2          = 1.50       # habitation (catégorie A)
-#categorie_q       = "A"
-#s_k_kNm2          = 0.0
-#w_k_kNm2          = 0.0
-#
-#second_oeuvre              = true
-#longueur_appui_mm          = 50.0
-#entraxe_antideversement_mm = 0.0
-#
-#  [[config_calcul.filtres]]
-#  champ     = "classe_resistance"
-#  operateur = "in"
-#  valeur    = ["C24", "C30"]
-#
+[[config_calcul]]
+id_config_calcul = "SOLIVE_PLANCHER"
+type_poutre       = "Solive"
+usage             = "plancher_courant"
+
+L_min_m           = 2.0
+L_max_m           = 6.0
+pas_longueur_m    = 0.25
+
+pente_deg         = 0.0
+entraxe_m         = [0.60]
+classe_service    = 1
+
+g_k_kNm2          = 0.50       # chape + revêtement
+g2_k_kNm2         = 0.20       # cloisons légères (charge fragile)
+q_k_kNm2          = 1.50       # habitation (catégorie A)
+categorie_q       = "A"
+s_k_kNm2          = 0.0
+w_k_kNm2          = 0.0
+
+second_oeuvre              = true
+longueur_appui_mm          = 50.0
+entraxe_antideversement_mm = 0.0
+
+  [[config_calcul.filtres]]
+  champ     = "classe_resistance"
+  operateur = "in"
+  valeur    = ["C24","GT24", "GL24h"]

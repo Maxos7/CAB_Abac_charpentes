@@ -192,3 +192,7 @@ class EspaceCombinaisonTenseur:
     # Paramètres ELS flèche avancés
     fleches_double: bool        # config.fleches_double OR config.double_flexion
     contre_fleche_mm: float     # pré-cambrure à soustraire de w_fin et w_2 [mm]
+
+    # Masque ELS — (n_C,) bool — True pour les combinaisons ELS (γ=1.0), False pour ELU
+    # Utilisé dans els_fleche.py pour ne calculer q_Q que sur les combinaisons ELS caractéristiques.
+    els_mask: np.ndarray
