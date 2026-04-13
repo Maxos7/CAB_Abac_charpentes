@@ -24,7 +24,9 @@ from importlib.resources import files
 
 def _charger_materiaux_bois() -> pd.DataFrame:
     """Charge la table des propriétés mécaniques depuis donnees/materiaux_bois.csv."""
-    chemin: str = str(files("abac_charpente_vectoriser.donnees").joinpath("materiaux_bois.csv"))
+    chemin: str = str(
+        files("abac_charpente_vectoriser.donnees").joinpath("materiaux_bois.csv")
+    )
     return pd.read_csv(chemin, sep=";", comment="#")
 
 
@@ -63,11 +65,17 @@ def charger_depuis_csv(
 
     # Exclure les lignes sans classe_resistance valide (produits exclus du filtrage SAPEG)
     if "statut_filtre" in df_stock.columns:
-        df_stock = df_stock[df_stock["statut_filtre"] == "retenu"].reset_index(drop=True)
+        df_stock = df_stock[df_stock["statut_filtre"] == "retenu"].reset_index(
+            drop=True
+        )
     elif "statut_ingestion" in df_stock.columns:
-        df_stock = df_stock[df_stock["statut_ingestion"] == "valide"].reset_index(drop=True)
+        df_stock = df_stock[df_stock["statut_ingestion"] == "valide"].reset_index(
+            drop=True
+        )
     else:
-        df_stock = df_stock[df_stock["classe_resistance"].notna()].reset_index(drop=True)
+        df_stock = df_stock[df_stock["classe_resistance"].notna()].reset_index(
+            drop=True
+        )
 
     df_mat: pd.DataFrame = _charger_materiaux_bois().set_index("classe")
 
@@ -84,7 +92,9 @@ def charger_depuis_csv(
         props_mat: pd.Series = df_mat.loc[classe]
         props_section: dict[str, float] = deriver_section_rect(b_mm, h_mm)
 
-        if "id_config_materiau" in df_stock.columns and not pd.isna(ligne["id_config_materiau"]):
+        if "id_config_materiau" in df_stock.columns and not pd.isna(
+            ligne["id_config_materiau"]
+        ):
             id_mat: str = str(ligne["id_config_materiau"])
         else:
             id_mat = f"{classe}_{int(b_mm)}x{int(h_mm)}"
@@ -100,28 +110,30 @@ def charger_depuis_csv(
             else ""
         )
 
-        configs.append(ConfigMatériauVect(
-            id_config_materiau=id_mat,
-            classe_resistance=classe,
-            famille=str(props_mat["famille"]),
-            id_produit=id_produit,
-            libelle=libelle,
-            b_mm=b_mm,
-            h_mm=h_mm,
-            A_cm2=props_section["A_cm2"],
-            I_y_cm4=props_section["I_y_cm4"],
-            I_z_cm4=props_section["I_z_cm4"],
-            W_y_cm3=props_section["W_y_cm3"],
-            W_z_cm3=props_section["W_z_cm3"],
-            A_eff_cisaillement_cm2=props_section["A_eff_cisaillement_cm2"],
-            f_m_k_MPa=float(props_mat["f_m_k_MPa"]),
-            f_v_k_MPa=float(props_mat["f_v_k_MPa"]),
-            f_c90_k_MPa=float(props_mat["f_c90_k_MPa"]),
-            f_t0_k_MPa=float(props_mat["f_t0_k_MPa"]),
-            f_c0_k_MPa=float(props_mat["f_c0_k_MPa"]),
-            E_0_mean_MPa=float(props_mat["E_0_mean_MPa"]),
-            E_0_05_MPa=float(props_mat["E_0_05_MPa"]),
-            rho_k_kgm3=float(props_mat["rho_k_kgm3"]),
-        ))
+        configs.append(
+            ConfigMatériauVect(
+                id_config_materiau=id_mat,
+                classe_resistance=classe,
+                famille=str(props_mat["famille"]),
+                id_produit=id_produit,
+                libelle=libelle,
+                b_mm=b_mm,
+                h_mm=h_mm,
+                A_cm2=props_section["A_cm2"],
+                I_y_cm4=props_section["I_y_cm4"],
+                I_z_cm4=props_section["I_z_cm4"],
+                W_y_cm3=props_section["W_y_cm3"],
+                W_z_cm3=props_section["W_z_cm3"],
+                A_eff_cisaillement_cm2=props_section["A_eff_cisaillement_cm2"],
+                f_m_k_MPa=float(props_mat["f_m_k_MPa"]),
+                f_v_k_MPa=float(props_mat["f_v_k_MPa"]),
+                f_c90_k_MPa=float(props_mat["f_c90_k_MPa"]),
+                f_t0_k_MPa=float(props_mat["f_t0_k_MPa"]),
+                f_c0_k_MPa=float(props_mat["f_c0_k_MPa"]),
+                E_0_mean_MPa=float(props_mat["E_0_mean_MPa"]),
+                E_0_05_MPa=float(props_mat["E_0_05_MPa"]),
+                rho_k_kgm3=float(props_mat["rho_k_kgm3"]),
+            )
+        )
 
     return configs

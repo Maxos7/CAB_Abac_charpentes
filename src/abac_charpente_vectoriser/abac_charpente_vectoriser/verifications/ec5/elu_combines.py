@@ -136,6 +136,7 @@ class FlexionCompressionFaible(VerificationELU):
 
         # k_m depuis params_ec5.csv
         from ..ec5.elu_flexion import _k_m
+
         km: float = _k_m()
 
         A: np.ndarray = np.array([m.A_cm2 for m in espace.materiaux], dtype=float)

@@ -3,6 +3,7 @@
 Ce module ne contient que le parsing des arguments (Principe X).
 La logique est déléguée à pipeline.run().
 """
+
 from __future__ import annotations
 
 import sys
@@ -21,25 +22,29 @@ def cli() -> None:
 
 @cli.command("regenerer")
 @click.option(
-    "--source", "-s",
+    "--source",
+    "-s",
     type=click.Path(exists=False, path_type=Path),
     required=True,
     help="Répertoire ou chemin direct du fichier ALL_PRODUIT_*.csv.",
 )
 @click.option(
-    "--filtres", "-f",
+    "--filtres",
+    "-f",
     type=click.Path(exists=False, path_type=Path),
     default=None,
     help="Chemin vers configs_filtre.toml (optionnel).",
 )
 @click.option(
-    "--stock-enrichi", "-o",
+    "--stock-enrichi",
+    "-o",
     type=click.Path(exists=False, path_type=Path),
     default=None,
     help="Chemin du CSV stock_enrichi.csv de sortie.",
 )
 @click.option(
-    "--verbose", "-v",
+    "--verbose",
+    "-v",
     is_flag=True,
     default=False,
     help="Affiche les détails de progression.",
@@ -67,6 +72,7 @@ def regenerer(
         if filtres is not None and filtres.exists():
             try:
                 import tomllib
+
                 with open(filtres, "rb") as f:
                     donnees = tomllib.load(f)
                 for bloc in donnees.get("filtre", []):

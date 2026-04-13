@@ -90,8 +90,8 @@ def _satisfait_regle(mat: ConfigMatériauVect, regle: RegleFiltre) -> bool:
     if op == "<=":
         return valeur_mat <= ref  # type: ignore[operator]
     if op == ">":
-        return valeur_mat > ref   # type: ignore[operator]
+        return valeur_mat > ref  # type: ignore[operator]
     if op == "<":
-        return valeur_mat < ref   # type: ignore[operator]
+        return valeur_mat < ref  # type: ignore[operator]
 
     raise ValueError(f"Opérateur non supporté : '{op}'")

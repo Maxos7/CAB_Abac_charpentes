@@ -6,6 +6,7 @@ Interdit : if/match type_poutre dans elu.py / els.py.
 Notation française EC5 obligatoire (Principe IX).
 Unités explicites dans les noms de variables (Principe VI).
 """
+
 from __future__ import annotations
 
 import math

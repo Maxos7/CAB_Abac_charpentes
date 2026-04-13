@@ -167,5 +167,7 @@ class TypePoutreVect(ABC):
             Vecteur ``(n_M,)`` de charges de poids propre en kN/m.
         """
         rho_k: np.ndarray = np.array([m.rho_k_kgm3 for m in materiaux], dtype=float)
-        A_m2: np.ndarray = np.array([m.A_cm2 * 1e-4 for m in materiaux], dtype=float)  # cm² → m²
+        A_m2: np.ndarray = np.array(
+            [m.A_cm2 * 1e-4 for m in materiaux], dtype=float
+        )  # cm² → m²
         return rho_k * 9.81e-3 * A_m2  # kN/m

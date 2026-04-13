@@ -13,6 +13,7 @@ Exports principaux (T033) :
 IMPORTANT : ce paquet n'importe PAS abac_charpente.ec5 / ec0 / ec1 / moteur / sortie
 (Constitution IV — couplage faible).
 """
+
 __version__ = "0.1.0"
 
 from sapeg_regen_stock.pipeline import run

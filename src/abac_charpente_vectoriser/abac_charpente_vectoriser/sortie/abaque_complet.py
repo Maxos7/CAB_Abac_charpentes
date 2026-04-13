@@ -70,7 +70,9 @@ def construire_df_complet(
             for id_v, taux in taux_els.items():
                 ligne[f"els_{id_v}"] = round(float(taux[l_idx, m]), 4)
 
-            tous: list[float] = [float(t[l_idx, m]) for t in {**taux_elu, **taux_els}.values()]
+            tous: list[float] = [
+                float(t[l_idx, m]) for t in {**taux_elu, **taux_els}.values()
+            ]
             ligne["taux_global"] = round(max(tous), 4)
             ligne["verifie"] = max(tous) <= 1.0
 

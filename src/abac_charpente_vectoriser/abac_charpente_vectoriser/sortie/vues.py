@@ -46,6 +46,7 @@ def _lire_toml(chemin: Path) -> dict:
 
 # ── Filtrage ──────────────────────────────────────────────────────────────────
 
+
 def _appliquer_filtres(df: pd.DataFrame, filtres: list[dict]) -> pd.DataFrame:
     """Applique une liste de filtres (AND logic) sur le DataFrame.
 
@@ -108,6 +109,7 @@ def _appliquer_filtres(df: pd.DataFrame, filtres: list[dict]) -> pd.DataFrame:
 
 # ── Agrégation ────────────────────────────────────────────────────────────────
 
+
 def _produire_agregation(
     df: pd.DataFrame,
     groupby: list[str],
@@ -142,7 +144,9 @@ def _produire_agregation(
     """
     taux_cols: list[str] = [c for c in df.columns if c.startswith(("elu_", "els_"))]
 
-    df_ok: pd.DataFrame = df[df["verifie"]].copy() if "verifie" in df.columns else df.copy()
+    df_ok: pd.DataFrame = (
+        df[df["verifie"]].copy() if "verifie" in df.columns else df.copy()
+    )
     if df_ok.empty:
         return pd.DataFrame()
 
@@ -151,7 +155,8 @@ def _produire_agregation(
 
     if taux_cols:
         df_max["verif_determinante"] = (
-            df_max[taux_cols].idxmax(axis=1)
+            df_max[taux_cols]
+            .idxmax(axis=1)
             .str.replace(r"^(elu_|els_)", "", regex=True)
         )
         df_max["taux_determinant"] = df_max[taux_cols].max(axis=1).round(4)
@@ -172,6 +177,7 @@ def _produire_agregation(
 
 
 # ── Filtre brut ────────────────────────────────────────────────────────────────
+
 
 def _produire_filtre(
     df: pd.DataFrame,
@@ -209,6 +215,7 @@ def _produire_filtre(
 
 
 # ── Point d'entrée public ─────────────────────────────────────────────────────
+
 
 def appliquer_vues_depuis_toml(
     df_complet: pd.DataFrame,
@@ -253,7 +260,9 @@ def appliquer_vues_depuis_toml(
         df_filtre: pd.DataFrame = _appliquer_filtres(df_complet, filtres_raw)
 
         if df_filtre.empty:
-            logger.warning(f"  Vue '{nom}' : DataFrame vide après filtres — fichier non produit")
+            logger.warning(
+                f"  Vue '{nom}' : DataFrame vide après filtres — fichier non produit"
+            )
             continue
 
         if type_vue == "agregation":
@@ -263,15 +272,16 @@ def appliquer_vues_depuis_toml(
                     f"Vue '{nom}' de type 'agregation' : "
                     f"le champ 'groupby' est obligatoire dans le TOML."
                 )
-            df_vue: pd.DataFrame = _produire_agregation(df_filtre, groupby, colonnes, trier_par)
+            df_vue: pd.DataFrame = _produire_agregation(
+                df_filtre, groupby, colonnes, trier_par
+            )
 
         elif type_vue == "filtre":
             df_vue = _produire_filtre(df_filtre, colonnes, trier_par)
 
         else:
             raise ValueError(
-                f"Type de vue inconnu : '{type_vue}'. "
-                f"Disponibles : agregation, filtre"
+                f"Type de vue inconnu : '{type_vue}'. Disponibles : agregation, filtre"
             )
 
         chemin_csv: Path = chemin_sortie / fichier

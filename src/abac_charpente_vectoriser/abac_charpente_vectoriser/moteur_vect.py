@@ -109,11 +109,11 @@ def _configurer_loguru(verbose: bool) -> None:
 
 # Abréviations pour construire les IDs de combinaisons uniques
 _ABBREV_COMBO: dict[str, str] = {
-    "pente_deg":        "P",
-    "entraxe_m":        "E",
-    "classe_service":   "CS",
+    "pente_deg": "P",
+    "entraxe_m": "E",
+    "classe_service": "CS",
     "longueur_appui_mm": "La",
-    "k_c90":            "kc90",
+    "k_c90": "kc90",
 }
 
 
@@ -148,9 +148,18 @@ def _developper_produit_cartesien(config_dict: dict) -> list[dict]:
     """
     # Champs multi-valués (scalar ou list) — exclure les champs non-numériques
     champs_multi: list[str] = [
-        "L_min_m", "L_max_m", "pente_deg", "entraxe_m", "classe_service",
-        "g_k_kNm2", "g2_k_kNm2", "q_k_kNm2", "s_k_kNm2", "w_k_kNm2",
-        "longueur_appui_mm", "k_c90",
+        "L_min_m",
+        "L_max_m",
+        "pente_deg",
+        "entraxe_m",
+        "classe_service",
+        "g_k_kNm2",
+        "g2_k_kNm2",
+        "q_k_kNm2",
+        "s_k_kNm2",
+        "w_k_kNm2",
+        "longueur_appui_mm",
+        "k_c90",
     ]
 
     listes: dict[str, list] = {}
@@ -191,10 +200,18 @@ def _charger_filtres_sapeg(chemin_filtres: Path) -> list:
         Liste des filtres chargés. Liste vide si le fichier est absent.
     """
     from loguru import logger
-    from sapeg_regen_stock.modeles import ConfigFiltre, RegleEgal, ReglePlage, RegleListe, RegleNonNul
+    from sapeg_regen_stock.modeles import (
+        ConfigFiltre,
+        RegleEgal,
+        ReglePlage,
+        RegleListe,
+        RegleNonNul,
+    )
 
     if not chemin_filtres.exists():
-        logger.warning(f"configs_filtre introuvable : {chemin_filtres} — aucun filtre appliqué")
+        logger.warning(
+            f"configs_filtre introuvable : {chemin_filtres} — aucun filtre appliqué"
+        )
         return []
 
     toml_data: dict = _lire_toml(chemin_filtres)
@@ -212,12 +229,14 @@ def _charger_filtres_sapeg(chemin_filtres: Path) -> list:
                 regles.append(RegleListe(**r))
             elif t == "non_nul":
                 regles.append(RegleNonNul(**r))
-        filtres.append(ConfigFiltre(
-            nom=bloc["nom"],
-            sortie=bloc["sortie"],
-            description=bloc.get("description", ""),
-            regles=regles,
-        ))
+        filtres.append(
+            ConfigFiltre(
+                nom=bloc["nom"],
+                sortie=bloc["sortie"],
+                description=bloc.get("description", ""),
+                regles=regles,
+            )
+        )
     return filtres
 
 
@@ -353,21 +372,26 @@ def run(
     store_tenseurs = None
     if sauvegarder_tenseurs:
         from .sortie.tenseur_duck import TenseurDuck
+
         store_tenseurs = TenseurDuck(chemin_sortie / "tenseurs.duckdb")
         logger.info(f"Store tenseurs DuckDB : {chemin_sortie / 'tenseurs.duckdb'}")
 
     tous_resultats: list[ResultatPortee] = []
-    tous_df_complet: list[pd.DataFrame] = []   # accumulateur pour le fichier global
+    tous_df_complet: list[pd.DataFrame] = []  # accumulateur pour le fichier global
 
     # ── Boucle sur les configs du TOML ────────────────────────────────────────
     for cfg_brut in configs_brutes:
         config_base: ConfigCalculVect = ConfigCalculVect(**cfg_brut)
-        logger.info(f"Config : {config_base.id_config_calcul} — type {config_base.type_poutre}")
+        logger.info(
+            f"Config : {config_base.id_config_calcul} — type {config_base.type_poutre}"
+        )
 
         # Filtrage matériaux pour cette config
         materiaux_filtres = appliquer_filtres(tous_materiaux, config_base.filtres)
         if not materiaux_filtres:
-            logger.warning(f"  Aucun matériau après filtrage pour {config_base.id_config_calcul}")
+            logger.warning(
+                f"  Aucun matériau après filtrage pour {config_base.id_config_calcul}"
+            )
             continue
         logger.info(f"  {len(materiaux_filtres)} matériaux retenus après filtrage")
 
@@ -386,11 +410,12 @@ def run(
             suffix_parts: list[str] = []
             for champ, abbrev in _ABBREV_COMBO.items():
                 val_brut = cfg_brut.get(champ)
-                if isinstance(val_brut, list):   # champ multi-valué → inclus dans l'ID
+                if isinstance(val_brut, list):  # champ multi-valué → inclus dans l'ID
                     val = combo.get(champ)
                     if val is not None:
                         val_str: str = (
-                            str(int(val)) if isinstance(val, float) and val == int(val)
+                            str(int(val))
+                            if isinstance(val, float) and val == int(val)
                             else str(val)
                         )
                         suffix_parts.append(f"{abbrev}{val_str}")
@@ -400,7 +425,7 @@ def run(
                 if suffix_parts
                 else config_base.id_config_calcul
             )
-            config.id_config_calcul = id_unique   # propagé dans tous les exports
+            config.id_config_calcul = id_unique  # propagé dans tous les exports
 
             # Vérification type_poutre
             if config.type_poutre not in TYPES_POUTRE:
@@ -413,8 +438,16 @@ def run(
             type_poutre = TYPES_POUTRE[config.type_poutre](config)
 
             # Vecteur de longueurs
-            L_min: float = float(config.L_min_m if not isinstance(config.L_min_m, list) else config.L_min_m[0])
-            L_max: float = float(config.L_max_m if not isinstance(config.L_max_m, list) else config.L_max_m[0])
+            L_min: float = float(
+                config.L_min_m
+                if not isinstance(config.L_min_m, list)
+                else config.L_min_m[0]
+            )
+            L_max: float = float(
+                config.L_max_m
+                if not isinstance(config.L_max_m, list)
+                else config.L_max_m[0]
+            )
             pas: float = float(config.pas_longueur_m)
             longueurs_m: np.ndarray = np.arange(L_min, L_max + pas / 2, pas)
 
@@ -422,11 +455,18 @@ def run(
             combinaisons = generer_combinaisons(config)
 
             # Charges caractéristiques
-            charges_k = calculer_charges_caracteristiques(config, materiaux_filtres, type_poutre)
+            charges_k = calculer_charges_caracteristiques(
+                config, materiaux_filtres, type_poutre
+            )
 
             # Espace tenseur
             espace = construire_espace(
-                longueurs_m, combinaisons, materiaux_filtres, config, type_poutre, charges_k
+                longueurs_m,
+                combinaisons,
+                materiaux_filtres,
+                config,
+                type_poutre,
+                charges_k,
             )
 
             # Vérifications
@@ -442,10 +482,14 @@ def run(
                 f"G2={charges_k['g2_kNm']:.3f}  Q={charges_k['q_kNm']:.3f}  "
                 f"S={charges_k['s_kNm']:.3f}  W={charges_k['w_kNm']:.3f}"
             )
-            logger.debug(f"    Longueurs : {longueurs_m[0]:.2f}→{longueurs_m[-1]:.2f} m  "
-                         f"({len(longueurs_m)} pts)  |  {len(materiaux_filtres)} matériaux")
+            logger.debug(
+                f"    Longueurs : {longueurs_m[0]:.2f}→{longueurs_m[-1]:.2f} m  "
+                f"({len(longueurs_m)} pts)  |  {len(materiaux_filtres)} matériaux"
+            )
             logger.debug("    ELU — taux max (toutes L, tous matériaux) :")
-            for id_v, taux_arr in sorted(taux_elu.items(), key=lambda x: -float(x[1].max())):
+            for id_v, taux_arr in sorted(
+                taux_elu.items(), key=lambda x: -float(x[1].max())
+            ):
                 idx = np.unravel_index(int(np.argmax(taux_arr)), taux_arr.shape)
                 mat_det: str = materiaux_filtres[idx[1]].id_config_materiau
                 logger.debug(
@@ -453,7 +497,9 @@ def run(
                     f"  @ L={longueurs_m[idx[0]]:.2f}m  mat={mat_det}"
                 )
             logger.debug("    ELS — taux max :")
-            for id_v, taux_arr in sorted(taux_els.items(), key=lambda x: -float(x[1].max())):
+            for id_v, taux_arr in sorted(
+                taux_els.items(), key=lambda x: -float(x[1].max())
+            ):
                 idx = np.unravel_index(int(np.argmax(taux_arr)), taux_arr.shape)
                 mat_det = materiaux_filtres[idx[1]].id_config_materiau
                 logger.debug(
@@ -462,7 +508,9 @@ def run(
                 )
 
             # Synthèse
-            resultats = synthetiser(longueurs_m, taux_elu, taux_els, materiaux_filtres, config)
+            resultats = synthetiser(
+                longueurs_m, taux_elu, taux_els, materiaux_filtres, config
+            )
             resultats_config.extend(resultats)
 
             # Accumulation abaque complet (global)
@@ -486,7 +534,11 @@ def run(
         tous_resultats.extend(resultats_config)
 
     # ── Export global unique (toutes configs confondues) ──────────────────────
-    df_complet_global: pd.DataFrame = pd.concat(tous_df_complet, ignore_index=True) if tous_df_complet else pd.DataFrame()
+    df_complet_global: pd.DataFrame = (
+        pd.concat(tous_df_complet, ignore_index=True)
+        if tous_df_complet
+        else pd.DataFrame()
+    )
     chemin_complet: Path = chemin_sortie / "abaque_complet_global.csv"
     exporter_abaque_complet(df_complet_global, chemin_complet)
     logger.info(f"abaque_complet_global.csv → {len(df_complet_global)} lignes")
@@ -504,7 +556,9 @@ def run(
         store_tenseurs.fermer()
         logger.info(f"Tenseurs DuckDB fermés → {chemin_sortie / 'tenseurs.duckdb'}")
 
-    logger.info(f"Pipeline terminé — {len(tous_resultats)} résultats dans {chemin_sortie}/")
+    logger.info(
+        f"Pipeline terminé — {len(tous_resultats)} résultats dans {chemin_sortie}/"
+    )
     return tous_resultats
 
 
@@ -528,47 +582,63 @@ def cli() -> None:
         ),
     )
     parser.add_argument(
-        "--toml-calcul", default=Path("configs_calcul_vect.toml"), type=Path,
+        "--toml-calcul",
+        default=Path("configs_calcul_vect.toml"),
+        type=Path,
         dest="toml_calcul",
         metavar="FICHIER",
         help="TOML de configuration du calcul EC5 (défaut : ./configs_calcul_vect.toml)",
     )
     parser.add_argument(
-        "--source", default=Path("."), type=Path,
+        "--source",
+        default=Path("."),
+        type=Path,
         metavar="DOSSIER",
         help="Dossier contenant ALL_PRODUIT_*.csv (défaut : répertoire courant)",
     )
     parser.add_argument(
-        "--stock", default=None, type=Path,
+        "--stock",
+        default=None,
+        type=Path,
         metavar="FICHIER",
         help="CSV stock direct — court-circuite la régénération via sapeg-regen-stock",
     )
     parser.add_argument(
-        "--filtres", default=Path("configs_filtre.toml"), type=Path,
+        "--filtres",
+        default=Path("configs_filtre.toml"),
+        type=Path,
         metavar="FICHIER",
         help="Fichier configs_filtre.toml (défaut : ./configs_filtre.toml)",
     )
     parser.add_argument(
-        "--filtre", default="charpente",
+        "--filtre",
+        default="charpente",
         metavar="NOM",
         help="Nom du filtre à utiliser comme stock de calcul (défaut : charpente)",
     )
     parser.add_argument(
-        "--sortie", default=Path("resultats"), type=Path,
+        "--sortie",
+        default=Path("resultats"),
+        type=Path,
         help="Répertoire de sortie (défaut : ./resultats)",
     )
     parser.add_argument(
-        "--toml-sortie", default=Path("configs_sortie_vect.toml"), type=Path,
+        "--toml-sortie",
+        default=Path("configs_sortie_vect.toml"),
+        type=Path,
         metavar="FICHIER",
         dest="toml_sortie",
         help="TOML de configuration des vues de sortie (défaut : ./configs_sortie_vect.toml)",
     )
     parser.add_argument(
-        "--tenseurs", action="store_true",
+        "--tenseurs",
+        action="store_true",
         help="Sauvegarder les tenseurs de taux dans resultats/tenseurs.duckdb (FLOAT[] par matériau)",
     )
     parser.add_argument(
-        "--verbose", "-v", action="store_true",
+        "--verbose",
+        "-v",
+        action="store_true",
         help="Affiche le détail des calculs par combo (charges, taux ELU/ELS)",
     )
     args = parser.parse_args()

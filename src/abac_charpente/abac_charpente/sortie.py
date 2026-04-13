@@ -4,6 +4,7 @@ Format : UTF-8, séparateur `;`, mode append, en-têtes si fichier vide/absent.
 Ordre des colonnes conforme à contracts/csv-output-schema.md v1.2.0.
 Erreur code 4 si écriture impossible.
 """
+
 from __future__ import annotations
 
 import sys

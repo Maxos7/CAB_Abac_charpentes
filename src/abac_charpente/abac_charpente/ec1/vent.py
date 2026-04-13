@@ -3,6 +3,7 @@
 Implémentation simplifiée pour toitures 1 pan / 2 pans.
 La valeur la plus défavorable est retournée.
 """
+
 from __future__ import annotations
 
 
@@ -11,7 +12,7 @@ from __future__ import annotations
 # → valeur défavorable = +0.2 (pression) ou -0.7 (aspiration selon situation)
 # Simplification : on prend c_pe = 0.8 comme valeur commune adverse
 _CPE: dict[str, float] = {
-    "1_pan": 0.8,   # pression sur versant au vent (simplifié AN France)
+    "1_pan": 0.8,  # pression sur versant au vent (simplifié AN France)
     "2_pans": 0.8,  # même simplification
 }
 

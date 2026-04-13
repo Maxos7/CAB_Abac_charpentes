@@ -5,6 +5,7 @@ Fonctions exportées :
     deriver_config_materiau(produit, proprietes) -> ConfigMatériau
     extraire_classe_resistance(libelle, mots_cles) -> str | None
 """
+
 from __future__ import annotations
 
 import hashlib

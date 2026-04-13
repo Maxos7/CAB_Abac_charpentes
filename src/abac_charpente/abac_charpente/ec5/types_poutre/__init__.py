@@ -8,6 +8,7 @@ Usage :
 
 INTERDIT dans elu.py / els.py : if/match type_poutre (EF-019).
 """
+
 from abac_charpente.ec5.types_poutre.base import TypePoutre
 from abac_charpente.ec5.types_poutre.panne import Panne
 from abac_charpente.ec5.types_poutre.solive import Solive
@@ -38,4 +39,12 @@ def instancier(type_poutre: str) -> TypePoutre:
     return cls()
 
 
-__all__ = ["TypePoutre", "Panne", "Solive", "Sommier", "Chevron", "TYPES_POUTRE", "instancier"]
+__all__ = [
+    "TypePoutre",
+    "Panne",
+    "Solive",
+    "Sommier",
+    "Chevron",
+    "TYPES_POUTRE",
+    "instancier",
+]

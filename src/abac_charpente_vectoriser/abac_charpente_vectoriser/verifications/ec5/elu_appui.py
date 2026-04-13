@@ -47,8 +47,12 @@ class Appui(VerificationELU):
         """
         # Largeur de section par matériau [mm]
         b_arr: np.ndarray = np.array(
-            [m.b_mm if m.b_mm is not None else (m.A_cm2 * 100.0 / (m.h_mm if m.h_mm else 100.0))
-             for m in espace.materiaux],
+            [
+                m.b_mm
+                if m.b_mm is not None
+                else (m.A_cm2 * 100.0 / (m.h_mm if m.h_mm else 100.0))
+                for m in espace.materiaux
+            ],
             dtype=float,
         )  # (n_M,)
 
@@ -57,10 +61,12 @@ class Appui(VerificationELU):
 
         # σ_c90 [MPa] = R_d [kN] × 1000 / A_appui [mm²]
         A_appui_11M: np.ndarray = A_appui_mm2[np.newaxis, np.newaxis, :]  # (1, 1, n_M)
-        sigma_c90: np.ndarray = espace.V_d_kN * 1000.0 / A_appui_11M     # (n_L, n_C, n_M) [MPa]
+        sigma_c90: np.ndarray = (
+            espace.V_d_kN * 1000.0 / A_appui_11M
+        )  # (n_L, n_C, n_M) [MPa]
 
         k_c90: float = espace.k_c90
-        f_c90_d: np.ndarray = espace.f_c90_d_CM[np.newaxis, :, :]         # (1, n_C, n_M)
+        f_c90_d: np.ndarray = espace.f_c90_d_CM[np.newaxis, :, :]  # (1, n_C, n_M)
 
         taux: np.ndarray = sigma_c90 / (k_c90 * f_c90_d)
         active: np.ndarray = np.ones_like(taux, dtype=bool)

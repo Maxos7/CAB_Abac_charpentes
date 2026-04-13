@@ -38,7 +38,9 @@ class PanneAplombVect(TypePoutreVect):
     def __init__(self, config: ConfigCalculVect) -> None:
         super().__init__(config)
         pente_deg: float = float(
-            config.pente_deg[0] if isinstance(config.pente_deg, list) else config.pente_deg
+            config.pente_deg[0]
+            if isinstance(config.pente_deg, list)
+            else config.pente_deg
         )
         self._pente_rad: float = math.radians(pente_deg)
 

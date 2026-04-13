@@ -50,7 +50,9 @@ def _sc(v: float | list[float] | int | list[int]) -> float:
 
 def _charger_limites_fleche(usage: str) -> dict[str, float | None]:
     """Lit les limites de flèche ELS depuis le CSV normatif."""
-    chemin: str = str(files("abac_charpente_vectoriser.donnees").joinpath("limites_fleche_ec5.csv"))
+    chemin: str = str(
+        files("abac_charpente_vectoriser.donnees").joinpath("limites_fleche_ec5.csv")
+    )
     df: pd.DataFrame = pd.read_csv(chemin, sep=";", comment="#")
     df = df.set_index("usage")
     if usage not in df.index:
@@ -103,18 +105,20 @@ def construire_espace(
 
     # Scalaires depuis charges_k
     g_pp_kNm: np.ndarray = charges_k["g_pp_kNm"]  # type: ignore[assignment]
-    g_kNm: float = charges_k["g_kNm"]              # type: ignore[assignment]
-    g2_kNm: float = charges_k["g2_kNm"]            # type: ignore[assignment]
-    q_kNm: float = charges_k["q_kNm"]              # type: ignore[assignment]
-    s_kNm: float = charges_k["s_kNm"]              # type: ignore[assignment]
-    w_kNm: float = charges_k["w_kNm"]              # type: ignore[assignment]
+    g_kNm: float = charges_k["g_kNm"]  # type: ignore[assignment]
+    g2_kNm: float = charges_k["g2_kNm"]  # type: ignore[assignment]
+    q_kNm: float = charges_k["q_kNm"]  # type: ignore[assignment]
+    s_kNm: float = charges_k["s_kNm"]  # type: ignore[assignment]
+    w_kNm: float = charges_k["w_kNm"]  # type: ignore[assignment]
 
     classe_service: int = int(_sc(config.classe_service))
 
     # ── Propriétés EC5 ───────────────────────────────────────────────────────────
     k_mod_CM: np.ndarray = calculer_kmod_CM(combinaisons, materiaux, classe_service)
     k_def_arr: np.ndarray = calculer_kdef_arr(materiaux, classe_service)
-    resistances: dict[str, np.ndarray] = calculer_resistances_CM(combinaisons, materiaux, classe_service)
+    resistances: dict[str, np.ndarray] = calculer_resistances_CM(
+        combinaisons, materiaux, classe_service
+    )
 
     l_dev_m: np.ndarray = type_poutre.longueur_deversement_m(longueurs_m)
     k_crit_LM: np.ndarray = calculer_k_crit_LM(longueurs_m, materiaux, l_dev_m)
@@ -125,31 +129,37 @@ def construire_espace(
     #   combinaisons : (1, n_C, 1)
     #   matériaux : (1, 1, n_M)
 
-    L_L11: np.ndarray = longueurs_m[:, np.newaxis, np.newaxis]   # (n_L, 1, 1)
+    L_L11: np.ndarray = longueurs_m[:, np.newaxis, np.newaxis]  # (n_L, 1, 1)
 
     gamma_G: np.ndarray = np.array([c.gamma_G for c in combinaisons], dtype=float)
     gamma_G2: np.ndarray = np.array([c.gamma_G2 for c in combinaisons], dtype=float)
     gamma_Q1: np.ndarray = np.array([c.gamma_Q1 for c in combinaisons], dtype=float)
-    gamma_Qa: np.ndarray = np.array([c.gamma_Q_accomp for c in combinaisons], dtype=float)
+    gamma_Qa: np.ndarray = np.array(
+        [c.gamma_Q_accomp for c in combinaisons], dtype=float
+    )
 
     q_princ_C: np.ndarray = np.array(
-        [_charge_principale(c.type_charge_principale, q_kNm, s_kNm, w_kNm)
-         for c in combinaisons],
+        [
+            _charge_principale(c.type_charge_principale, q_kNm, s_kNm, w_kNm)
+            for c in combinaisons
+        ],
         dtype=float,
     )
     q_accomp_C: np.ndarray = np.array(
-        [_charge_accompagnement(c.type_charge_principale, q_kNm, s_kNm, w_kNm)
-         for c in combinaisons],
+        [
+            _charge_accompagnement(c.type_charge_principale, q_kNm, s_kNm, w_kNm)
+            for c in combinaisons
+        ],
         dtype=float,
     )
 
-    g_pp_11M: np.ndarray = g_pp_kNm[np.newaxis, np.newaxis, :]   # (1, 1, n_M)
+    g_pp_11M: np.ndarray = g_pp_kNm[np.newaxis, np.newaxis, :]  # (1, 1, n_M)
 
-    gamma_G_1C1: np.ndarray  = gamma_G[np.newaxis, :, np.newaxis]
+    gamma_G_1C1: np.ndarray = gamma_G[np.newaxis, :, np.newaxis]
     gamma_G2_1C1: np.ndarray = gamma_G2[np.newaxis, :, np.newaxis]
     gamma_Q1_1C1: np.ndarray = gamma_Q1[np.newaxis, :, np.newaxis]
     gamma_Qa_1C1: np.ndarray = gamma_Qa[np.newaxis, :, np.newaxis]
-    q_princ_1C1: np.ndarray  = q_princ_C[np.newaxis, :, np.newaxis]
+    q_princ_1C1: np.ndarray = q_princ_C[np.newaxis, :, np.newaxis]
     q_accomp_1C1: np.ndarray = q_accomp_C[np.newaxis, :, np.newaxis]
 
     q_d_LCM: np.ndarray = (
@@ -177,21 +187,27 @@ def construire_espace(
     N_d_LCM: np.ndarray | None = type_poutre.effort_normal_kN(longueurs_m, n_C, n_M)
 
     # ── Charge permanente quasi-permanente pour ELS fluage ───────────────────────
-    q_G_qperm_LCM: np.ndarray = (g_pp_kNm[np.newaxis, np.newaxis, :] + g_kNm) * np.ones((n_L, 1, n_M))
+    q_G_qperm_LCM: np.ndarray = (g_pp_kNm[np.newaxis, np.newaxis, :] + g_kNm) * np.ones(
+        (n_L, 1, n_M)
+    )
 
     # ── Limites ELS ──────────────────────────────────────────────────────────────
     limites: dict[str, float | None] = _charger_limites_fleche(config.usage)
-    lim_inst: float = config.limite_fleche_inst or limites["w_inst"]   # type: ignore[assignment]
-    lim_fin: float = config.limite_fleche_fin or limites["w_fin"]      # type: ignore[assignment]
-    lim_2: float | None = config.limite_fleche_2 or (limites["w_2"] if config.second_oeuvre else None)
+    lim_inst: float = config.limite_fleche_inst or limites["w_inst"]  # type: ignore[assignment]
+    lim_fin: float = config.limite_fleche_fin or limites["w_fin"]  # type: ignore[assignment]
+    lim_2: float | None = config.limite_fleche_2 or (
+        limites["w_2"] if config.second_oeuvre else None
+    )
 
     # ── Propriétés de section en vecteurs ────────────────────────────────────────
-    A_eff_arr: np.ndarray = np.array([m.A_eff_cisaillement_cm2 for m in materiaux], dtype=float)
-    W_y_arr: np.ndarray   = np.array([m.W_y_cm3 for m in materiaux], dtype=float)
-    W_z_arr: np.ndarray   = np.array([m.W_z_cm3 for m in materiaux], dtype=float)
-    I_y_arr: np.ndarray   = np.array([m.I_y_cm4 for m in materiaux], dtype=float)
-    I_z_arr: np.ndarray   = np.array([m.I_z_cm4 for m in materiaux], dtype=float)
-    E_arr: np.ndarray     = np.array([m.E_0_mean_MPa for m in materiaux], dtype=float)
+    A_eff_arr: np.ndarray = np.array(
+        [m.A_eff_cisaillement_cm2 for m in materiaux], dtype=float
+    )
+    W_y_arr: np.ndarray = np.array([m.W_y_cm3 for m in materiaux], dtype=float)
+    W_z_arr: np.ndarray = np.array([m.W_z_cm3 for m in materiaux], dtype=float)
+    I_y_arr: np.ndarray = np.array([m.I_y_cm4 for m in materiaux], dtype=float)
+    I_z_arr: np.ndarray = np.array([m.I_z_cm4 for m in materiaux], dtype=float)
+    E_arr: np.ndarray = np.array([m.E_0_mean_MPa for m in materiaux], dtype=float)
 
     pente_rad: float | None = None
     if hasattr(type_poutre, "_pente_rad"):

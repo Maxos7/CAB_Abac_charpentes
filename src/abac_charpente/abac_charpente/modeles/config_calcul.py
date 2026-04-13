@@ -3,6 +3,7 @@
 Notation française obligatoire (Principe IX).
 Entités domaine en dataclasses/pydantic (Principe X).
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -14,6 +15,7 @@ from pydantic import BaseModel, field_validator, model_validator
 @dataclass
 class ConfigCalculDefaults:
     """Valeurs par défaut pour les paramètres d'appui et de flèche (EF-005b)."""
+
     longueur_appui_mm: float = 50.0
     k_c90: float = 1.0
     taux_cible_appui: float = 0.80
@@ -28,9 +30,10 @@ class ConfigCalcul(BaseModel):
     Paramètres multivalués (EF-005c) : float | list[float] → produit cartésien auto.
     Validation pydantic en français.
     """
+
     id_config_calcul: str
     type_poutre: str  # "Panne" | "Solive" | "Sommier" | "Chevron"
-    usage: str        # TOITURE_INACC | TOITURE_ACC | PLANCHER_HAB | ... (EF-023)
+    usage: str  # TOITURE_INACC | TOITURE_ACC | PLANCHER_HAB | ... (EF-023)
 
     # Portées
     L_min_m: float | list[float] = 1.0
@@ -54,9 +57,9 @@ class ConfigCalcul(BaseModel):
 
     # Limites de flèche ELS (0 = depuis limites_fleche_ec5.csv)
     second_oeuvre: bool = False
-    limite_fleche_inst: float | None = None   # inverseur L/x
+    limite_fleche_inst: float | None = None  # inverseur L/x
     limite_fleche_fin: float | None = None
-    limite_fleche_2: float | None = None      # flèche de second-œuvre
+    limite_fleche_2: float | None = None  # flèche de second-œuvre
 
     # Paramètres d'appui
     longueur_appui_mm: float | list[float] = 50.0
@@ -83,8 +86,15 @@ class ConfigCalcul(BaseModel):
     @classmethod
     def _valider_usage(cls, v: str) -> str:
         usages_valides = {
-            "TOITURE_INACC", "TOITURE_ACC", "PLANCHER_HAB", "PLANCHER_BUR",
-            "PLANCHER_REU", "PLANCHER_COM", "PLANCHER_STO", "PLANCHER_PAR", "AGRICOLE",
+            "TOITURE_INACC",
+            "TOITURE_ACC",
+            "PLANCHER_HAB",
+            "PLANCHER_BUR",
+            "PLANCHER_REU",
+            "PLANCHER_COM",
+            "PLANCHER_STO",
+            "PLANCHER_PAR",
+            "AGRICOLE",
         }
         if v not in usages_valides:
             raise ValueError(
@@ -108,9 +118,7 @@ class ConfigCalcul(BaseModel):
         vals = [v] if isinstance(v, int) else v
         for cs in vals:
             if cs not in (1, 2, 3):
-                raise ValueError(
-                    f"classe_service {cs} invalide — doit être 1, 2 ou 3"
-                )
+                raise ValueError(f"classe_service {cs} invalide — doit être 1, 2 ou 3")
         return v
 
     model_config = {"arbitrary_types_allowed": True}

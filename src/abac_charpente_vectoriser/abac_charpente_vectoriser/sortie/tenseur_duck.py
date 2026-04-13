@@ -162,16 +162,28 @@ class TenseurDuck:
         taux_rows: list[tuple] = []
         for verif_id, arr in taux_elu.items():
             for l_idx, L in enumerate(longueurs_m):
-                taux_rows.append((
-                    id_combo, "ELU", verif_id, float(L),
-                    arr[l_idx].tolist(), horodatage,
-                ))
+                taux_rows.append(
+                    (
+                        id_combo,
+                        "ELU",
+                        verif_id,
+                        float(L),
+                        arr[l_idx].tolist(),
+                        horodatage,
+                    )
+                )
         for verif_id, arr in taux_els.items():
             for l_idx, L in enumerate(longueurs_m):
-                taux_rows.append((
-                    id_combo, "ELS", verif_id, float(L),
-                    arr[l_idx].tolist(), horodatage,
-                ))
+                taux_rows.append(
+                    (
+                        id_combo,
+                        "ELS",
+                        verif_id,
+                        float(L),
+                        arr[l_idx].tolist(),
+                        horodatage,
+                    )
+                )
 
         self._conn.executemany(
             "INSERT INTO taux VALUES (?, ?, ?, ?, ?, ?)",

@@ -4,6 +4,7 @@ L = longueur rampante (pas horizontale).
 Décomposition cos(α) / cos²(α) selon le type de charge.
 Notation EC5 française (Principe IX).
 """
+
 from __future__ import annotations
 
 import math
@@ -46,7 +47,11 @@ class Chevron(TypePoutre):
                 "Chevron : double_flexion=True ignoré — le chevron est toujours mono-axe."
             )
 
-        pente_deg = float(config.pente_deg if isinstance(config.pente_deg, (int, float)) else config.pente_deg[0])
+        pente_deg = float(
+            config.pente_deg
+            if isinstance(config.pente_deg, (int, float))
+            else config.pente_deg[0]
+        )
         if pente_deg == 0.0:
             logger.warning(
                 "Chevron : pente=0° — un chevron horizontal n'a pas de sens physique. "
@@ -55,13 +60,33 @@ class Chevron(TypePoutre):
 
         pente_rad = math.radians(pente_deg)
         cos_a = math.cos(pente_rad)
-        cos2_a = cos_a ** 2
+        cos2_a = cos_a**2
 
-        entraxe_m = float(config.entraxe_m if isinstance(config.entraxe_m, (int, float)) else config.entraxe_m[0])
-        g_k_kNm2 = float(config.g_k_kNm2 if isinstance(config.g_k_kNm2, (int, float)) else config.g_k_kNm2[0])
-        q_k_kNm2 = float(config.q_k_kNm2 if isinstance(config.q_k_kNm2, (int, float)) else config.q_k_kNm2[0])
-        s_k_kNm2 = float(config.s_k_kNm2 if isinstance(config.s_k_kNm2, (int, float)) else config.s_k_kNm2[0])
-        w_k_kNm2 = float(config.w_k_kNm2 if isinstance(config.w_k_kNm2, (int, float)) else config.w_k_kNm2[0])
+        entraxe_m = float(
+            config.entraxe_m
+            if isinstance(config.entraxe_m, (int, float))
+            else config.entraxe_m[0]
+        )
+        g_k_kNm2 = float(
+            config.g_k_kNm2
+            if isinstance(config.g_k_kNm2, (int, float))
+            else config.g_k_kNm2[0]
+        )
+        q_k_kNm2 = float(
+            config.q_k_kNm2
+            if isinstance(config.q_k_kNm2, (int, float))
+            else config.q_k_kNm2[0]
+        )
+        s_k_kNm2 = float(
+            config.s_k_kNm2
+            if isinstance(config.s_k_kNm2, (int, float))
+            else config.s_k_kNm2[0]
+        )
+        w_k_kNm2 = float(
+            config.w_k_kNm2
+            if isinstance(config.w_k_kNm2, (int, float))
+            else config.w_k_kNm2[0]
+        )
 
         # Charges perpendiculaires au rampant (kN/m rampant)
         # g_k en kN/m² rampant → cos(α)
@@ -75,19 +100,25 @@ class Chevron(TypePoutre):
 
         # Combinaison EC0
         from abac_charpente.ec5.types_poutre.panne import (
-            _charge_principale, _charge_accomp_2, _charge_accomp_3,
+            _charge_principale,
+            _charge_accomp_2,
+            _charge_accomp_3,
         )
+
         q_d_perp_kNm = (
             combi.gamma_G * q_G_perp_kNm
-            + combi.gamma_Q1 * _charge_principale(combi, q_Q_perp_kNm, q_S_perp_kNm, q_W_perp_kNm)
-            + combi.psi_0_Q2 * _charge_accomp_2(combi, q_Q_perp_kNm, q_S_perp_kNm, q_W_perp_kNm)
-            + combi.psi_0_Q3 * _charge_accomp_3(combi, q_Q_perp_kNm, q_S_perp_kNm, q_W_perp_kNm)
+            + combi.gamma_Q1
+            * _charge_principale(combi, q_Q_perp_kNm, q_S_perp_kNm, q_W_perp_kNm)
+            + combi.psi_0_Q2
+            * _charge_accomp_2(combi, q_Q_perp_kNm, q_S_perp_kNm, q_W_perp_kNm)
+            + combi.psi_0_Q3
+            * _charge_accomp_3(combi, q_Q_perp_kNm, q_S_perp_kNm, q_W_perp_kNm)
         )
 
         n = len(longueurs_m)
         q_d_arr = np.full(n, q_d_perp_kNm)
         # L = longueur rampante (entrée directe)
-        M_d_kNm = q_d_arr * longueurs_m ** 2 / 8.0
+        M_d_kNm = q_d_arr * longueurs_m**2 / 8.0
         V_d_kN = q_d_arr * longueurs_m / 2.0
 
         return {

@@ -3,6 +3,7 @@
 Ce module ne contient que le parsing des arguments — aucune logique métier (Principe X).
 La logique est déléguée à moteur.lancer_calcul().
 """
+
 from __future__ import annotations
 
 import sys
@@ -21,7 +22,8 @@ def cli() -> None:
 
 @cli.command("calculer")
 @click.option(
-    "--config", "-c",
+    "--config",
+    "-c",
     type=click.Path(exists=False, path_type=Path),
     default=Path("config.toml"),
     show_default=True,
@@ -40,7 +42,8 @@ def cli() -> None:
     help="Répertoire où chercher ALL_PRODUIT_*.csv (auto-détection du plus récent).",
 )
 @click.option(
-    "--sortie", "-o",
+    "--sortie",
+    "-o",
     type=click.Path(exists=False, path_type=Path),
     default=None,
     help="Chemin du CSV de sortie (écrase [sortie].fichier_csv de config.toml).",
@@ -52,7 +55,8 @@ def cli() -> None:
     help="Ignore le registre et recalcule tout.",
 )
 @click.option(
-    "--verbose", "-v",
+    "--verbose",
+    "-v",
     is_flag=True,
     default=False,
     help="Affiche les détails de progression.",
@@ -83,7 +87,11 @@ def calculer(
         sys.exit(1)
 
     try:
-        from abac_charpente.config import charger_config, charger_filtres, expandre_configs
+        from abac_charpente.config import (
+            charger_config,
+            charger_filtres,
+            expandre_configs,
+        )
         from abac_charpente.moteur import lancer_calcul
 
         app_config = charger_config(config)

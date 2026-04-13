@@ -3,6 +3,7 @@
 Fonction exportée :
     filtrer_stock(produits, filtre) -> tuple[list[ProduitValide], list[ProduitExclu]]
 """
+
 from __future__ import annotations
 
 import math
@@ -107,8 +108,7 @@ def _verifier_regle(produit: ProduitValide, regle) -> str | None:
 
     if isinstance(regle, RegleListe):
         valeurs_norm = [
-            str(v).strip().lower() if isinstance(v, str) else v
-            for v in regle.valeurs
+            str(v).strip().lower() if isinstance(v, str) else v for v in regle.valeurs
         ]
         val_norm = str(val).strip().lower() if isinstance(val, str) else val
         if val_norm not in valeurs_norm:

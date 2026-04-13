@@ -135,8 +135,8 @@ class EspaceCombinaisonTenseur:
     N_d_kN: np.ndarray | None
 
     # Charges pour fluage ELS
-    q_G_kNm: np.ndarray   # (n_L, n_C, n_M) — charge permanente G quasi-permanente
-    q_G2_kNm: float        # scalaire — charge G2 non amplifiée (pour k_def)
+    q_G_kNm: np.ndarray  # (n_L, n_C, n_M) — charge permanente G quasi-permanente
+    q_G2_kNm: float  # scalaire — charge G2 non amplifiée (pour k_def)
 
     # Géométrie inclinée
     longueur_projetee_m: np.ndarray | None

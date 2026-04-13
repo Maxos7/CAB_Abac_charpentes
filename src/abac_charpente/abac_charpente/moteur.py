@@ -5,6 +5,7 @@ Déduplication par id_config_materiau (EF-004).
 Recalcul incrémental via RegistreCalcul (EF-006, EF-007).
 Application marge_securite EF-026 : taux_effectif = taux × (1 + marge_securite).
 """
+
 from __future__ import annotations
 
 import sys
@@ -92,6 +93,7 @@ def lancer_calcul(
 
     # 4. Registre de calcul
     from abac_charpente.registre import RegistreCalcul
+
     chemin_registre = Path(app_config.sortie.registre)
     registre = RegistreCalcul()
     registre.charger(chemin_registre)
@@ -113,7 +115,9 @@ def lancer_calcul(
         try:
             materiau = deriver_materiau(p_rep)
         except Exception as e:
-            logger.warning(f"AVERTISSEMENT [{p_rep.id_produit}] : dérivation matériau impossible — {e}")
+            logger.warning(
+                f"AVERTISSEMENT [{p_rep.id_produit}] : dérivation matériau impossible — {e}"
+            )
             continue
 
         for config in app_config.configs_calcul:
@@ -121,11 +125,17 @@ def lancer_calcul(
 
             if not registre._force_recalcul and registre.est_calcule(id_mat, id_calc):
                 if verbose:
-                    logger.info(f"Résultats existants pour ({id_mat}, {id_calc}) — ignoré.")
+                    logger.info(
+                        f"Résultats existants pour ({id_mat}, {id_calc}) — ignoré."
+                    )
                 continue
 
             # Génération des longueurs
-            L_min = float(config.L_min_m if isinstance(config.L_min_m, (int, float)) else config.L_min_m[0])
+            L_min = float(
+                config.L_min_m
+                if isinstance(config.L_min_m, (int, float))
+                else config.L_min_m[0]
+            )
             pas = float(config.pas_longueur_m)
             L_max = p_rep.L_max_m
             longueurs_m = np.arange(L_min, L_max + pas / 2, pas)
@@ -138,8 +148,12 @@ def lancer_calcul(
 
             # Vérifications ELU + ELS
             try:
-                résultats_elu = verifier_elu(materiau, config, type_poutre, longueurs_m, combinaisons)
-                résultats_els = verifier_els(materiau, config, type_poutre, longueurs_m, combinaisons)
+                résultats_elu = verifier_elu(
+                    materiau, config, type_poutre, longueurs_m, combinaisons
+                )
+                résultats_els = verifier_els(
+                    materiau, config, type_poutre, longueurs_m, combinaisons
+                )
             except Exception as e:
                 logger.warning(
                     f"AVERTISSEMENT [{id_mat}/{id_calc}] : erreur calcul — {e} — ignoré."
@@ -149,17 +163,28 @@ def lancer_calcul(
             # Double flexion (EF-024)
             if config.double_flexion:
                 try:
-                    from abac_charpente.ec5.double_flexion import verifier_double_flexion
+                    from abac_charpente.ec5.double_flexion import (
+                        verifier_double_flexion,
+                    )
                     from abac_charpente.ec5.proprietes import get_kmod, get_gamma_m
+
                     # Prendre la combinaison la plus défavorable ELU pour df
-                    combi_elu = [c for c in combinaisons if c.type_combinaison == "ELU_STR"]
+                    combi_elu = [
+                        c for c in combinaisons if c.type_combinaison == "ELU_STR"
+                    ]
                     if combi_elu:
                         combi_df = combi_elu[0]
-                        charges_df = type_poutre.charges_lineaires(config, materiau, longueurs_m, combi_df)
+                        charges_df = type_poutre.charges_lineaires(
+                            config, materiau, longueurs_m, combi_df
+                        )
                         q_y = charges_df.get("q_y_kNm", charges_df["q_d_kNm"])
                         q_z = charges_df.get("q_z_kNm", np.zeros_like(q_y))
                         famille = get_famille(materiau.classe_resistance)
-                        cs = int(config.classe_service if isinstance(config.classe_service, int) else config.classe_service[0])
+                        cs = int(
+                            config.classe_service
+                            if isinstance(config.classe_service, int)
+                            else config.classe_service[0]
+                        )
                         k_mod = get_kmod(famille, cs, combi_df.duree_charge)
                         gamma_M = get_gamma_m(famille)
                         résultats_df = verifier_double_flexion(
@@ -168,7 +193,9 @@ def lancer_calcul(
                     else:
                         résultats_df = []
                 except Exception as e:
-                    logger.warning(f"AVERTISSEMENT [{id_mat}/{id_calc}] : double flexion — {e}")
+                    logger.warning(
+                        f"AVERTISSEMENT [{id_mat}/{id_calc}] : double flexion — {e}"
+                    )
                     résultats_df = []
             else:
                 résultats_df = []
@@ -195,7 +222,9 @@ def lancer_calcul(
     # 6. Écriture CSV de sortie
     if tous_résultats:
         ecrire_sortie(tous_résultats, chemin_sortie)
-        logger.info(f"Calcul terminé : {len(tous_résultats)} lignes écrites dans {chemin_sortie}")
+        logger.info(
+            f"Calcul terminé : {len(tous_résultats)} lignes écrites dans {chemin_sortie}"
+        )
     else:
         logger.info("Aucun nouveau résultat à écrire.")
 
@@ -217,21 +246,28 @@ def _lire_produits_csv(chemin: Path) -> list[ProduitValide]:
 
     produits: list[ProduitValide] = []
     for _, row in df.iterrows():
-        if str(row.get("statut_ingestion", "valide")).strip() not in ("valide", "retenu", ""):
+        if str(row.get("statut_ingestion", "valide")).strip() not in (
+            "valide",
+            "retenu",
+            "",
+        ):
             continue
         try:
-            produits.append(ProduitValide(
-                id_produit=str(row["id_produit"]),
-                libelle=str(row.get("libelle", "")),
-                b_mm=float(row["b_mm"]),
-                h_mm=float(row["h_mm"]),
-                L_max_m=float(row["L_max_m"]),
-                classe_resistance=str(row["classe_resistance"]),
-                famille=str(row.get("famille", "bois_massif")),
-                disponible=str(row.get("disponible", "True")).lower() in ("true", "1", "oui"),
-                fournisseur=str(row.get("fournisseur", "")),
-                id_config_materiau=str(row["id_config_materiau"]),
-            ))
+            produits.append(
+                ProduitValide(
+                    id_produit=str(row["id_produit"]),
+                    libelle=str(row.get("libelle", "")),
+                    b_mm=float(row["b_mm"]),
+                    h_mm=float(row["h_mm"]),
+                    L_max_m=float(row["L_max_m"]),
+                    classe_resistance=str(row["classe_resistance"]),
+                    famille=str(row.get("famille", "bois_massif")),
+                    disponible=str(row.get("disponible", "True")).lower()
+                    in ("true", "1", "oui"),
+                    fournisseur=str(row.get("fournisseur", "")),
+                    id_config_materiau=str(row["id_config_materiau"]),
+                )
+            )
         except (KeyError, ValueError) as e:
             logger.warning(f"Ligne ignorée ({row.get('id_produit', '?')}) : {e}")
 
@@ -295,9 +331,11 @@ def _construire_résultats(
             els.get("taux_ELS_2", 0) or 0,
         )
         if df_res:
-            taux_elu = max(taux_elu,
-                           df_res.get("taux_biaxial_1_ELU", 0) or 0,
-                           df_res.get("taux_biaxial_2_ELU", 0) or 0)
+            taux_elu = max(
+                taux_elu,
+                df_res.get("taux_biaxial_1_ELU", 0) or 0,
+                df_res.get("taux_biaxial_2_ELU", 0) or 0,
+            )
 
         taux_determinant = max(taux_elu, taux_els)
 
@@ -366,7 +404,9 @@ def _construire_résultats(
             longueur_appui_min_mm=elu.get("longueur_appui_min_mm", 0.0),
             taux_appui_ELU=elu.get("taux_appui_ELU", 0.0),
             k_crit=elu.get("k_crit", 1.0),
-            L_deversement_m=elu.get("L_deversement_m") if config.double_flexion else None,
+            L_deversement_m=elu.get("L_deversement_m")
+            if config.double_flexion
+            else None,
             taux_deversement_ELU=elu.get("taux_deversement_ELU", 0.0),
             sigma_m_y_MPa=df_res.get("sigma_m_y_MPa") if df_res else None,
             sigma_m_z_MPa=df_res.get("sigma_m_z_MPa") if df_res else None,
@@ -392,7 +432,9 @@ def _construire_résultats(
             w_vert_inst_mm=els.get("w_vert_inst_mm"),
             w_vert_fin_mm=els.get("w_vert_fin_mm"),
             taux_determinant=taux_determinant,
-            verification_determinante=_trouver_verification_determinante(elu, els, df_res, taux_determinant),
+            verification_determinante=_trouver_verification_determinante(
+                elu, els, df_res, taux_determinant
+            ),
             clause_EC5=_clause_ec5(elu, els, df_res, taux_determinant),
             statut=statut,
             marge_securite=config.marge_securite,
@@ -404,6 +446,7 @@ def _construire_résultats(
     for r_base in résultats_base:
         for produit in produits_groupe:
             from dataclasses import replace
+
             r_produit = replace(r_base, id_produit=produit.id_produit)
             tous.append(r_produit)
 

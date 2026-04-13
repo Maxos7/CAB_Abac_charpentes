@@ -2,6 +2,7 @@
 
 Notation française EC5 (Principe IX). Entité dataclass (Principe X).
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -22,6 +23,7 @@ class CombinaisonEC0:
         duree_charge : durée de chargement EC5 T3.1 ('permanent' | 'long_terme' |
                         'moyen_terme' | 'court_terme' | 'instantane').
     """
+
     id_combinaison: str
     type_combinaison: str
     charge_principale: str

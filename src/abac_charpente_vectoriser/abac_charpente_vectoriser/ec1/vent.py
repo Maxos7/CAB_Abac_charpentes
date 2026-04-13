@@ -25,7 +25,9 @@ def _charger_cpe_table() -> dict[str, float]:
     dict[str, float]
         Dictionnaire ``{type_toiture: c_pe}``.
     """
-    chemin: str = str(files("abac_charpente_vectoriser.donnees").joinpath("ec1_cpe_vent.csv"))
+    chemin: str = str(
+        files("abac_charpente_vectoriser.donnees").joinpath("ec1_cpe_vent.csv")
+    )
     df: pd.DataFrame = pd.read_csv(chemin, sep=";", comment="#")
     return dict(zip(df["type_toiture"], df["c_pe"]))
 

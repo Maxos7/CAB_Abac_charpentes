@@ -3,6 +3,7 @@
 Le fichier ALL_PRODUIT_*.csv le plus récent est sélectionné par tri lexicographique
 décroissant sur le nom du fichier (format AAAA-MM-JJ_HH_MM_SS).
 """
+
 from __future__ import annotations
 
 from pathlib import Path

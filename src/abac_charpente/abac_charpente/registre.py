@@ -3,6 +3,7 @@
 Persistance CSV : id_config_materiau;id_config_calcul;statut;horodatage_iso
 Lookup O(1) via ensemble frozenset en mémoire.
 """
+
 from __future__ import annotations
 
 from datetime import datetime
@@ -51,7 +52,9 @@ class RegistreCalcul:
                 (str(row["id_config_materiau"]), str(row["id_config_calcul"]))
                 for _, row in df.iterrows()
             }
-            logger.info(f"Registre chargé : {len(self._calcules)} entrées depuis {chemin}")
+            logger.info(
+                f"Registre chargé : {len(self._calcules)} entrées depuis {chemin}"
+            )
         except Exception as e:
             logger.warning(
                 f"AVERTISSEMENT : Registre illisible ({e}) — recalcul complet forcé."

@@ -20,21 +20,16 @@ TYPES_POUTRE: dict[str, type[TypePoutreVect]] = {
     # ── Pannes (pièces inclinées, section variable selon orientation) ──────────
     "PanneDeversee": PanneDeverseeVect,
     # Section ⊥ au rampant (normale à la surface) — double flexion si activée.
-
     "PanneAplomb": PanneAplombVect,
     # Section verticale (normale au sol) — double flexion intrinsèque.
-
     # ── Chevron ────────────────────────────────────────────────────────────────
     "Chevron": ChevronVect,
     # Pièce posée dans le sens du rampant, charges ⊥ au rampant.
-
     # ── Poutres horizontales ───────────────────────────────────────────────────
     "Solive": SoliveVect,
     # Plancher ou toiture accessible — bi-appui horizontal.
-
     "Sommier": SommierVect,
     # Poutre principale horizontale — bi-appui horizontal.
-
     # ── Futures extensions (commentées — à implémenter dans des modules dédiés) ─
     # "Arbaletrier":  ArbaletierVect,   # compression + flexion §6.2.4, N_d < 0
     # "Entrait":      EntraitVect,      # traction + flexion §6.2.3, N_d > 0

@@ -69,7 +69,9 @@ def calculer_charges_caracteristiques(
     g2_kNm: float = g2_k * entraxe_m
     q_kNm: float = q_k * entraxe_m
     s_kNm: float = charge_neige_kNm(s_k, pente_deg, entraxe_m) if s_k > 0 else 0.0
-    w_kNm: float = charge_vent_kNm(w_k, config.type_toiture_vent, entraxe_m) if w_k > 0 else 0.0
+    w_kNm: float = (
+        charge_vent_kNm(w_k, config.type_toiture_vent, entraxe_m) if w_k > 0 else 0.0
+    )
 
     return {
         "g_pp_kNm": g_pp_kNm,

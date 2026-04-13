@@ -11,6 +11,7 @@ Fonctions exportées :
 Toutes les tables sont chargées à l'import depuis src/abac_charpente/data/.
 Notation EC5 française (Principe IX). Unités explicites (Principe VI).
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -25,8 +26,9 @@ _DATA = Path(__file__).parent.parent / "data"
 # Chargement des tables (une seule fois à l'import)
 # ---------------------------------------------------------------------------
 
+
 def _charger_materiaux() -> pd.DataFrame:
-    df = pd.read_csv(_DATA / "materiaux_bois.csv", sep=";",index_col="classe")
+    df = pd.read_csv(_DATA / "materiaux_bois.csv", sep=";", index_col="classe")
     return df
 
 
@@ -114,9 +116,9 @@ def calculer_section(b_mm: float, h_mm: float, rho_k_kgm3: float) -> dict:
     h_cm = h_mm / 10.0
 
     A_cm2 = b_cm * h_cm
-    I_cm4 = b_cm * h_cm ** 3 / 12.0       # axe fort (flexion dans la hauteur)
+    I_cm4 = b_cm * h_cm**3 / 12.0  # axe fort (flexion dans la hauteur)
     W_cm3 = I_cm4 / (h_cm / 2.0)
-    I_z_cm4 = h_cm * b_cm ** 3 / 12.0     # axe faible (flexion dans la largeur)
+    I_z_cm4 = h_cm * b_cm**3 / 12.0  # axe faible (flexion dans la largeur)
     W_z_cm3 = I_z_cm4 / (b_cm / 2.0)
 
     # Poids propre (kN/m) : ρ_k × A × g / 1000
@@ -152,9 +154,8 @@ def get_kmod(famille: str, classe_service: int, duree_charge: str) -> float:
 
 def get_kdef(famille: str, classe_service: int) -> float:
     """Retourne k_def selon EC5 Tableau 3.2."""
-    mask = (
-        (_DF_KDEF["famille"] == famille)
-        & (_DF_KDEF["classe_service"] == classe_service)
+    mask = (_DF_KDEF["famille"] == famille) & (
+        _DF_KDEF["classe_service"] == classe_service
     )
     rows = _DF_KDEF[mask]
     if rows.empty:

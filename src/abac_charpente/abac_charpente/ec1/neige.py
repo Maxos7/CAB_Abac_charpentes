@@ -7,6 +7,7 @@
 
 Implémentation vectorisée numpy (np.interp).
 """
+
 from __future__ import annotations
 
 import numpy as np

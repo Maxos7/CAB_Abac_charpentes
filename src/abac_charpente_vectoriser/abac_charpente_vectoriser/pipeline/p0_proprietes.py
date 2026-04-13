@@ -41,7 +41,9 @@ def extraire_vecteurs_materiaux(
         - ``A_cm2``          : aire totale [cm²]
     """
     return {
-        "A_eff_cis_cm2": np.array([m.A_eff_cisaillement_cm2 for m in materiaux], dtype=float),
+        "A_eff_cis_cm2": np.array(
+            [m.A_eff_cisaillement_cm2 for m in materiaux], dtype=float
+        ),
         "W_y_cm3": np.array([m.W_y_cm3 for m in materiaux], dtype=float),
         "W_z_cm3": np.array([m.W_z_cm3 for m in materiaux], dtype=float),
         "I_y_cm4": np.array([m.I_y_cm4 for m in materiaux], dtype=float),

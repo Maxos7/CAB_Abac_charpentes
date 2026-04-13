@@ -8,6 +8,7 @@ le nom du type de poutre dans ce module. La décomposition des charges est dél�
 Notation française EC5 obligatoire (Principe IX).
 Unités explicites dans les noms de variables (Principe VI).
 """
+
 from __future__ import annotations
 
 import math
@@ -152,7 +153,7 @@ def calculer_k_crit(
 
     # Contrainte critique de déversement (MPa) — EC5 Éq. (6.32) section rectangulaire
     # σ_m_crit [MPa] = 0.78 × b[mm]² × E_0.05[MPa] / (h[mm] × L_ef[mm])
-    sigma_m_crit_MPa = 0.78 * b_mm ** 2 * E_005_MPa / (h_mm * L_dev_mm)
+    sigma_m_crit_MPa = 0.78 * b_mm**2 * E_005_MPa / (h_mm * L_dev_mm)
 
     if sigma_m_crit_MPa <= 0:
         return 0.0
@@ -164,7 +165,7 @@ def calculer_k_crit(
     elif lambda_rel_m <= 1.4:
         return 1.56 - 0.75 * lambda_rel_m
     else:
-        return 1.0 / (lambda_rel_m ** 2)
+        return 1.0 / (lambda_rel_m**2)
 
 
 def verifier_elu(
@@ -180,12 +181,20 @@ def verifier_elu(
     Retourne une liste de dicts contenant toutes les valeurs intermédiaires ELU.
     """
     famille = get_famille(materiau.classe_resistance)
-    classe_service = int(config.classe_service if isinstance(config.classe_service, int)
-                         else config.classe_service[0])
+    classe_service = int(
+        config.classe_service
+        if isinstance(config.classe_service, int)
+        else config.classe_service[0]
+    )
     k_cr = get_k_cr()
-    longueur_appui_mm = float(config.longueur_appui_mm if isinstance(config.longueur_appui_mm, (int, float))
-                              else config.longueur_appui_mm[0])
-    k_c90 = float(config.k_c90 if isinstance(config.k_c90, (int, float)) else config.k_c90[0])
+    longueur_appui_mm = float(
+        config.longueur_appui_mm
+        if isinstance(config.longueur_appui_mm, (int, float))
+        else config.longueur_appui_mm[0]
+    )
+    k_c90 = float(
+        config.k_c90 if isinstance(config.k_c90, (int, float)) else config.k_c90[0]
+    )
     taux_cible_appui = config.taux_cible_appui
 
     résultats: list[dict] = []
@@ -205,70 +214,87 @@ def verifier_elu(
         # Cisaillement §6.1.7
         res_cis = calculer_cisaillement(materiau, V_d_kN, k_mod, gamma_M, k_cr)
         # Appui §6.1.5
-        res_app = calculer_appui(materiau, V_d_kN, longueur_appui_mm, k_c90, k_mod, gamma_M)
+        res_app = calculer_appui(
+            materiau, V_d_kN, longueur_appui_mm, k_c90, k_mod, gamma_M
+        )
 
         # Longueur appui minimale — calculée QUELLE QUE SOIT l'issue (T052)
         n = len(longueurs_m)
-        long_appui_min = np.array([
-            calculer_longueur_appui_min(materiau, float(V_d_kN[i]), k_c90, taux_cible_appui, k_mod, gamma_M)
-            for i in range(n)
-        ])
+        long_appui_min = np.array(
+            [
+                calculer_longueur_appui_min(
+                    materiau, float(V_d_kN[i]), k_c90, taux_cible_appui, k_mod, gamma_M
+                )
+                for i in range(n)
+            ]
+        )
 
         # Déversement §6.3.3 (scalaire par longueur)
         entraxe_adv = config.entraxe_antideversement_mm
-        k_crit_arr = np.array([
-            calculer_k_crit(
-                materiau,
-                type_poutre.longueur_deversement_m(float(longueurs_m[i]), entraxe_adv),
-            )
-            for i in range(n)
-        ])
+        k_crit_arr = np.array(
+            [
+                calculer_k_crit(
+                    materiau,
+                    type_poutre.longueur_deversement_m(
+                        float(longueurs_m[i]), entraxe_adv
+                    ),
+                )
+                for i in range(n)
+            ]
+        )
         taux_dever = res_flex["sigma_m_MPa"] / (k_crit_arr * res_flex["f_m_d_MPa"])
 
         # Double flexion (EF-024) — délégué à double_flexion.py via moteur.py
         M_z_kNm = charges.get("M_z_kNm", None)
 
         for i in range(n):
-            L_dev_m_i = type_poutre.longueur_deversement_m(float(longueurs_m[i]), entraxe_adv)
-            résultats.append({
-                "longueur_m": float(longueurs_m[i]),
-                "longueur_projetee_m": float(charges.get("longueur_projetee_m", [None] * n)[i])
-                    if "longueur_projetee_m" in charges else None,
-                "id_combinaison": combi.id_combinaison,
-                "type_combinaison": combi.type_combinaison,
-                "charge_principale": combi.charge_principale,
-                "gamma_G": combi.gamma_G,
-                "gamma_Q1": combi.gamma_Q1,
-                "psi_0_Q2": combi.psi_0_Q2,
-                "psi_0_Q3": combi.psi_0_Q3,
-                "q_G_kNm": float(charges["q_G_kNm"][i]),
-                "q_Q_kNm": float(charges["q_Q_kNm"][i]),
-                "q_S_kNm": float(charges["q_S_kNm"][i]),
-                "q_W_kNm": float(charges["q_W_kNm"][i]),
-                "q_combinee_kNm": float(charges["q_d_kNm"][i]),
-                "M_max_kNm": float(M_d_kNm[i]),
-                "V_max_kN": float(V_d_kN[i]),
-                "M_z_kNm": float(M_z_kNm[i]) if M_z_kNm is not None else None,
-                "k_mod": k_mod,
-                "gamma_M": gamma_M,
-                "f_m_d_MPa": float(res_flex["f_m_d_MPa"][i]),
-                "f_v_d_MPa": float(res_cis["f_v_d_MPa"][i]),
-                "sigma_m_MPa": float(res_flex["sigma_m_MPa"][i]),
-                "taux_flexion_ELU": float(res_flex["taux_flexion_ELU"][i]),
-                "tau_MPa": float(res_cis["tau_MPa"][i]),
-                "taux_cisaillement_ELU": float(res_cis["taux_cisaillement_ELU"][i]),
-                "f_c90_k_MPa": materiau.f_c90_k_MPa,
-                "f_c90_d_MPa": float(res_app["f_c90_d_MPa"][i]),
-                "sigma_c90_MPa": float(res_app["sigma_c90_MPa"][i]),
-                "k_c90": k_c90,
-                "longueur_appui_mm": longueur_appui_mm,
-                "taux_cible_appui": taux_cible_appui,
-                "longueur_appui_min_mm": float(long_appui_min[i]),
-                "taux_appui_ELU": float(res_app["taux_appui_ELU"][i]),
-                "k_crit": float(k_crit_arr[i]),
-                "L_deversement_m": L_dev_m_i if config.double_flexion else None,
-                "taux_deversement_ELU": float(taux_dever[i]),
-                "duree_charge": combi.duree_charge,
-            })
+            L_dev_m_i = type_poutre.longueur_deversement_m(
+                float(longueurs_m[i]), entraxe_adv
+            )
+            résultats.append(
+                {
+                    "longueur_m": float(longueurs_m[i]),
+                    "longueur_projetee_m": float(
+                        charges.get("longueur_projetee_m", [None] * n)[i]
+                    )
+                    if "longueur_projetee_m" in charges
+                    else None,
+                    "id_combinaison": combi.id_combinaison,
+                    "type_combinaison": combi.type_combinaison,
+                    "charge_principale": combi.charge_principale,
+                    "gamma_G": combi.gamma_G,
+                    "gamma_Q1": combi.gamma_Q1,
+                    "psi_0_Q2": combi.psi_0_Q2,
+                    "psi_0_Q3": combi.psi_0_Q3,
+                    "q_G_kNm": float(charges["q_G_kNm"][i]),
+                    "q_Q_kNm": float(charges["q_Q_kNm"][i]),
+                    "q_S_kNm": float(charges["q_S_kNm"][i]),
+                    "q_W_kNm": float(charges["q_W_kNm"][i]),
+                    "q_combinee_kNm": float(charges["q_d_kNm"][i]),
+                    "M_max_kNm": float(M_d_kNm[i]),
+                    "V_max_kN": float(V_d_kN[i]),
+                    "M_z_kNm": float(M_z_kNm[i]) if M_z_kNm is not None else None,
+                    "k_mod": k_mod,
+                    "gamma_M": gamma_M,
+                    "f_m_d_MPa": float(res_flex["f_m_d_MPa"][i]),
+                    "f_v_d_MPa": float(res_cis["f_v_d_MPa"][i]),
+                    "sigma_m_MPa": float(res_flex["sigma_m_MPa"][i]),
+                    "taux_flexion_ELU": float(res_flex["taux_flexion_ELU"][i]),
+                    "tau_MPa": float(res_cis["tau_MPa"][i]),
+                    "taux_cisaillement_ELU": float(res_cis["taux_cisaillement_ELU"][i]),
+                    "f_c90_k_MPa": materiau.f_c90_k_MPa,
+                    "f_c90_d_MPa": float(res_app["f_c90_d_MPa"][i]),
+                    "sigma_c90_MPa": float(res_app["sigma_c90_MPa"][i]),
+                    "k_c90": k_c90,
+                    "longueur_appui_mm": longueur_appui_mm,
+                    "taux_cible_appui": taux_cible_appui,
+                    "longueur_appui_min_mm": float(long_appui_min[i]),
+                    "taux_appui_ELU": float(res_app["taux_appui_ELU"][i]),
+                    "k_crit": float(k_crit_arr[i]),
+                    "L_deversement_m": L_dev_m_i if config.double_flexion else None,
+                    "taux_deversement_ELU": float(taux_dever[i]),
+                    "duree_charge": combi.duree_charge,
+                }
+            )
 
     return résultats

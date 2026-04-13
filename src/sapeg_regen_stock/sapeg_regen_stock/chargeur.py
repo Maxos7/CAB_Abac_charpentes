@@ -3,6 +3,7 @@
 Lecture avec pandas (latin-1, séparateur |).
 Validation des colonnes obligatoires et des valeurs numériques.
 """
+
 from __future__ import annotations
 
 import sys
@@ -17,10 +18,21 @@ from sapeg_regen_stock.modeles import ConfigIngestion, ProduitStock
 # Mapping colonnes CSV → champs ProduitStock
 # Les noms de colonnes exacts du fichier ALL_PRODUIT_*.csv seront détectés dynamiquement.
 # Format SAPEG : colonnes avec préfixe "produit_", dimensions en cm.
-_COL_CODE_ARTICLE = ["produit_code_article", "Code article", "code_article", "CODE_ARTICLE", "Reference"]
+_COL_CODE_ARTICLE = [
+    "produit_code_article",
+    "Code article",
+    "code_article",
+    "CODE_ARTICLE",
+    "Reference",
+]
 _COL_DESIGNATION = ["produit_libelle", "Désignation", "designation", "Designation"]
 _COL_FAMILLE = ["Famille", "famille"]
-_COL_DISPONIBILITE = ["produit_commandable", "Disponibilité", "disponibilite", "Disponibilite"]
+_COL_DISPONIBILITE = [
+    "produit_commandable",
+    "Disponibilité",
+    "disponibilite",
+    "Disponibilite",
+]
 # SAPEG : produit_longueur = longueur en cm ; génériques en mm
 _COL_LONGUEUR = ["produit_longueur", "Longueur", "longueur", "LONGUEUR", "L_max"]
 # SAPEG : produit_epaisseur = b (épaisseur, dim. plus petite) en cm
@@ -29,7 +41,12 @@ _COL_LARGEUR = ["produit_epaisseur", "Largeur", "largeur", "LARGEUR", "b_mm"]
 _COL_HAUTEUR = ["produit_largeur", "Hauteur", "hauteur", "HAUTEUR", "h_mm"]
 # Classe de résistance : extraite du libellé si colonne absente
 _COL_CLASSE = ["Classe", "classe", "CLASSE", "Classe_resistance", "produit_mots_cles"]
-_COL_FOURNISSEUR = ["produit_nom_fournisseur", "Fournisseur", "fournisseur", "FOURNISSEUR"]
+_COL_FOURNISSEUR = [
+    "produit_nom_fournisseur",
+    "Fournisseur",
+    "fournisseur",
+    "FOURNISSEUR",
+]
 
 
 def _trouver_colonne(df: pd.DataFrame, candidats: list[str]) -> str | None:
@@ -94,7 +111,9 @@ def charger_stock(chemin: Path, config: ConfigIngestion) -> list[ProduitStock]:
         sys.exit(2)
 
     # Vérification colonnes obligatoires
-    colonnes_manquantes = [c for c in config.colonnes_obligatoires if c not in df.columns]
+    colonnes_manquantes = [
+        c for c in config.colonnes_obligatoires if c not in df.columns
+    ]
     if colonnes_manquantes:
         logger.error(
             f"Colonnes obligatoires manquantes dans {chemin.name} : "
@@ -118,6 +137,7 @@ def charger_stock(chemin: Path, config: ConfigIngestion) -> list[ProduitStock]:
         sys.exit(2)
 
     from sapeg_regen_stock.derivateur import extraire_classe_resistance
+
     produits: list[ProduitStock] = []
 
     for idx, row in enumerate(df.to_dict("records")):
@@ -141,7 +161,9 @@ def charger_stock(chemin: Path, config: ConfigIngestion) -> list[ProduitStock]:
             else:
                 h_mm = 0.0
         except (ValueError, TypeError):
-            logger.warning(f"AVERTISSEMENT [{id_produit}] : dimensions non numériques — ligne ignorée")
+            logger.warning(
+                f"AVERTISSEMENT [{id_produit}] : dimensions non numériques — ligne ignorée"
+            )
             continue
 
         # S'assurer que b <= h (épaisseur <= largeur)
@@ -150,46 +172,60 @@ def charger_stock(chemin: Path, config: ConfigIngestion) -> list[ProduitStock]:
 
         # Validation basique
         if b_mm <= 0 or h_mm <= 0 or L_max_m <= 0:
-            logger.warning(f"AVERTISSEMENT [{id_produit}] : dimensions invalides (b={b_mm}, h={h_mm}, L={L_max_m}) — ligne ignorée")
+            logger.warning(
+                f"AVERTISSEMENT [{id_produit}] : dimensions invalides (b={b_mm}, h={h_mm}, L={L_max_m}) — ligne ignorée"
+            )
             continue
 
         # Extraction classe de résistance
         # Cherche dans : libellé produit → col_classe → code article
         # classe_estimee = True si non trouvée directement dans le libellé
         classe_raw = str(row[col_classe]).strip() if col_classe else ""
-        libelle_raw = str(row[col_desi]).strip() if col_desi else str(row.get(col_code, ""))
+        libelle_raw = (
+            str(row[col_desi]).strip() if col_desi else str(row.get(col_code, ""))
+        )
         classe = extraire_classe_resistance(libelle=libelle_raw, mots_cles="")
         if classe:
             classe_dans_libelle = True
         else:
             classe = extraire_classe_resistance(libelle="", mots_cles=classe_raw)
             if not classe:
-                classe = extraire_classe_resistance(libelle=str(row.get(col_code, "")), mots_cles="")
+                classe = extraire_classe_resistance(
+                    libelle=str(row.get(col_code, "")), mots_cles=""
+                )
             if classe:
                 classe_dans_libelle = False
             else:
-                logger.warning(f"AVERTISSEMENT [{id_produit}] : classe de résistance non détectée ('{classe_raw[:50]}') — ligne ignorée")
+                logger.warning(
+                    f"AVERTISSEMENT [{id_produit}] : classe de résistance non détectée ('{classe_raw[:50]}') — ligne ignorée"
+                )
                 continue
 
         famille = str(row[col_famille]).strip() if col_famille else "INCONNU"
         disponible = str(row.get(col_dispo, "")).strip().lower() in (
-            "disponible", "oui", "yes", "true", "1"
+            "disponible",
+            "oui",
+            "yes",
+            "true",
+            "1",
         )
         fournisseur = str(row[col_fournisseur]).strip() if col_fournisseur else ""
 
-        produits.append(ProduitStock(
-            id_produit=id_produit,
-            b_mm=b_mm,
-            h_mm=h_mm,
-            L_max_m=L_max_m,
-            classe_resistance=classe,
-            famille=famille,
-            disponible=disponible,
-            fournisseur=fournisseur,
-            libelle=libelle_raw,
-            classe_dans_libelle=classe_dans_libelle,
-            ligne_csv_source=int(idx) + 2,  # +2 : 1 pour l'en-tête, 1 pour base-1
-        ))
+        produits.append(
+            ProduitStock(
+                id_produit=id_produit,
+                b_mm=b_mm,
+                h_mm=h_mm,
+                L_max_m=L_max_m,
+                classe_resistance=classe,
+                famille=famille,
+                disponible=disponible,
+                fournisseur=fournisseur,
+                libelle=libelle_raw,
+                classe_dans_libelle=classe_dans_libelle,
+                ligne_csv_source=int(idx) + 2,  # +2 : 1 pour l'en-tête, 1 pour base-1
+            )
+        )
 
     logger.info(f"{len(produits)} produits chargés depuis {chemin.name}")
     return produits

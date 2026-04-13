@@ -29,7 +29,9 @@ from ...protocoles.verification import ResultatVerification, VerificationELU
 @lru_cache(maxsize=1)
 def _k_m() -> float:
     """Lit le coefficient k_m depuis params_ec5.csv — EC5 §6.1.6(2)."""
-    chemin: str = str(files("abac_charpente_vectoriser.donnees").joinpath("params_ec5.csv"))
+    chemin: str = str(
+        files("abac_charpente_vectoriser.donnees").joinpath("params_ec5.csv")
+    )
     df: pd.DataFrame = pd.read_csv(chemin, sep=";", comment="#")
     return float(df.set_index("parametre").loc["k_m", "valeur"])
 
@@ -61,11 +63,11 @@ class FlexionSimple(VerificationELU):
             f_m_d_CM : (n_C, n_M) → (1, n_C, n_M)
         """
         # M en kN·m → σ en MPa : (kN·m) / (cm³) × 1e3 = MPa
-        W_y: np.ndarray = espace.W_y_cm3_arr[np.newaxis, np.newaxis, :]        # (1, 1, n_M)
-        sigma_m_y: np.ndarray = espace.M_d_kNm / W_y * 1e3                    # (n_L, n_C, n_M) [MPa]
+        W_y: np.ndarray = espace.W_y_cm3_arr[np.newaxis, np.newaxis, :]  # (1, 1, n_M)
+        sigma_m_y: np.ndarray = espace.M_d_kNm / W_y * 1e3  # (n_L, n_C, n_M) [MPa]
 
-        k_crit: np.ndarray = espace.k_crit_LM[:, np.newaxis, :]               # (n_L, 1, n_M)
-        f_m_d: np.ndarray = espace.f_m_d_CM[np.newaxis, :, :]                 # (1, n_C, n_M)
+        k_crit: np.ndarray = espace.k_crit_LM[:, np.newaxis, :]  # (n_L, 1, n_M)
+        f_m_d: np.ndarray = espace.f_m_d_CM[np.newaxis, :, :]  # (1, n_C, n_M)
 
         taux: np.ndarray = sigma_m_y / (k_crit * f_m_d)
         active: np.ndarray = np.ones_like(taux, dtype=bool)
@@ -101,8 +103,8 @@ class DoubleFlexionForte(VerificationELU):
         k_crit: np.ndarray = espace.k_crit_LM[:, np.newaxis, :]
         f_m_d: np.ndarray = espace.f_m_d_CM[np.newaxis, :, :]
 
-        sigma_y: np.ndarray = espace.M_y_kNm / W_y * 1e3   # (n_L, n_C, n_M) [MPa]
-        sigma_z: np.ndarray = espace.M_z_kNm / W_z * 1e3   # (n_L, n_C, n_M) [MPa]
+        sigma_y: np.ndarray = espace.M_y_kNm / W_y * 1e3  # (n_L, n_C, n_M) [MPa]
+        sigma_z: np.ndarray = espace.M_z_kNm / W_z * 1e3  # (n_L, n_C, n_M) [MPa]
 
         taux: np.ndarray = sigma_y / (k_crit * f_m_d) + km * sigma_z / f_m_d
         active = np.ones_like(taux, dtype=bool)

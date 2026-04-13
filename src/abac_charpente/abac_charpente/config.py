@@ -4,6 +4,7 @@ Modèles pydantic (Principe X). Validation en français.
 Résolution des limites de flèche depuis data/limites_fleche_ec5.csv (EF-023).
 Expansion cartésienne EF-005c dans expandre_configs().
 """
+
 from __future__ import annotations
 
 import itertools
@@ -16,7 +17,13 @@ import pandas as pd
 from loguru import logger
 from pydantic import BaseModel, field_validator, model_validator
 
-from sapeg_regen_stock.modeles import ConfigFiltre, RegleEgal, ReglePlage, RegleListe, RegleNonNul
+from sapeg_regen_stock.modeles import (
+    ConfigFiltre,
+    RegleEgal,
+    ReglePlage,
+    RegleListe,
+    RegleNonNul,
+)
 from abac_charpente.modeles.config_calcul import ConfigCalcul
 
 # Limites de flèche depuis le CSV normatif
@@ -35,6 +42,7 @@ def _charger_limites_fleche() -> pd.DataFrame:
 # ---------------------------------------------------------------------------
 # Modèles pydantic de configuration
 # ---------------------------------------------------------------------------
+
 
 class ConfigStock(BaseModel):
     repertoire: str = "."
@@ -76,6 +84,7 @@ class AppConfig(BaseModel):
 # Chargement TOML
 # ---------------------------------------------------------------------------
 
+
 def charger_config(chemin: Path) -> AppConfig:
     """Charge config.toml et configs_calcul.toml, valide avec pydantic.
 
@@ -95,8 +104,11 @@ def charger_config(chemin: Path) -> AppConfig:
     try:
         stock = ConfigStock(**data.get("stock", {}))
         sortie = ConfigSortie(**data.get("sortie", {}))
-        calcul = ConfigCalculGlobal(**data.get("calcul", {}) if not isinstance(data.get("calcul"), dict)
-                                    else {k: v for k, v in data["calcul"].items() if k != "defaults"})
+        calcul = ConfigCalculGlobal(
+            **data.get("calcul", {})
+            if not isinstance(data.get("calcul"), dict)
+            else {k: v for k, v in data["calcul"].items() if k != "defaults"}
+        )
         filtres_ref = ConfigFiltresRef(**data.get("filtres", {}))
         defaults_data = data.get("calcul", {}).get("defaults", {})
         defaults = ConfigCalculDefaults(**defaults_data)
@@ -164,16 +176,23 @@ def charger_configs_calcul(
                 bloc["limite_fleche_2"] = float(row["w_2_inv"])
 
         # EF-024 : double_flexion auto si Panne ET pente > 0
-        if bloc.get("type_poutre") == "Panne" and float(
-            bloc.get("pente_deg", 0) if not isinstance(bloc.get("pente_deg"), list)
-            else bloc["pente_deg"][0]
-        ) > 0:
+        if (
+            bloc.get("type_poutre") == "Panne"
+            and float(
+                bloc.get("pente_deg", 0)
+                if not isinstance(bloc.get("pente_deg"), list)
+                else bloc["pente_deg"][0]
+            )
+            > 0
+        ):
             bloc.setdefault("double_flexion", True)
 
         try:
             cfg = ConfigCalcul(**bloc)
         except Exception as e:
-            logger.error(f"Config de calcul invalide (id={bloc.get('id_config_calcul', '?')}) : {e}")
+            logger.error(
+                f"Config de calcul invalide (id={bloc.get('id_config_calcul', '?')}) : {e}"
+            )
             sys.exit(1)
 
         configs.append(cfg)
@@ -208,7 +227,9 @@ def charger_filtres(chemin: Path) -> list[ConfigFiltre]:
     for bloc in blocs:
         nom = bloc.get("nom", "")
         if nom in noms_vus:
-            logger.error(f"Nom de filtre dupliqué : '{nom}' — les noms doivent être uniques.")
+            logger.error(
+                f"Nom de filtre dupliqué : '{nom}' — les noms doivent être uniques."
+            )
             sys.exit(1)
         noms_vus.add(nom)
 
@@ -265,10 +286,19 @@ _ABBREV: dict[str, str] = {
 }
 
 _CHAMPS_SCALAIRES = {
-    "id_config_calcul", "type_poutre", "usage", "categorie_q",
-    "type_toiture_vent", "second_oeuvre", "double_flexion",
-    "entraxe_antideversement_mm", "marge_securite", "taux_cible_appui",
-    "limite_fleche_inst", "limite_fleche_fin", "limite_fleche_2",
+    "id_config_calcul",
+    "type_poutre",
+    "usage",
+    "categorie_q",
+    "type_toiture_vent",
+    "second_oeuvre",
+    "double_flexion",
+    "entraxe_antideversement_mm",
+    "marge_securite",
+    "taux_cible_appui",
+    "limite_fleche_inst",
+    "limite_fleche_fin",
+    "limite_fleche_2",
     "pas_longueur_m",
 }
 
@@ -281,8 +311,7 @@ def expandre_configs(parent: ConfigCalcul) -> list[ConfigCalcul]:
     Erreur code 1 en cas de collision d'ID.
     """
     champs_multivalues = [
-        c for c in _ABBREV
-        if isinstance(getattr(parent, c, None), list)
+        c for c in _ABBREV if isinstance(getattr(parent, c, None), list)
     ]
 
     if not champs_multivalues:
@@ -314,14 +343,16 @@ def expandre_configs(parent: ConfigCalcul) -> list[ConfigCalcul]:
             enfant_dict[champ] = val
             abbrev = _ABBREV[champ]
             # Format : entier si pas de décimales
-            val_str = str(int(val)) if isinstance(val, float) and val == int(val) else str(val)
+            val_str = (
+                str(int(val))
+                if isinstance(val, float) and val == int(val)
+                else str(val)
+            )
             suffix_parts.append(f"{abbrev}{val_str}")
 
         id_enfant = f"{parent.id_config_calcul}_{'_'.join(suffix_parts)}"
         if id_enfant in ids_vus:
-            logger.error(
-                f"Collision d'ID détectée lors de l'expansion : '{id_enfant}'"
-            )
+            logger.error(f"Collision d'ID détectée lors de l'expansion : '{id_enfant}'")
             sys.exit(1)
         ids_vus.add(id_enfant)
         enfant_dict["id_config_calcul"] = id_enfant

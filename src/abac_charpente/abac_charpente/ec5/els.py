@@ -12,6 +12,7 @@ Formules EC5 §7.2 :
 
 Notation française EC5 (Principe IX). Unités explicites (Principe VI).
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -57,9 +58,9 @@ def calculer_w_inst(
         L m → mm : L × 1000
         I cm⁴ → mm⁴ : I × 10000
     """
-    q_Nmm = q_kNm * 1.0       # kN/m → N/mm : numériquement identique
-    L_mm = L_m * 1000.0        # m → mm
-    I_mm4 = I_cm4 * 1e4        # cm⁴ → mm⁴
+    q_Nmm = q_kNm * 1.0  # kN/m → N/mm : numériquement identique
+    L_mm = L_m * 1000.0  # m → mm
+    I_mm4 = I_cm4 * 1e4  # cm⁴ → mm⁴
     return 5.0 * q_Nmm * L_mm**4 / (384.0 * E_mean_MPa * I_mm4)
 
 
@@ -86,7 +87,11 @@ def get_limites_fleche(usage: str, L_m: float) -> dict[str, float]:
     """
     limites = _charger_limites()
     if usage not in limites.index:
-        return {"limite_inst_mm": L_m * 1000 / 300, "limite_fin_mm": L_m * 1000 / 250, "limite_2_mm": None}
+        return {
+            "limite_inst_mm": L_m * 1000 / 300,
+            "limite_fin_mm": L_m * 1000 / 250,
+            "limite_2_mm": None,
+        }
 
     row = limites.loc[usage]
     L_mm = L_m * 1000.0
@@ -121,8 +126,11 @@ def verifier_els(
     Retourne une liste de dicts contenant toutes les valeurs intermédiaires ELS.
     """
     famille = get_famille(materiau.classe_resistance)
-    classe_service = int(config.classe_service if isinstance(config.classe_service, int)
-                         else config.classe_service[0])
+    classe_service = int(
+        config.classe_service
+        if isinstance(config.classe_service, int)
+        else config.classe_service[0]
+    )
     k_def = get_kdef(famille, classe_service)
     second_oeuvre = config.second_oeuvre
     usage = config.usage
@@ -150,9 +158,19 @@ def verifier_els(
             limite_2 = config.limite_fleche_2
 
             # L/x → mm ou depuis CSV
-            limite_inst_mm = (L_m_f * 1000 / limite_inst) if limite_inst else limites_csv["limite_inst_mm"]
-            limite_fin_mm = (L_m_f * 1000 / limite_fin) if limite_fin else limites_csv["limite_fin_mm"]
-            limite_2_mm = (L_m_f * 1000 / limite_2) if limite_2 else limites_csv["limite_2_mm"]
+            limite_inst_mm = (
+                (L_m_f * 1000 / limite_inst)
+                if limite_inst
+                else limites_csv["limite_inst_mm"]
+            )
+            limite_fin_mm = (
+                (L_m_f * 1000 / limite_fin)
+                if limite_fin
+                else limites_csv["limite_fin_mm"]
+            )
+            limite_2_mm = (
+                (L_m_f * 1000 / limite_2) if limite_2 else limites_csv["limite_2_mm"]
+            )
 
             if limite_inst_mm is None:
                 limite_inst_mm = L_m_f * 1000 / 300
@@ -160,7 +178,9 @@ def verifier_els(
                 limite_fin_mm = L_m_f * 1000 / 250
 
             # Flèche instantanée
-            w_inst_mm = calculer_w_inst(q_d, L_m_f, materiau.E_0_mean_MPa, materiau.I_cm4)
+            w_inst_mm = calculer_w_inst(
+                q_d, L_m_f, materiau.E_0_mean_MPa, materiau.I_cm4
+            )
             w_creep_mm = k_def * w_inst_mm
             w_fin_mm = calculer_w_fin(w_inst_mm, k_def)
 
@@ -187,37 +207,40 @@ def verifier_els(
             w_vert_fin_mm = None
             if pente_rad_arr is not None:
                 import math
+
                 pente_r = float(pente_rad_arr[i])
                 if pente_r > 0:
                     w_vert_inst_mm = w_inst_mm / math.cos(pente_r)
                     w_vert_fin_mm = w_fin_mm / math.cos(pente_r)
 
-            résultats.append({
-                "longueur_m": L_m_f,
-                "longueur_projetee_m": lp,
-                "id_combinaison": combi.id_combinaison,
-                "type_combinaison": combi.type_combinaison,
-                "statut_usage": statut_usage,
-                "w_inst_mm": w_inst_mm,
-                "limite_inst_mm": limite_inst_mm,
-                "taux_ELS_inst": taux_inst,
-                "w_creep_mm": w_creep_mm,
-                "w_fin_mm": w_fin_mm,
-                "limite_fin_mm": limite_fin_mm,
-                "taux_ELS_fin": taux_fin,
-                "w_2_mm": w_2_mm,
-                "limite_2_mm": limite_2_mm_calc,
-                "taux_ELS_2": taux_2,
-                # Double flexion (rempli par double_flexion.py)
-                "w_y_inst_mm": None,
-                "w_z_inst_mm": None,
-                "w_res_inst_mm": None,
-                "w_y_fin_mm": None,
-                "w_z_fin_mm": None,
-                "w_res_fin_mm": None,
-                # Chevron
-                "w_vert_inst_mm": w_vert_inst_mm,
-                "w_vert_fin_mm": w_vert_fin_mm,
-            })
+            résultats.append(
+                {
+                    "longueur_m": L_m_f,
+                    "longueur_projetee_m": lp,
+                    "id_combinaison": combi.id_combinaison,
+                    "type_combinaison": combi.type_combinaison,
+                    "statut_usage": statut_usage,
+                    "w_inst_mm": w_inst_mm,
+                    "limite_inst_mm": limite_inst_mm,
+                    "taux_ELS_inst": taux_inst,
+                    "w_creep_mm": w_creep_mm,
+                    "w_fin_mm": w_fin_mm,
+                    "limite_fin_mm": limite_fin_mm,
+                    "taux_ELS_fin": taux_fin,
+                    "w_2_mm": w_2_mm,
+                    "limite_2_mm": limite_2_mm_calc,
+                    "taux_ELS_2": taux_2,
+                    # Double flexion (rempli par double_flexion.py)
+                    "w_y_inst_mm": None,
+                    "w_z_inst_mm": None,
+                    "w_res_inst_mm": None,
+                    "w_y_fin_mm": None,
+                    "w_z_fin_mm": None,
+                    "w_res_fin_mm": None,
+                    # Chevron
+                    "w_vert_inst_mm": w_vert_inst_mm,
+                    "w_vert_fin_mm": w_vert_fin_mm,
+                }
+            )
 
     return résultats

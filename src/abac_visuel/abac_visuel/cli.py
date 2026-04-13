@@ -1,4 +1,5 @@
 """Interface CLI abac_visuel — point d'entrée."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -16,28 +17,32 @@ def cli() -> None:
 
 @cli.command("generer")
 @click.option(
-    "--donnees", "-d",
+    "--donnees",
+    "-d",
     type=click.Path(exists=True, path_type=Path),
     default=Path("resultats/portees_admissibles.csv"),
     show_default=True,
     help="Chemin vers portees_admissibles.csv.",
 )
 @click.option(
-    "--configs", "-c",
+    "--configs",
+    "-c",
     type=click.Path(exists=True, path_type=Path),
     default=Path("configs_calcul.toml"),
     show_default=True,
     help="Chemin vers configs_calcul.toml (pour les entraxes).",
 )
 @click.option(
-    "--sortie", "-o",
+    "--sortie",
+    "-o",
     type=click.Path(path_type=Path),
     default=Path("resultats/graphiques"),
     show_default=True,
     help="Dossier de sortie des graphiques.",
 )
 @click.option(
-    "--format", "-f",
+    "--format",
+    "-f",
     "fmt",
     type=click.Choice(["png", "pdf"]),
     default="png",

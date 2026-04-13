@@ -22,7 +22,9 @@ import pandas as pd
 @lru_cache(maxsize=1)
 def _k_cr() -> float:
     """Lit le facteur k_cr depuis params_ec5.csv — EC5 §6.1.7(2)."""
-    chemin: str = str(files("abac_charpente_vectoriser.donnees").joinpath("params_ec5.csv"))
+    chemin: str = str(
+        files("abac_charpente_vectoriser.donnees").joinpath("params_ec5.csv")
+    )
     df: pd.DataFrame = pd.read_csv(chemin, sep=";", comment="#")
     return float(df.set_index("parametre").loc["k_cr", "valeur"])
 

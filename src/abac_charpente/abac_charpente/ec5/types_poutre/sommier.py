@@ -2,6 +2,7 @@
 
 Notation EC5 française (Principe IX).
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -11,7 +12,9 @@ from abac_charpente.modeles.combinaison import CombinaisonEC0
 from abac_charpente.modeles.config_calcul import ConfigCalcul
 from abac_charpente.ec5.types_poutre.base import TypePoutre
 from abac_charpente.ec5.types_poutre.panne import (
-    _charge_principale, _charge_accomp_2, _charge_accomp_3,
+    _charge_principale,
+    _charge_accomp_2,
+    _charge_accomp_3,
 )
 
 
@@ -30,11 +33,31 @@ class Sommier(TypePoutre):
         combi: CombinaisonEC0,
     ) -> dict[str, np.ndarray]:
         """Charges linéaires pour sommier (kN/m)."""
-        entraxe_m = float(config.entraxe_m if isinstance(config.entraxe_m, (int, float)) else config.entraxe_m[0])
-        g_k_kNm2 = float(config.g_k_kNm2 if isinstance(config.g_k_kNm2, (int, float)) else config.g_k_kNm2[0])
-        q_k_kNm2 = float(config.q_k_kNm2 if isinstance(config.q_k_kNm2, (int, float)) else config.q_k_kNm2[0])
-        s_k_kNm2 = float(config.s_k_kNm2 if isinstance(config.s_k_kNm2, (int, float)) else config.s_k_kNm2[0])
-        w_k_kNm2 = float(config.w_k_kNm2 if isinstance(config.w_k_kNm2, (int, float)) else config.w_k_kNm2[0])
+        entraxe_m = float(
+            config.entraxe_m
+            if isinstance(config.entraxe_m, (int, float))
+            else config.entraxe_m[0]
+        )
+        g_k_kNm2 = float(
+            config.g_k_kNm2
+            if isinstance(config.g_k_kNm2, (int, float))
+            else config.g_k_kNm2[0]
+        )
+        q_k_kNm2 = float(
+            config.q_k_kNm2
+            if isinstance(config.q_k_kNm2, (int, float))
+            else config.q_k_kNm2[0]
+        )
+        s_k_kNm2 = float(
+            config.s_k_kNm2
+            if isinstance(config.s_k_kNm2, (int, float))
+            else config.s_k_kNm2[0]
+        )
+        w_k_kNm2 = float(
+            config.w_k_kNm2
+            if isinstance(config.w_k_kNm2, (int, float))
+            else config.w_k_kNm2[0]
+        )
 
         q_G_kNm = g_k_kNm2 * entraxe_m + materiau.poids_propre_kNm
         q_Q_kNm = q_k_kNm2 * entraxe_m
@@ -50,7 +73,7 @@ class Sommier(TypePoutre):
 
         n = len(longueurs_m)
         q_d_arr = np.full(n, q_d_kNm)
-        M_d_kNm = q_d_arr * longueurs_m ** 2 / 8.0
+        M_d_kNm = q_d_arr * longueurs_m**2 / 8.0
         V_d_kN = q_d_arr * longueurs_m / 2.0
 
         return {

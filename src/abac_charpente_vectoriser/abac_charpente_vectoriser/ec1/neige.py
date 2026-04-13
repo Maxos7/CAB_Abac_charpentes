@@ -29,7 +29,9 @@ def _charger_mu1_table() -> tuple[np.ndarray, np.ndarray]:
     tuple[np.ndarray, np.ndarray]
         (pentes_deg, mu1_values) — vecteurs pour ``np.interp``.
     """
-    chemin: str = str(files("abac_charpente_vectoriser.donnees").joinpath("ec1_mu1_neige.csv"))
+    chemin: str = str(
+        files("abac_charpente_vectoriser.donnees").joinpath("ec1_mu1_neige.csv")
+    )
     df: pd.DataFrame = pd.read_csv(chemin, sep=";", comment="#")
     return df["pente_deg"].to_numpy(float), df["mu1"].to_numpy(float)
 

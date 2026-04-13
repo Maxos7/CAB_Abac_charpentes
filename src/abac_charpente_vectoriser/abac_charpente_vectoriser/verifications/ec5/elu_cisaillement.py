@@ -41,11 +41,13 @@ class Cisaillement(VerificationELU):
             A_eff_cm2_arr  : (n_M,)  → (1, 1, n_M)
             f_v_d_CM       : (n_C, n_M) → (1, n_C, n_M)
         """
-        A_eff: np.ndarray = espace.A_eff_cis_cm2_arr[np.newaxis, np.newaxis, :]  # (1, 1, n_M)
-        f_v_d: np.ndarray = espace.f_v_d_CM[np.newaxis, :, :]                    # (1, n_C, n_M)
+        A_eff: np.ndarray = espace.A_eff_cis_cm2_arr[
+            np.newaxis, np.newaxis, :
+        ]  # (1, 1, n_M)
+        f_v_d: np.ndarray = espace.f_v_d_CM[np.newaxis, :, :]  # (1, n_C, n_M)
 
         # τ_d = 1.5 × V / A_eff  [kN/cm²] × 10 = [MPa]
-        tau_d: np.ndarray = 1.5 * espace.V_d_kN / A_eff * 10.0   # (n_L, n_C, n_M) [MPa]
+        tau_d: np.ndarray = 1.5 * espace.V_d_kN / A_eff * 10.0  # (n_L, n_C, n_M) [MPa]
 
         taux: np.ndarray = tau_d / f_v_d
         active: np.ndarray = np.ones_like(taux, dtype=bool)

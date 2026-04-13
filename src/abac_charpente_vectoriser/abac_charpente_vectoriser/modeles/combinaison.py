@@ -50,8 +50,8 @@ class CombinaisonEC0Vect:
     """
 
     id_combinaison: str
-    type_etat_limite: str       # "ELU" | "ELS"
-    type_combinaison: str       # "STR" | "CAR" | "FREQ" | "QPERM"
+    type_etat_limite: str  # "ELU" | "ELS"
+    type_combinaison: str  # "STR" | "CAR" | "FREQ" | "QPERM"
 
     gamma_G: float
     gamma_G2: float

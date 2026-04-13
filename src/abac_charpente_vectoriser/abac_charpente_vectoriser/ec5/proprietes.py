@@ -39,14 +39,18 @@ def _charger_kdef() -> pd.DataFrame:
 @lru_cache(maxsize=1)
 def _charger_gamma_m() -> pd.DataFrame:
     """Charge la table γ_M depuis le CSV normatif (AN France)."""
-    chemin: str = str(files("abac_charpente_vectoriser.donnees").joinpath("gamma_m.csv"))
+    chemin: str = str(
+        files("abac_charpente_vectoriser.donnees").joinpath("gamma_m.csv")
+    )
     return pd.read_csv(chemin, sep=";", comment="#")
 
 
 @lru_cache(maxsize=1)
 def _charger_params_ec5() -> dict[str, float]:
     """Charge les paramètres EC5 (k_cr, k_m, seuils k_crit) depuis le CSV normatif."""
-    chemin: str = str(files("abac_charpente_vectoriser.donnees").joinpath("params_ec5.csv"))
+    chemin: str = str(
+        files("abac_charpente_vectoriser.donnees").joinpath("params_ec5.csv")
+    )
     df: pd.DataFrame = pd.read_csv(chemin, sep=";", comment="#")
     return dict(zip(df["parametre"], df["valeur"].astype(float)))
 
@@ -120,9 +124,8 @@ def calculer_kdef_arr(
     k_def_arr: np.ndarray = np.empty(n_M, dtype=float)
 
     for j, mat in enumerate(materiaux):
-        masque: pd.Series = (
-            (df_kdef["famille"] == mat.famille)
-            & (df_kdef["classe_service"] == classe_service)
+        masque: pd.Series = (df_kdef["famille"] == mat.famille) & (
+            df_kdef["classe_service"] == classe_service
         )
         lignes: pd.DataFrame = df_kdef[masque]
         if lignes.empty:
@@ -148,7 +151,9 @@ def calculer_gamma_m_arr(materiaux: list[ConfigMatériauVect]) -> np.ndarray:
         Vecteur ``(n_M,)`` des coefficients partiels γ_M.
     """
     df_gm: pd.DataFrame = _charger_gamma_m()
-    table: dict[str, float] = dict(zip(df_gm["famille"], df_gm["gamma_M"].astype(float)))
+    table: dict[str, float] = dict(
+        zip(df_gm["famille"], df_gm["gamma_M"].astype(float))
+    )
     return np.array([table[mat.famille] for mat in materiaux], dtype=float)
 
 
@@ -183,20 +188,20 @@ def calculer_resistances_CM(
     k_mod_CM: np.ndarray = calculer_kmod_CM(combinaisons, materiaux, classe_service)
     gamma_m_arr: np.ndarray = calculer_gamma_m_arr(materiaux)
 
-    f_m_k: np.ndarray   = np.array([m.f_m_k_MPa   for m in materiaux], dtype=float)
-    f_v_k: np.ndarray   = np.array([m.f_v_k_MPa   for m in materiaux], dtype=float)
+    f_m_k: np.ndarray = np.array([m.f_m_k_MPa for m in materiaux], dtype=float)
+    f_v_k: np.ndarray = np.array([m.f_v_k_MPa for m in materiaux], dtype=float)
     f_c90_k: np.ndarray = np.array([m.f_c90_k_MPa for m in materiaux], dtype=float)
-    f_t0_k: np.ndarray  = np.array([m.f_t0_k_MPa  for m in materiaux], dtype=float)
-    f_c0_k: np.ndarray  = np.array([m.f_c0_k_MPa  for m in materiaux], dtype=float)
+    f_t0_k: np.ndarray = np.array([m.f_t0_k_MPa for m in materiaux], dtype=float)
+    f_c0_k: np.ndarray = np.array([m.f_c0_k_MPa for m in materiaux], dtype=float)
 
     facteur_CM: np.ndarray = k_mod_CM / gamma_m_arr[np.newaxis, :]
 
     return {
-        "f_m_d_CM":   facteur_CM * f_m_k,
-        "f_v_d_CM":   facteur_CM * f_v_k,
+        "f_m_d_CM": facteur_CM * f_m_k,
+        "f_v_d_CM": facteur_CM * f_v_k,
         "f_c90_d_CM": facteur_CM * f_c90_k,
-        "f_t0_d_CM":  facteur_CM * f_t0_k,
-        "f_c0_d_CM":  facteur_CM * f_c0_k,
+        "f_t0_d_CM": facteur_CM * f_t0_k,
+        "f_c0_d_CM": facteur_CM * f_c0_k,
     }
 
 
@@ -229,21 +234,31 @@ def calculer_k_crit_LM(
     lam_1: float = params["lambda_rel_m_1"]
 
     E_0_05: np.ndarray = np.array([m.E_0_05_MPa for m in materiaux], dtype=float)
-    f_m_k: np.ndarray  = np.array([m.f_m_k_MPa  for m in materiaux], dtype=float)
-    b: np.ndarray = np.array([m.b_mm if m.b_mm is not None else 0.0 for m in materiaux], dtype=float)
-    h: np.ndarray = np.array([m.h_mm if m.h_mm is not None else 0.0 for m in materiaux], dtype=float)
+    f_m_k: np.ndarray = np.array([m.f_m_k_MPa for m in materiaux], dtype=float)
+    b: np.ndarray = np.array(
+        [m.b_mm if m.b_mm is not None else 0.0 for m in materiaux], dtype=float
+    )
+    h: np.ndarray = np.array(
+        [m.h_mm if m.h_mm is not None else 0.0 for m in materiaux], dtype=float
+    )
 
     # G_0_05 ≈ E_0_05 / 16 (approximation EN 338 §3.3)
     # σ_m_crit [MPa] — formule EC5 §6.3.3(3) pour section rectangulaire :
     # σ_m_crit = 0.78 × b² × E_0_05 / (h × l_ef)
-    l_ef_mm: np.ndarray = longueur_deversement_m[:, np.newaxis] * 1000.0  # (n_L, 1) [mm]
+    l_ef_mm: np.ndarray = (
+        longueur_deversement_m[:, np.newaxis] * 1000.0
+    )  # (n_L, 1) [mm]
 
     sigma_m_crit: np.ndarray = (
-        0.78 * b[np.newaxis, :]**2 * E_0_05[np.newaxis, :]
+        0.78
+        * b[np.newaxis, :] ** 2
+        * E_0_05[np.newaxis, :]
         / (h[np.newaxis, :] * l_ef_mm)
     )  # (n_L, n_M) [MPa]
 
-    lambda_rel_m: np.ndarray = np.sqrt(f_m_k[np.newaxis, :] / sigma_m_crit)  # (n_L, n_M)
+    lambda_rel_m: np.ndarray = np.sqrt(
+        f_m_k[np.newaxis, :] / sigma_m_crit
+    )  # (n_L, n_M)
 
     k_crit: np.ndarray = np.where(
         lambda_rel_m <= lam_0,

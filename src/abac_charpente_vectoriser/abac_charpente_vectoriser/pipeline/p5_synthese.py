@@ -81,7 +81,9 @@ def synthetiser(
         Un ``ResultatPortee`` par matériau.
     """
     tous_taux: dict[str, np.ndarray] = {**taux_elu, **taux_els}
-    taux_stack: np.ndarray = np.stack(list(tous_taux.values()), axis=0)  # (n_verif, n_L, n_M)
+    taux_stack: np.ndarray = np.stack(
+        list(tous_taux.values()), axis=0
+    )  # (n_verif, n_L, n_M)
     ids_verif: list[str] = list(tous_taux.keys())
 
     n_M: int = len(materiaux)
@@ -103,17 +105,18 @@ def synthetiser(
         verif_det: str = ids_verif[idx_verif_det]
 
         taux_par_verif: dict[str, float] = {
-            id_v: float(np.max(taux_stack[i, :, m]))
-            for i, id_v in enumerate(ids_verif)
+            id_v: float(np.max(taux_stack[i, :, m])) for i, id_v in enumerate(ids_verif)
         }
 
-        resultats.append(ResultatPortee(
-            id_config_materiau=materiaux[m].id_config_materiau,
-            id_config_calcul=config.id_config_calcul,
-            longueur_max_admissible_m=L_max,
-            taux_determinant=taux_det,
-            verif_determinante=verif_det,
-            taux_par_verif=taux_par_verif,
-        ))
+        resultats.append(
+            ResultatPortee(
+                id_config_materiau=materiaux[m].id_config_materiau,
+                id_config_calcul=config.id_config_calcul,
+                longueur_max_admissible_m=L_max,
+                taux_determinant=taux_det,
+                verif_determinante=verif_det,
+                taux_par_verif=taux_par_verif,
+            )
+        )
 
     return resultats

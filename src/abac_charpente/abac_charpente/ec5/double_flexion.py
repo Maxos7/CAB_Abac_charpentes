@@ -9,6 +9,7 @@ k_crit composé : calculé avec I_z, W_z, E_0.05
 
 Notation française EC5 (Principe IX). Unités explicites (Principe VI).
 """
+
 from __future__ import annotations
 
 import math
@@ -84,9 +85,11 @@ def verifier_double_flexion(
 
         # k_crit composé
         from abac_charpente.ec5.types_poutre.base import TypePoutre
+
         L_dev_m = TypePoutre.longueur_deversement_m(None, L_m_f, entraxe_adv)  # type: ignore
         # Appel via une instance factice
         from abac_charpente.ec5.types_poutre import instancier
+
         _poutre = instancier(config.type_poutre)
         L_dev_m = _poutre.longueur_deversement_m(L_m_f, entraxe_adv)
         k_crit = calculer_k_crit_compose(materiau, L_dev_m)
@@ -99,35 +102,43 @@ def verifier_double_flexion(
 
         # ELS double axe
         w_y_inst_mm = calculer_w_inst(q_y, L_m_f, E_0_mean_MPa, materiau.I_cm4)
-        w_z_inst_mm = calculer_w_inst(q_z, L_m_f, E_0_mean_MPa, I_z_cm4) if I_z_cm4 > 0 else 0.0
+        w_z_inst_mm = (
+            calculer_w_inst(q_z, L_m_f, E_0_mean_MPa, I_z_cm4) if I_z_cm4 > 0 else 0.0
+        )
         w_res_inst_mm = math.sqrt(w_y_inst_mm**2 + w_z_inst_mm**2)
 
         from abac_charpente.ec5.proprietes import get_kdef, get_famille
+
         famille = get_famille(materiau.classe_resistance)
-        classe_service = int(config.classe_service if isinstance(config.classe_service, int)
-                             else config.classe_service[0])
+        classe_service = int(
+            config.classe_service
+            if isinstance(config.classe_service, int)
+            else config.classe_service[0]
+        )
         k_def = get_kdef(famille, classe_service)
         w_y_fin_mm = w_y_inst_mm * (1 + k_def)
         w_z_fin_mm = w_z_inst_mm * (1 + k_def)
         w_res_fin_mm = math.sqrt(w_y_fin_mm**2 + w_z_fin_mm**2)
 
-        résultats.append({
-            "longueur_m": L_m_f,
-            "M_y_kNm": M_y_kNm,
-            "M_z_kNm": M_z_kNm,
-            "sigma_m_y_MPa": sigma_m_y_MPa,
-            "sigma_m_z_MPa": sigma_m_z_MPa,
-            "k_m": _K_M,
-            "k_crit": k_crit,
-            "L_deversement_m": L_dev_m,
-            "taux_biaxial_1_ELU": taux_biaxial_1,
-            "taux_biaxial_2_ELU": taux_biaxial_2,
-            "w_y_inst_mm": w_y_inst_mm,
-            "w_z_inst_mm": w_z_inst_mm,
-            "w_res_inst_mm": w_res_inst_mm,
-            "w_y_fin_mm": w_y_fin_mm,
-            "w_z_fin_mm": w_z_fin_mm,
-            "w_res_fin_mm": w_res_fin_mm,
-        })
+        résultats.append(
+            {
+                "longueur_m": L_m_f,
+                "M_y_kNm": M_y_kNm,
+                "M_z_kNm": M_z_kNm,
+                "sigma_m_y_MPa": sigma_m_y_MPa,
+                "sigma_m_z_MPa": sigma_m_z_MPa,
+                "k_m": _K_M,
+                "k_crit": k_crit,
+                "L_deversement_m": L_dev_m,
+                "taux_biaxial_1_ELU": taux_biaxial_1,
+                "taux_biaxial_2_ELU": taux_biaxial_2,
+                "w_y_inst_mm": w_y_inst_mm,
+                "w_z_inst_mm": w_z_inst_mm,
+                "w_res_inst_mm": w_res_inst_mm,
+                "w_y_fin_mm": w_y_fin_mm,
+                "w_z_fin_mm": w_z_fin_mm,
+                "w_res_fin_mm": w_res_fin_mm,
+            }
+        )
 
     return résultats

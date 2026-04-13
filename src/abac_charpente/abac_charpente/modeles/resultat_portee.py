@@ -2,6 +2,7 @@
 
 Notation française EC5 (Principe IX). Entité dataclass (Principe X).
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -14,6 +15,7 @@ class RésultatPortée:
     Contient toutes les colonnes définies dans EF-014 et contracts/csv-output-schema.md.
     Les champs optionnels (None) sont exclus selon le type de poutre / options activées.
     """
+
     # -----------------------------------------------------------------------
     # Identification
     # -----------------------------------------------------------------------
@@ -101,11 +103,11 @@ class RésultatPortée:
     longueur_appui_min_mm: float
     taux_appui_ELU: float
     k_crit: float
-    L_deversement_m: float | None   # None si double_flexion=False
+    L_deversement_m: float | None  # None si double_flexion=False
     taux_deversement_ELU: float
-    sigma_m_y_MPa: float | None     # None si double_flexion=False
-    sigma_m_z_MPa: float | None     # None si double_flexion=False
-    k_m: float | None               # None si double_flexion=False
+    sigma_m_y_MPa: float | None  # None si double_flexion=False
+    sigma_m_z_MPa: float | None  # None si double_flexion=False
+    k_m: float | None  # None si double_flexion=False
     taux_biaxial_1_ELU: float | None  # None si double_flexion=False
     taux_biaxial_2_ELU: float | None  # None si double_flexion=False
 
@@ -119,19 +121,19 @@ class RésultatPortée:
     w_fin_mm: float
     limite_fin_mm: float
     taux_ELS_fin: float
-    w_2_mm: float | None        # None si second_oeuvre=False
-    limite_2_mm: float | None   # None si second_oeuvre=False
-    taux_ELS_2: float | None    # None si second_oeuvre=False
+    w_2_mm: float | None  # None si second_oeuvre=False
+    limite_2_mm: float | None  # None si second_oeuvre=False
+    taux_ELS_2: float | None  # None si second_oeuvre=False
     # Double flexion ELS
-    w_y_inst_mm: float | None   # None si double_flexion=False
-    w_z_inst_mm: float | None   # None si double_flexion=False
-    w_res_inst_mm: float | None # None si double_flexion=False
-    w_y_fin_mm: float | None    # None si double_flexion=False
-    w_z_fin_mm: float | None    # None si double_flexion=False
+    w_y_inst_mm: float | None  # None si double_flexion=False
+    w_z_inst_mm: float | None  # None si double_flexion=False
+    w_res_inst_mm: float | None  # None si double_flexion=False
+    w_y_fin_mm: float | None  # None si double_flexion=False
+    w_z_fin_mm: float | None  # None si double_flexion=False
     w_res_fin_mm: float | None  # None si double_flexion=False
     # Chevron uniquement
     w_vert_inst_mm: float | None  # None si ≠ Chevron
-    w_vert_fin_mm: float | None   # None si ≠ Chevron
+    w_vert_fin_mm: float | None  # None si ≠ Chevron
 
     # -----------------------------------------------------------------------
     # Résultat synthétique
@@ -139,5 +141,5 @@ class RésultatPortée:
     taux_determinant: float
     verification_determinante: str
     clause_EC5: str
-    statut: str          # 'admis' | 'refusé' | 'rejeté_usage'
+    statut: str  # 'admis' | 'refusé' | 'rejeté_usage'
     marge_securite: float

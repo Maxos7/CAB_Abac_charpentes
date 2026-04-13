@@ -43,7 +43,9 @@ _DUREE_CHARGE: dict[str, str] = {
 }
 
 
-def _charger_psi(categorie_q: str, categorie_s: str = "neige") -> dict[str, dict[str, float]]:
+def _charger_psi(
+    categorie_q: str, categorie_s: str = "neige"
+) -> dict[str, dict[str, float]]:
     """Charge les coefficients ψ depuis donnees/psi_coefficients.csv.
 
     Parameters
@@ -58,13 +60,19 @@ def _charger_psi(categorie_q: str, categorie_s: str = "neige") -> dict[str, dict
     dict[str, dict[str, float]]
         Dictionnaire ``{type_charge: {"psi_0": ..., "psi_1": ..., "psi_2": ...}}``.
     """
-    chemin: str = str(files("abac_charpente_vectoriser.donnees").joinpath("psi_coefficients.csv"))
+    chemin: str = str(
+        files("abac_charpente_vectoriser.donnees").joinpath("psi_coefficients.csv")
+    )
     df: pd.DataFrame = pd.read_csv(chemin, sep=";", comment="#")
     df = df.set_index("categorie")
 
     def _psi(cat: str) -> dict[str, float]:
         row: pd.Series = df.loc[cat]
-        return {"psi_0": float(row["psi_0"]), "psi_1": float(row["psi_1"]), "psi_2": float(row["psi_2"])}
+        return {
+            "psi_0": float(row["psi_0"]),
+            "psi_1": float(row["psi_1"]),
+            "psi_2": float(row["psi_2"]),
+        }
 
     return {
         "Q": _psi(categorie_q),
@@ -109,83 +117,101 @@ def generer_combinaisons(config: ConfigCalculVect) -> list[CombinaisonEC0Vect]:
 
     for ch_princ in charges_principales_elu:
         psi_0_accomp: float = max(
-            (psi[ch]["psi_0"] for ch in ("Q", "S", "W") if ch != ch_princ and _charge_active(ch, config)),
+            (
+                psi[ch]["psi_0"]
+                for ch in ("Q", "S", "W")
+                if ch != ch_princ and _charge_active(ch, config)
+            ),
             default=0.0,
         )
-        combinaisons.append(CombinaisonEC0Vect(
-            id_combinaison=f"ELU_STR_G+{ch_princ}",
-            type_etat_limite="ELU",
-            type_combinaison="STR",
-            gamma_G=1.35,
-            gamma_G2=1.35,
-            gamma_Q1=1.50,
-            gamma_Q_accomp=1.50 * psi_0_accomp,
-            type_charge_principale=ch_princ,
-            duree_charge=_DUREE_CHARGE[ch_princ],
-        ))
+        combinaisons.append(
+            CombinaisonEC0Vect(
+                id_combinaison=f"ELU_STR_G+{ch_princ}",
+                type_etat_limite="ELU",
+                type_combinaison="STR",
+                gamma_G=1.35,
+                gamma_G2=1.35,
+                gamma_Q1=1.50,
+                gamma_Q_accomp=1.50 * psi_0_accomp,
+                type_charge_principale=ch_princ,
+                duree_charge=_DUREE_CHARGE[ch_princ],
+            )
+        )
 
     if not charges_principales_elu:
-        combinaisons.append(CombinaisonEC0Vect(
-            id_combinaison="ELU_STR_G",
-            type_etat_limite="ELU",
-            type_combinaison="STR",
-            gamma_G=1.35,
-            gamma_G2=1.35,
-            gamma_Q1=0.0,
-            gamma_Q_accomp=0.0,
-            type_charge_principale="Q",
-            duree_charge="permanent",
-        ))
+        combinaisons.append(
+            CombinaisonEC0Vect(
+                id_combinaison="ELU_STR_G",
+                type_etat_limite="ELU",
+                type_combinaison="STR",
+                gamma_G=1.35,
+                gamma_G2=1.35,
+                gamma_Q1=0.0,
+                gamma_Q_accomp=0.0,
+                type_charge_principale="Q",
+                duree_charge="permanent",
+            )
+        )
 
     # ── ELS CAR ──────────────────────────────────────────────────────────────────
     for ch_princ in charges_principales_elu or ["Q"]:
         psi_1_accomp: float = max(
-            (psi[ch]["psi_1"] for ch in ("Q", "S", "W") if ch != ch_princ and _charge_active(ch, config)),
+            (
+                psi[ch]["psi_1"]
+                for ch in ("Q", "S", "W")
+                if ch != ch_princ and _charge_active(ch, config)
+            ),
             default=0.0,
         )
-        combinaisons.append(CombinaisonEC0Vect(
-            id_combinaison=f"ELS_CAR_G+{ch_princ}",
-            type_etat_limite="ELS",
-            type_combinaison="CAR",
-            gamma_G=1.0,
-            gamma_G2=1.0,
-            gamma_Q1=1.0,
-            gamma_Q_accomp=psi_1_accomp,
-            type_charge_principale=ch_princ,
-            duree_charge=_DUREE_CHARGE[ch_princ],
-        ))
+        combinaisons.append(
+            CombinaisonEC0Vect(
+                id_combinaison=f"ELS_CAR_G+{ch_princ}",
+                type_etat_limite="ELS",
+                type_combinaison="CAR",
+                gamma_G=1.0,
+                gamma_G2=1.0,
+                gamma_Q1=1.0,
+                gamma_Q_accomp=psi_1_accomp,
+                type_charge_principale=ch_princ,
+                duree_charge=_DUREE_CHARGE[ch_princ],
+            )
+        )
 
     # ── ELS FREQ ─────────────────────────────────────────────────────────────────
     if q_actif:
         psi_1_q: float = psi["Q"]["psi_1"]
         psi_2_s: float = psi["S"]["psi_2"] if s_actif else 0.0
         psi_2_w: float = psi["W"]["psi_2"] if w_actif else 0.0
-        combinaisons.append(CombinaisonEC0Vect(
-            id_combinaison="ELS_FREQ_G+Q",
-            type_etat_limite="ELS",
-            type_combinaison="FREQ",
-            gamma_G=1.0,
-            gamma_G2=1.0,
-            gamma_Q1=psi_1_q,
-            gamma_Q_accomp=max(psi_2_s, psi_2_w),
-            type_charge_principale="Q",
-            duree_charge=_DUREE_CHARGE["Q"],
-        ))
+        combinaisons.append(
+            CombinaisonEC0Vect(
+                id_combinaison="ELS_FREQ_G+Q",
+                type_etat_limite="ELS",
+                type_combinaison="FREQ",
+                gamma_G=1.0,
+                gamma_G2=1.0,
+                gamma_Q1=psi_1_q,
+                gamma_Q_accomp=max(psi_2_s, psi_2_w),
+                type_charge_principale="Q",
+                duree_charge=_DUREE_CHARGE["Q"],
+            )
+        )
 
     # ── ELS QPERM ────────────────────────────────────────────────────────────────
     psi_2_q: float = psi["Q"]["psi_2"] if q_actif else 0.0
     psi_2_s_qp: float = psi["S"]["psi_2"] if s_actif else 0.0
-    combinaisons.append(CombinaisonEC0Vect(
-        id_combinaison="ELS_QPERM",
-        type_etat_limite="ELS",
-        type_combinaison="QPERM",
-        gamma_G=1.0,
-        gamma_G2=1.0,
-        gamma_Q1=psi_2_q,
-        gamma_Q_accomp=psi_2_s_qp,
-        type_charge_principale="Q",
-        duree_charge="permanent",
-    ))
+    combinaisons.append(
+        CombinaisonEC0Vect(
+            id_combinaison="ELS_QPERM",
+            type_etat_limite="ELS",
+            type_combinaison="QPERM",
+            gamma_G=1.0,
+            gamma_G2=1.0,
+            gamma_Q1=psi_2_q,
+            gamma_Q_accomp=psi_2_s_qp,
+            type_charge_principale="Q",
+            duree_charge="permanent",
+        )
+    )
 
     return combinaisons
 

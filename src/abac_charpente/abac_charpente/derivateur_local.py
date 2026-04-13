@@ -6,6 +6,7 @@ en construisant un ConfigMatériau complet avec toutes les propriétés mécaniq
 Aucun import métier EC5/EC0/EC1 interdit dans sapeg_regen_stock — la dérivation
 mécanique se fait ici, du côté abac_charpente.
 """
+
 from __future__ import annotations
 
 from sapeg_regen_stock.modeles import ConfigMatériau, ProduitValide

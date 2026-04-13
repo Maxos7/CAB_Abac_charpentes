@@ -5,6 +5,7 @@ Configure loguru pour les messages en français :
     - Informations sur stdout
     - Format : NIVEAU [contexte] : message
 """
+
 import sys
 
 from loguru import logger
