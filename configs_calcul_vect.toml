@@ -105,8 +105,8 @@ pente_deg         = 0.0
 entraxe_m         = [0.60]
 classe_service    = 1
 
-g_k_kNm2          = 0.50       # chape + revêtement
-g2_k_kNm2         = 0.20       # cloisons légères (charge fragile)
+g_k_kNm2          = 0.60       # chape + revêtement
+g2_k_kNm2         = 0.17       # cloisons légères (charge fragile)
 q_k_kNm2          = 1.50       # habitation (catégorie A)
 categorie_q       = "A"
 s_k_kNm2          = 0.0

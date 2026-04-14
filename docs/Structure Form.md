@@ -34,7 +34,7 @@ end
 
 
 
-# Foncionement Systéme d'Abaque
+# Fonctionnement Systéme d'Abaque
 
 ````mermaid
 ---

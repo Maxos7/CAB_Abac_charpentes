@@ -148,9 +148,7 @@ def construire_espace(
     gamma_G: np.ndarray = np.array([c.gamma_G for c in combinaisons], dtype=float)
     gamma_G2: np.ndarray = np.array([c.gamma_G2 for c in combinaisons], dtype=float)
     gamma_Q1: np.ndarray = np.array([c.gamma_Q1 for c in combinaisons], dtype=float)
-    gamma_Qa: np.ndarray = np.array(
-        [c.gamma_Q_accomp for c in combinaisons], dtype=float
-    )
+    gamma_Qa: np.ndarray = np.array([c.gamma_Q_accomp for c in combinaisons], dtype=float)
 
     q_princ_C: np.ndarray = np.array(
         [
