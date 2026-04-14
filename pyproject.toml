@@ -1,21 +1,12 @@
 [tool.uv.workspace]
 members = [
     "src/abac_charpente_vectoriser",
-    "src/abac_charpente",
     "src/sapeg_regen_stock",
 ]
 
 [tool.uv.sources]
 sapeg-regen-stock = { workspace = true }
-abac-charpente = { workspace = true }
 abac-charpente-vectoriser = { workspace = true }
-
-[dependency-groups]
-dev = [
-    "abac-charpente[dev]",
-    "duckdb>=1.5.1",
-    "pykernel>=0.1.6",
-]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

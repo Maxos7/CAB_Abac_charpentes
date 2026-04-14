@@ -63,7 +63,7 @@ pente_deg         = [45]
 entraxe_m         = [1.2]
 classe_service    = 1
 
-g_k_kNm2          = 0.40
+g_k_kNm2          = [0.40]
 g2_k_kNm2         = 0.17
 q_k_kNm2          = 0.0
 categorie_q       = "H"
@@ -119,7 +119,7 @@ entraxe_antideversement_mm = 0.0
   [[config_calcul.filtres]]
   champ     = "classe_resistance"
   operateur = "in"
-  valeur    = ["C24","GT24", "GL24h"]
+  valeur    = ["C24","GT24"]
 
 # -----------------------------------------------------------------------------
 # Chevron — portée sur rampant, charges perpendiculaires au rampant
