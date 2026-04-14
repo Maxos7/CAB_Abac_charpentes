@@ -74,6 +74,20 @@ def construire_df_complet(
         for l_idx in range(n_L):
             ligne: dict = {
                 "id_config_calcul": config.id_config_calcul,
+                # ── Composantes de la configuration de calcul ──────────────────
+                "type_poutre": config.type_poutre,
+                "usage": config.usage,
+                "pente_deg": config.pente_deg,
+                "entraxe_m": config.entraxe_m,
+                "classe_service": config.classe_service,
+                # Charges brutes surfaciques (kN/m²)
+                "g_k_kNm2": config.g_k_kNm2,
+                "g2_k_kNm2": config.g2_k_kNm2,
+                "q_k_kNm2": config.q_k_kNm2,
+                "categorie_q": config.categorie_q,
+                "s_k_kNm2": config.s_k_kNm2,
+                "w_k_kNm2": config.w_k_kNm2,
+                # ── Article ────────────────────────────────────────────────────
                 "id_produit": mat.id_produit,
                 "libelle": mat.libelle,
                 "id_config_materiau": mat.id_config_materiau,
@@ -103,15 +117,35 @@ def construire_df_complet(
                     ligne[f"els_{id_v}_val_mm"] = round(float(valeur_els[id_v][l_idx, m]), 4)
 
             # taux_global = max des taux uniquement (exclut les colonnes _val)
+            tous_ids: list[str] = list({**taux_elu, **taux_els}.keys())
             tous: list[float] = [
                 float(t[l_idx, m]) for t in {**taux_elu, **taux_els}.values()
             ]
-            ligne["taux_global"] = round(max(tous), 4)
-            ligne["verifie"] = max(tous) <= 1.0
+            taux_max: float = max(tous)
+            ligne["taux_global"] = round(taux_max, 4)
+            ligne["verifie"] = taux_max <= 1.0
+            ligne["verifie_raison"] = (
+                "" if taux_max <= 1.0 else tous_ids[tous.index(taux_max)]
+            )
 
             lignes.append(ligne)
 
     return pd.DataFrame(lignes)
+
+
+def renommer_cols_elu_els(df: pd.DataFrame) -> pd.DataFrame:
+    """Renomme les colonnes ``elu_*``/``els_*`` → ``*_[elu]``/``*_[els]`` pour l'export CSV.
+
+    Exemple : ``elu_FlexionAxeFort_val_MPa`` → ``FlexionAxeFort_val_MPa_[elu]``.
+    Les colonnes sans préfixe ``elu_``/``els_`` ne sont pas modifiées.
+    """
+    renaming: dict[str, str] = {}
+    for col in df.columns:
+        if col.startswith("elu_"):
+            renaming[col] = col[4:] + "_[elu]"
+        elif col.startswith("els_"):
+            renaming[col] = col[4:] + "_[els]"
+    return df.rename(columns=renaming) if renaming else df
 
 
 def exporter_abaque_complet(
@@ -128,4 +162,4 @@ def exporter_abaque_complet(
         Chemin du fichier CSV de sortie (écrasé à chaque appel).
     """
     chemin_sortie.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(chemin_sortie, sep=";", index=False, encoding="utf-8-sig")
+    renommer_cols_elu_els(df).to_csv(chemin_sortie, sep=";", index=False, encoding="utf-8-sig")

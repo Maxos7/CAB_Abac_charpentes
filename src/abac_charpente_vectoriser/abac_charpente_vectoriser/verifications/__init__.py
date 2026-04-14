@@ -18,11 +18,9 @@ from .ec5.elu_flexion import (
     FlexionAxeFaible,
     FlexionAxeFort,
 )
-from .ec5.elu_cisaillement import Cisaillement
-from .ec5.elu_appui import Appui
+from .ec5.elu_effort_tranchant import Appui, Cisaillement
+from .ec5.elu_effort_normal import Compression, Traction, TractionTransversale
 from .ec5.elu_deversement import Deversement
-from .ec5.elu_traction import Traction, TractionTransversale
-from .ec5.elu_compression import Compression
 from .ec5.elu_flambement import FlambementAxeFaible, FlambementAxeFort
 from .ec5.elu_combines import (
     FlexionCompressionFaible,

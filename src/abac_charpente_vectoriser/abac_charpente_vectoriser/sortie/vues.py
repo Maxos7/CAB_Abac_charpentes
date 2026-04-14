@@ -30,6 +30,8 @@ from pathlib import Path
 
 import pandas as pd
 
+from .abaque_complet import renommer_cols_elu_els
+
 
 def _lire_toml(chemin: Path) -> dict:
     """Lit un fichier TOML. Compatible Python 3.11+ (tomllib stdlib) et 3.10 (tomli)."""
@@ -142,11 +144,13 @@ def _produire_agregation(
         Une ligne par groupe. Si aucune portée n'est vérifiée pour un groupe,
         la ligne est exclue.
     """
-    # Exclure les colonnes *_combo (strings) — seules les colonnes numériques de taux
+    # Garder uniquement les colonnes de taux numériques (elu_*/els_* sans suffixe _combi/_val_*)
     taux_cols: list[str] = [
         c
         for c in df.columns
-        if c.startswith(("elu_", "els_")) and not c.endswith("_combo")
+        if c.startswith(("elu_", "els_"))
+        and not c.endswith(("_combi", "_combo"))
+        and "_val_" not in c
     ]
 
     df_ok: pd.DataFrame = (
@@ -171,6 +175,12 @@ def _produire_agregation(
 
     df_max = df_max.rename(columns={"longueur_m": "longueur_max_admissible_m"})
     df_max = df_max.reset_index(drop=True)
+
+    # Validité CSL par article : portée admissible ≤ longueur commerciale max article
+    if "longueur_max_article_m" in df_max.columns:
+        lma: pd.Series = df_max["longueur_max_article_m"]
+        lmax_adm: pd.Series = df_max["longueur_max_admissible_m"]
+        df_max["csl_valide"] = lma.isna() | (lmax_adm <= lma)
 
     if trier_par:
         trier_valides: list[str] = [c for c in trier_par if c in df_max.columns]
@@ -293,7 +303,7 @@ def appliquer_vues_depuis_toml(
             )
 
         chemin_csv: Path = chemin_sortie / fichier
-        df_vue.to_csv(chemin_csv, sep=";", index=False, encoding="utf-8-sig")
+        renommer_cols_elu_els(df_vue).to_csv(chemin_csv, sep=";", index=False, encoding="utf-8-sig")
         logger.info(f"  → {len(df_vue)} lignes écrites dans {chemin_csv}")
         produits[nom] = chemin_csv
 

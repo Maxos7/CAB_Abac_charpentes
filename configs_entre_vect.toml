@@ -1,7 +1,118 @@
 # =============================================================================
 # configs_entre_vect.toml
-# Configuration du mapage de l'ingestion de csv et du repertoire par defaut
-
+# Configuration de l'ingestion CSV (stock produit par sapeg / sapeg_regen_stock)
+#
+# Usage CLI :
+#   uv run abac-vect --toml-calcul configs_calcul_vect.toml
+#   uv run abac-vect --toml-calcul configs_calcul_vect.toml --toml-entre configs_entre_vect.toml
+#
+# [mappage_colonnes]
+#   Déclarer uniquement les colonnes dont le nom a changé dans le CSV.
+#   Convention : nom_interne = "nom_réel_dans_le_csv"
+#   Les colonnes non déclarées conservent leur nom d'origine (identité).
+#
+# Colonnes internes reconnues par le moteur :
+#
+#   Obligatoires
+#     b_mm              — largeur de section (mm)
+#     h_mm              — hauteur de section (mm)
+#     classe_resistance — classe EN 338 / EN 14080 (ex : "C24", "GL28h")
+#
+#   Optionnelles — propagées jusqu'aux fichiers de sortie
+#     id_produit        — code article SAPEG
+#     libelle           — désignation commerciale (essence, dimensions…)
+#
+#   Optionnelles — filtrage des lignes valides
+#     statut_filtre     — colonne de statut (valeur attendue : "retenu")
+#     statut_ingestion  — alternative (valeur attendue : "valide")
+#
+#   Optionnelle — enrichissement sortie
+#     L_max_m           — longueur commerciale max de l'article (m)
+#                         ajoutée comme longueur_max_article_m dans abaque_complet
+#
+#   Optionnelles — forme de section (voir aussi [section] ci-dessous)
+#     forme_section            — "rectangle" (défaut) | "rond" | "custom"
+#     d_mm                     — diamètre [mm] pour les lignes de forme "rond"
+#     A_cm2                    — aire [cm²]              (custom, fallback si absent)
+#     I_y_cm4                  — moment quadratique fort [cm⁴]  (custom, fallback)
+#     I_z_cm4                  — moment quadratique faible [cm⁴] (custom, fallback)
+#     W_y_cm3                  — module résistant fort [cm³]     (custom, fallback)
+#     W_z_cm3                  — module résistant faible [cm³]   (custom, fallback)
+#     A_eff_cisaillement_cm2   — section efficace cisaillement [cm²] (custom, fallback)
+#
+# Note : id_config_materiau n'est jamais lu depuis le CSV.
+#        Il est toujours généré par le moteur : "{classe}_{b}x{h}".
 # =============================================================================
 
-#                                    WIP
+[filtrage]
+# Colonne de statut utilisée pour sélectionner les lignes valides du CSV.
+# Le nom est appliqué APRÈS le mappage_colonnes ci-dessous.
+# Si la colonne est absente du CSV, les lignes avec classe_resistance non nulle
+# sont retenues (comportement de repli).
+#
+# Valeurs typiques selon la source :
+#   stock filtré (sapeg_regen_stock filtre "charpente") → statut_filtre  = "retenu"
+#   stock enrichi (sapeg_regen_stock sans filtre)       → statut_ingestion = "valide"
+colonne = "statut_filtre"
+valeur  = "retenu"
+
+
+[section]
+# Colonne CSV indiquant la forme de section de chaque ligne (après mappage_colonnes).
+# Si absente ou valeur vide : "rectangle" par défaut.
+# Valeurs valides : "rectangle" | "rond" | "custom"
+colonne_forme    = "forme_section"
+
+# Pour les lignes de forme "rond" : colonne du diamètre [mm]
+colonne_diametre = "d_mm"
+
+# Formules utilisées par le moteur selon la forme :
+#
+#   rectangle → A = b×h  I_y = b×h³/12  W_y = b×h²/6  A_eff = A × k_cr (0.67)
+#   rond      → A = π×d²/4  I = π×d⁴/64  W = π×d³/32  A_eff = A  k_crit = 1.0
+#   custom    → lire A_cm2, I_y_cm4, I_z_cm4, W_y_cm3, W_z_cm3, A_eff_cisaillement_cm2
+#               depuis le CSV — fallback formule rectangle si colonne absente
+
+
+[mappage_colonnes]
+# Colonnes de stock_charpente.csv (généré par sapeg_regen_stock) :
+#   id_produit;libelle;b_mm;h_mm;L_max_m;classe_resistance;
+#   famille;id_config_materiau;disponible;statut_filtre;regle_violee
+
+# ── Colonnes obligatoires ─────────────────────────────────────────────────────
+b_mm              = "b_mm"
+h_mm              = "h_mm"
+classe_resistance = "classe_resistance"
+
+# ── Colonnes optionnelles — sortie ────────────────────────────────────────────
+id_produit        = "id_produit"
+libelle           = "libelle"
+
+# ── Colonnes optionnelles — filtrage ─────────────────────────────────────────
+statut_filtre     = "statut_filtre"
+# statut_ingestion  = "statut_ingestion"   # absent de stock_charpente.csv
+
+# ── Colonnes optionnelles — enrichissement ────────────────────────────────────
+L_max_m           = "L_max_m"
+
+# ── Colonnes optionnelles — forme de section ──────────────────────────────────
+# forme_section            = "forme_section"   # absent → fallback "rectangle"
+# d_mm                     = "d_mm"            # absent
+# A_cm2                    = "A_cm2"           # absent
+# I_y_cm4                  = "I_y_cm4"         # absent
+# I_z_cm4                  = "I_z_cm4"         # absent
+# W_y_cm3                  = "W_y_cm3"         # absent
+# W_z_cm3                  = "W_z_cm3"         # absent
+# A_eff_cisaillement_cm2   = "A_eff_cisaillement_cm2"  # absent
+
+# ── Remappage anti-conflit ────────────────────────────────────────────────────
+# stock_charpente.csv a une colonne "famille" (valeur "INCONNU" issue du pipeline
+# sapeg) qui entrerait en conflit avec "famille" de materiaux_bois.csv lors du
+# merge. On la renomme en "famille_stock" (ignorée par le moteur) pour laisser
+# la jointure apporter la valeur normative depuis materiaux_bois.csv.
+famille_stock = "famille"
+
+# ── Colonnes ignorées (présentes dans le CSV mais non lues par le moteur) ─────
+# id_config_materiau  → généré par ConfigMatériauVect.__post_init__, jamais lu
+# disponible          → non utilisé
+# regle_violee        → non utilisé

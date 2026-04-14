@@ -27,48 +27,55 @@
 
 
 ### ── Vue Questionnaire ────────────────────────────────────────────────────────────
-#[[vue]]
-#nom            = "questionnaire"
-#description    = "Format compact — usage comparatife pour questionnaire"
-#fichier_sortie = "abaque_questionnaire.csv"
-#type           = "agregation"
-#groupby        = ["id_config_materiau", "id_config_calcul"]
-#colonnes       = [
-## Donnée pour liste comnfiguration
-#    "id_config_calcul", # type_poutre
-#    #"pente" 
-#    #"G"
-#    #"entraxe"
-#    "longueur_m", # Portée (m)
-#    #"essence"
-## Donnée pour liste 10 article
-#    "id_produit",
-#    # Indice de classement (à ne pas afficher)
-#    "b_mm",
-#    "h_mm",
-#    "longueur_max_admissible_m",# longeur_article
-#    "classe_resistance",
-#    #"Commentaire"
-#    "taux_global",
-#    "verife",
-#]
-#trier_par      = [
-#    #"pente"
-#    #"entraxe"
-#    "id_config_calcul",
-#    # Indice de classement (à ne pas afficher)
-#    #"essence"
-#]
+# Produit un CSV fusionné (une ligne par couple config × article) destiné au
+# logiciel externe de comparaison TypeForms.
 #
-#  [[vue.filtres]]
-#  champ     = "verifie"
-#  operateur = "egal"
-#  valeur    = true
+# Correspondance des colonnes avec les tableaux docs/Structure Form.md :
 #
-#  [[vue.filtres]]
-#    champ     = "essence"
-#    operateur = "egal"
-#    valeur    = 
+#   Données comparaison questionnaire :
+#     type_poutre             → type_poutre
+#     pente_deg               → Pente (°)
+#     g_k_kNm2                → G permanente  ⚠ unité kN/m² (× 100 = daN/m²)
+#     entraxe_m               → Entraxe (m)
+#     longueur_max_admissible_m → Portée (m)
+#     essence                 → à venir : colonne dédiée ajoutée dans sapeg_regen_stock
+#                               (pour l'instant encodée dans `libelle`)
+#
+#   Données complémentaires — liste articles :
+#     id_produit              → Code Sapeg
+#     taux_determinant        → Indice de classement (à ne pas afficher)
+#     b_mm                    → Base (mm)
+#     h_mm                    → Hauteur (mm)
+#     longueur_max_article_m  → Longueur_article (m)  [longueur commerciale]
+#     classe_resistance       → Classe de résistance
+#     libelle                 → Commentaire  (contient aussi l'essence)
+#     csl_valide              → article disponible pour cette portée (auto-calculé)
+
+[[vue]]
+nom            = "questionnaire"
+description    = "Format questionnaire — comparaison TypeForms + liste articles"
+fichier_sortie = "abaque_questionnaire.csv"
+type           = "agregation"
+groupby        = ["id_config_calcul", "id_produit"]
+colonnes       = [
+    # ── Données pour comparaison questionnaire ────────────────────────────────
+    "type_poutre",
+    "pente_deg",                  # Pente (°)
+    "g_k_kNm2",                   # G permanente (kN/m²) — ×100 → daN/m²
+    "entraxe_m",                  # Entraxe (m)
+    "longueur_max_admissible_m",  # Portée max admissible (m)
+    # "essence",                  # Essence — colonne à venir (sapeg_regen_stock)
+    # ── Données complémentaires — liste articles ──────────────────────────────
+    "id_produit",                 # Code Sapeg
+    "taux_determinant",           # Indice de classement (à ne pas afficher)
+    "b_mm",                       # Base (mm)
+    "h_mm",                       # Hauteur (mm)
+    "longueur_max_article_m",     # Longueur article commercial (m)
+    "classe_resistance",          # Classe de résistance
+    "libelle",                    # Commentaire + essence (ex. "épicéa C24 45×120")
+    "csl_valide",                 # Portée ≤ longueur commerciale de l'article
+]
+trier_par      = ["id_config_calcul", "taux_determinant"]
 
 ## ── Vue réduite ────────────────────────────────────────────────────────────────
 #

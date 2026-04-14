@@ -12,6 +12,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from .type_section import TypeSection
+
 
 @dataclass(frozen=True)
 class ConfigMatériauVect:
@@ -23,8 +25,6 @@ class ConfigMatériauVect:
 
     Parameters
     ----------
-    id_config_materiau:
-        Identifiant unique de la configuration matériau (ex: "C24_63x175").
     classe_resistance:
         Classe de résistance EN 338 ou EN 14080 (ex: "C24", "GL28h").
     famille:
@@ -65,9 +65,22 @@ class ConfigMatériauVect:
         Module d'élasticité caractéristique à 5 % (ELU déversement).
     rho_k_kgm3:
         Masse volumique caractéristique en kg/m³ (poids propre).
+    type_section:
+        Forme de la section transversale.
+        ``RECTANGULAIRE`` (défaut) — calculée depuis b_mm × h_mm.
+        ``RONDE`` — calculée depuis d_mm (b_mm = h_mm = d_mm).
+        ``PERSONNALISEE`` — propriétés A, I, W lues depuis le CSV.
+    id_config_materiau:
+        Identifiant unique de la configuration matériau (ex: "C24_63x175").
+        Généré automatiquement depuis ``classe_resistance`` + ``b_mm`` × ``h_mm``
+        si non fourni. Ne jamais lire depuis le CSV d'entrée.
+    id_produit:
+        Code article SAPEG (optionnel — propagé jusqu'aux CSV de sortie).
+    libelle:
+        Désignation commerciale (optionnel — propagé jusqu'aux CSV de sortie).
     """
 
-    id_config_materiau: str
+    # ── Champs obligatoires ───────────────────────────────────────────────────
     classe_resistance: str
     famille: str
 
@@ -98,6 +111,22 @@ class ConfigMatériauVect:
     # Masse volumique [kg/m³]
     rho_k_kgm3: float
 
-    # Identifiants SAPEG (optionnels — renseignés si le stock provient de sapeg_regen_stock)
+    # ── Champs optionnels ─────────────────────────────────────────────────────
+    type_section: TypeSection = TypeSection.RECTANGULAIRE
+
+    # id_config_materiau : généré par __post_init__ si non fourni explicitement.
+    # Ne jamais l'importer depuis le CSV d'entrée.
+    id_config_materiau: str = ""
+
+    # Identifiants SAPEG propagés jusqu'aux CSV de sortie
     id_produit: str = ""
     libelle: str = ""
+
+    def __post_init__(self) -> None:
+        """Génère id_config_materiau si absent, depuis classe + section."""
+        if not self.id_config_materiau and self.b_mm is not None and self.h_mm is not None:
+            object.__setattr__(
+                self,
+                "id_config_materiau",
+                f"{self.classe_resistance}_{int(self.b_mm)}x{int(self.h_mm)}",
+            )

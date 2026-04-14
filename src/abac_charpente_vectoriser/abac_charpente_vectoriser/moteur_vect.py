@@ -85,7 +85,7 @@ def _configurer_loguru(verbose: bool) -> None:
         logger.add(
             sys.stderr,
             level="DEBUG",
-            colorize=True,
+            colorize=None,
             format=(
                 "<green>{time:HH:mm:ss}</green> | "
                 "<level>{level: <8}</level> | "
@@ -97,7 +97,7 @@ def _configurer_loguru(verbose: bool) -> None:
         logger.add(
             sys.stderr,
             level="INFO",
-            colorize=True,
+            colorize=None,
             format=(
                 "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | "
                 "<level>{level: <8}</level> | "
@@ -306,6 +306,7 @@ def run(
     nom_filtre: str = "charpente",
     chemin_sortie: Path = Path("resultats"),
     chemin_toml_sortie: Path = Path("configs_sortie_vect.toml"),
+    chemin_toml_entre: Path = Path("configs_entre_vect.toml"),
     sauvegarder_tenseurs: bool = False,
 ) -> list[ResultatPortee]:
     """Exécute le pipeline complet de calcul EC5 vectorisé.
@@ -334,6 +335,10 @@ def run(
         Chemin vers ``configs_sortie_vect.toml`` définissant les vues dérivées.
         Si le fichier n'existe pas, seul ``abaque_complet_global.csv`` est écrit.
         Défaut : ``./configs_sortie_vect.toml``.
+    chemin_toml_entre:
+        Chemin vers ``configs_entre_vect.toml`` définissant le mappage des colonnes
+        du CSV stock. Si le fichier n'existe pas, les noms de colonnes sont utilisés
+        tels quels (identité). Défaut : ``./configs_entre_vect.toml``.
     sauvegarder_tenseurs:
         Si True, sauvegarde les tenseurs de taux dans ``resultats/tenseurs.duckdb``
         (table ``taux`` avec colonnes ``FLOAT[]`` par matériau, table ``materiaux_combo``).
@@ -346,6 +351,34 @@ def run(
     from loguru import logger
 
     chemin_sortie.mkdir(parents=True, exist_ok=True)
+
+    # ── Configuration ingestion CSV (configs_entre_vect.toml) ────────────────
+    mappage_colonnes: dict[str, str] = {}
+    filtrage_col: str | None = None
+    filtrage_val: str | None = None
+    section_col_forme: str | None = None
+    section_col_diam: str | None  = None
+    if chemin_toml_entre.exists():
+        toml_entre: dict = _lire_toml(chemin_toml_entre)
+        mappage_colonnes = toml_entre.get("mappage_colonnes", {})
+        filtrage_cfg: dict = toml_entre.get("filtrage", {})
+        filtrage_col = filtrage_cfg.get("colonne") or None
+        filtrage_val = filtrage_cfg.get("valeur") or None
+        section_cfg: dict = toml_entre.get("section", {})
+        section_col_forme: str | None = section_cfg.get("colonne_forme") or None
+        section_col_diam: str | None  = section_cfg.get("colonne_diametre") or None
+        if mappage_colonnes:
+            logger.info(
+                f"Mappage colonnes : {len(mappage_colonnes)} entrée(s) "
+                f"({chemin_toml_entre})"
+            )
+        if filtrage_col:
+            logger.info(f"Filtrage CSV : {filtrage_col!r} == {filtrage_val!r}")
+    else:
+        logger.debug(
+            f"configs_entre_vect.toml introuvable ({chemin_toml_entre}) "
+            f"— colonnes CSV utilisées telles quelles, filtrage sur classe_resistance"
+        )
 
     # ── Stock : régénération ou fichier direct ────────────────────────────────
     if chemin_stock is not None:
@@ -365,7 +398,14 @@ def run(
 
     # ── Chargement matériaux ──────────────────────────────────────────────────
     logger.info(f"Chargement stock : {chemin_stock_calcul}")
-    tous_materiaux = charger_depuis_csv(chemin_stock_calcul)
+    tous_materiaux = charger_depuis_csv(
+        chemin_stock_calcul,
+        mappage_colonnes=mappage_colonnes or None,
+        filtrage_colonne=filtrage_col,
+        filtrage_valeur=filtrage_val,
+        section_colonne_forme=section_col_forme,
+        section_colonne_diametre=section_col_diam,
+    )
     logger.info(f"{len(tous_materiaux)} matériaux chargés")
 
     # Store DuckDB tenseurs optionnel
@@ -553,6 +593,51 @@ def run(
         if tous_df_complet
         else pd.DataFrame()
     )
+    # Enrichissement : longueur commerciale max article depuis le stock (join sortie uniquement)
+    # id_config_materiau n'est pas dans le CSV — on le reconstruit depuis classe + b × h
+    try:
+        df_stock_brut: pd.DataFrame = pd.read_csv(
+            chemin_stock_calcul, sep=";", comment="#", low_memory=False
+        )
+        # Appliquer le mappage au CSV brut pour obtenir les noms internes
+        if mappage_colonnes:
+            df_stock_brut = df_stock_brut.rename(
+                columns={v: k for k, v in mappage_colonnes.items() if v != k}
+            )
+        col_lmax: str = "L_max_m"
+        cols_requises: set[str] = {"classe_resistance", "b_mm", "h_mm", col_lmax}
+        if cols_requises.issubset(df_stock_brut.columns) and not df_complet_global.empty:
+            df_lmax: pd.DataFrame = df_stock_brut[
+                ["classe_resistance", "b_mm", "h_mm", col_lmax]
+            ].copy()
+            # Reconstruire id_config_materiau selon la même convention que __post_init__
+            df_lmax["id_config_materiau"] = (
+                df_lmax["classe_resistance"].astype(str)
+                + "_"
+                + df_lmax["b_mm"].astype(int).astype(str)
+                + "x"
+                + df_lmax["h_mm"].astype(int).astype(str)
+            )
+            lmax_map: pd.DataFrame = (
+                df_lmax[["id_config_materiau", col_lmax]]
+                .drop_duplicates("id_config_materiau")
+                .rename(columns={col_lmax: "longueur_max_article_m"})
+            )
+            df_complet_global = df_complet_global.merge(
+                lmax_map, on="id_config_materiau", how="left"
+            )
+            logger.info("longueur_max_article_m ajoutée depuis le stock")
+            # Marquer les lignes dont la portée testée dépasse la longueur max article
+            if "longueur_m" in df_complet_global.columns:
+                masque_dep: pd.Series = (
+                    df_complet_global["longueur_max_article_m"].notna()
+                    & (df_complet_global["longueur_m"] > df_complet_global["longueur_max_article_m"])
+                )
+                df_complet_global.loc[masque_dep, "verifie"] = False
+                df_complet_global.loc[masque_dep, "verifie_raison"] = "longueur_dépassée"
+    except Exception as exc:
+        logger.debug(f"Enrichissement L_max_m ignoré : {exc}")
+
     chemin_complet: Path = chemin_sortie / "abaque_complet_global.csv"
     exporter_abaque_complet(df_complet_global, chemin_complet)
     logger.info(f"abaque_complet_global.csv → {len(df_complet_global)} lignes")
@@ -645,6 +730,14 @@ def cli() -> None:
         help="TOML de configuration des vues de sortie (défaut : ./configs_sortie_vect.toml)",
     )
     parser.add_argument(
+        "--toml-entre",
+        default=Path("configs_entre_vect.toml"),
+        type=Path,
+        metavar="FICHIER",
+        dest="toml_entre",
+        help="TOML de configuration de l'ingestion CSV — mappage colonnes (défaut : ./configs_entre_vect.toml)",
+    )
+    parser.add_argument(
         "--tenseurs",
         action="store_true",
         help="Sauvegarder les tenseurs de taux dans resultats/tenseurs.duckdb (FLOAT[] par matériau)",
@@ -667,5 +760,6 @@ def cli() -> None:
         nom_filtre=args.filtre,
         chemin_sortie=args.sortie,
         chemin_toml_sortie=args.toml_sortie,
+        chemin_toml_entre=args.toml_entre,
         sauvegarder_tenseurs=args.tenseurs,
     )

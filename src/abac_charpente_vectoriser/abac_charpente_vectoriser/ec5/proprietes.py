@@ -20,6 +20,7 @@ import pandas as pd
 
 from ..modeles.combinaison import CombinaisonEC0Vect
 from ..modeles.config_materiau import ConfigMatériauVect
+from ..modeles.type_section import TypeSection
 
 
 @lru_cache(maxsize=1)
@@ -272,8 +273,16 @@ def calculer_k_crit_LM(
             1.0 / lambda_rel_m**2,
         ),
     )
+    k_crit = k_crit.clip(0.0, 1.0)
 
-    return k_crit.clip(0.0, 1.0)
+    # Sections rondes : pas de déversement (section doublement symétrique)
+    # EC5 §6.3.3 ne s'applique qu'aux sections rectangulaires — k_crit = 1.0 pour les rondes
+    is_ronde: np.ndarray = np.array(
+        [m.type_section == TypeSection.RONDE for m in materiaux], dtype=bool
+    )  # (n_M,)
+    k_crit = np.where(is_ronde[np.newaxis, :], 1.0, k_crit)
+
+    return k_crit
 
 
 def calculer_k_c_LM(

@@ -9,11 +9,8 @@ Pour ajouter un nouveau type de poutre :
 3. Aucune modification des modules pipeline ou vérifications n'est requise.
 """
 
-from .chevron import ChevronVect
-from .panne_aplomb import PanneAplombVect
-from .panne_deversee import PanneDeverseeVect
-from .solive import SoliveVect
-from .sommier import SommierVect
+from .inclinees import ChevronVect, PanneAplombVect, PanneDeverseeVect
+from .horizontales import SoliveVect, SommierVect
 from ..protocoles.type_poutre import PoutreHorizontaleVect, TypePoutreInclineeVect, TypePoutreVect
 
 TYPES_POUTRE: dict[str, type[TypePoutreVect]] = {
