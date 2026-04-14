@@ -26,28 +26,50 @@
 # =============================================================================
 
 
-## ── Vue synthétique ────────────────────────────────────────────────────────────
-#
+### ── Vue Questionnaire ────────────────────────────────────────────────────────────
 #[[vue]]
-#nom            = "synthetique"
-#description    = "Longueur max admissible par couple (matériau × config) — dimensionnement rapide"
-#fichier_sortie = "abaque_synthetique_global.csv"
+#nom            = "questionnaire"
+#description    = "Format compact — usage comparatife pour questionnaire"
+#fichier_sortie = "abaque_questionnaire.csv"
 #type           = "agregation"
 #groupby        = ["id_config_materiau", "id_config_calcul"]
 #colonnes       = [
+## Donnée pour liste comnfiguration
+#    "id_config_calcul", # type_poutre
+#    #"pente" 
+#    #"G"
+#    #"entraxe"
+#    "longueur_m", # Portée (m)
+#    #"essence"
+## Donnée pour liste 10 article
 #    "id_produit",
-#    "id_config_materiau",
-#    "id_config_calcul",
-#    "classe_resistance",
+#    # Indice de classement (à ne pas afficher)
 #    "b_mm",
 #    "h_mm",
-#    "longueur_max_admissible_m",
-#    "taux_determinant",
-#    "verif_determinante",
+#    "longueur_max_admissible_m",# longeur_article
+#    "classe_resistance",
+#    #"Commentaire"
+#    "taux_global",
+#    "verife",
 #]
-#trier_par      = ["id_config_calcul", "classe_resistance", "b_mm", "h_mm"]
+#trier_par      = [
+#    #"pente"
+#    #"entraxe"
+#    "id_config_calcul",
+#    # Indice de classement (à ne pas afficher)
+#    #"essence"
+#]
 #
+#  [[vue.filtres]]
+#  champ     = "verifie"
+#  operateur = "egal"
+#  valeur    = true
 #
+#  [[vue.filtres]]
+#    champ     = "essence"
+#    operateur = "egal"
+#    valeur    = 
+
 ## ── Vue réduite ────────────────────────────────────────────────────────────────
 #
 #[[vue]]
