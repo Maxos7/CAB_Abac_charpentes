@@ -33,7 +33,7 @@ def cli() -> None:
     "-f",
     type=click.Path(exists=False, path_type=Path),
     default=None,
-    help="Chemin vers configs_filtre.toml (optionnel).",
+    help="Chemin vers configs_filtre_regen.toml (optionnel).",
 )
 @click.option(
     "--stock-enrichi",
@@ -41,6 +41,13 @@ def cli() -> None:
     type=click.Path(exists=False, path_type=Path),
     default=None,
     help="Chemin du CSV stock_enrichi.csv de sortie.",
+)
+@click.option(
+    "--config",
+    "-c",
+    type=click.Path(exists=False, path_type=Path),
+    default=None,
+    help="Chemin vers configs_regen.toml (ingestion + mappage colonnes).",
 )
 @click.option(
     "--verbose",
@@ -53,6 +60,7 @@ def regenerer(
     source: Path,
     filtres: Path | None,
     stock_enrichi: Path | None,
+    config: Path | None,
     verbose: bool,
 ) -> None:
     """Filtre et enrichit le fichier stock SAPEG.
@@ -65,7 +73,32 @@ def regenerer(
     """
     try:
         from sapeg_regen_stock.pipeline import run
-        from sapeg_regen_stock.modeles import ConfigFiltre
+        from sapeg_regen_stock.modeles import ConfigFiltre, ConfigIngestion
+
+        # Chargement configs_regen.toml
+        config_ingestion = ConfigIngestion()
+        if config is not None and config.exists():
+            try:
+                import tomllib
+
+                with open(config, "rb") as f:
+                    donnees_regene = tomllib.load(f)
+                bloc_ingestion = donnees_regene.get("ingestion", {})
+                mappage = donnees_regene.get("mappage_colonnes", {})
+                config_ingestion = ConfigIngestion(
+                    encodage=bloc_ingestion.get("encodage", config_ingestion.encodage),
+                    separateur=bloc_ingestion.get("separateur", config_ingestion.separateur),
+                    pattern_fichier=bloc_ingestion.get("pattern_fichier", config_ingestion.pattern_fichier),
+                    mappage_colonnes={k: str(v) for k, v in mappage.items()},
+                )
+            except Exception as e:
+                click.echo(f"ERREUR configs_regen.toml : {e}", err=True)
+                sys.exit(1)
+        elif config is not None:
+            click.echo(
+                f"AVERTISSEMENT : {config} introuvable — configuration par défaut utilisée.",
+                err=True,
+            )
 
         # Chargement des filtres
         liste_filtres: list[ConfigFiltre] = []
@@ -78,7 +111,7 @@ def regenerer(
                 for bloc in donnees.get("filtre", []):
                     liste_filtres.append(ConfigFiltre(**bloc))
             except Exception as e:
-                click.echo(f"ERREUR configs_filtre.toml : {e}", err=True)
+                click.echo(f"ERREUR configs_filtre_regen.toml : {e}", err=True)
                 sys.exit(1)
         elif filtres is not None:
             click.echo(
@@ -90,7 +123,7 @@ def regenerer(
         stock_enrichi_path = stock_enrichi
 
         # Appel pipeline
-        dict_résultats = run(source, liste_filtres, stock_enrichi_path)
+        dict_résultats = run(source, liste_filtres, stock_enrichi_path, config_ingestion)
 
         # Rapport FR sur stdout
         click.echo("Enrichissement termine.")

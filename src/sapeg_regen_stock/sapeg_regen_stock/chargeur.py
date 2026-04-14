@@ -122,15 +122,17 @@ def charger_stock(chemin: Path, config: ConfigIngestion) -> list[ProduitStock]:
         sys.exit(2)
 
     # Détection colonnes dimensionnelles
-    col_code = _trouver_colonne(df, _COL_CODE_ARTICLE)
-    col_desi = _trouver_colonne(df, _COL_DESIGNATION)
-    col_famille = _trouver_colonne(df, _COL_FAMILLE)
-    col_dispo = _trouver_colonne(df, _COL_DISPONIBILITE)
-    col_long = _trouver_colonne(df, _COL_LONGUEUR)
-    col_larg = _trouver_colonne(df, _COL_LARGEUR)
-    col_haut = _trouver_colonne(df, _COL_HAUTEUR)
-    col_classe = _trouver_colonne(df, _COL_CLASSE)
-    col_fournisseur = _trouver_colonne(df, _COL_FOURNISSEUR)
+    # Priorité : mappage explicite (config.mappage_colonnes) → auto-détection par candidats
+    _m = config.mappage_colonnes
+    col_code       = _m.get("code_article")  or _trouver_colonne(df, _COL_CODE_ARTICLE)
+    col_desi       = _m.get("designation")   or _trouver_colonne(df, _COL_DESIGNATION)
+    col_famille    = _m.get("famille")       or _trouver_colonne(df, _COL_FAMILLE)
+    col_dispo      = _m.get("disponibilite") or _trouver_colonne(df, _COL_DISPONIBILITE)
+    col_long       = _m.get("longueur")      or _trouver_colonne(df, _COL_LONGUEUR)
+    col_larg       = _m.get("largeur")       or _trouver_colonne(df, _COL_LARGEUR)
+    col_haut       = _m.get("hauteur")       or _trouver_colonne(df, _COL_HAUTEUR)
+    col_classe     = _m.get("classe")        or _trouver_colonne(df, _COL_CLASSE)
+    col_fournisseur= _m.get("fournisseur")   or _trouver_colonne(df, _COL_FOURNISSEUR)
 
     if not col_code:
         logger.error("Colonne code article introuvable dans le stock.")

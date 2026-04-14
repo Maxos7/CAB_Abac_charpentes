@@ -187,7 +187,7 @@ def _developper_produit_cartesien(config_dict: dict) -> list[dict]:
 
 
 def _charger_filtres_sapeg(chemin_filtres: Path) -> list:
-    """Charge les filtres depuis un fichier ``configs_filtre.toml`` (format sapeg_regen_stock).
+    """Charge les filtres depuis un fichier ``configs_filtre_regen.toml`` (format sapeg_regen_stock).
 
     Parameters
     ----------
@@ -243,14 +243,14 @@ def _charger_filtres_sapeg(chemin_filtres: Path) -> list:
 def _regenerer_stock(
     chemin_source: Path,
     chemin_sortie: Path,
-    chemin_filtres: Path = Path("configs_filtre.toml"),
+    chemin_filtres: Path = Path("configs_filtre_regen.toml"),
     nom_filtre: str = "charpente",
 ) -> Path:
     """Appelle ``sapeg_regen_stock`` pour générer le stock filtré.
 
     Suit le même processus que ``abac_charpente`` : auto-détection du fichier
     ``ALL_PRODUIT_*.csv`` dans ``chemin_source``, enrichissement des propriétés
-    mécaniques, application du filtre ``nom_filtre`` depuis ``configs_filtre.toml``.
+    mécaniques, application du filtre ``nom_filtre`` depuis ``configs_filtre_regen.toml``.
 
     Parameters
     ----------
@@ -259,7 +259,7 @@ def _regenerer_stock(
     chemin_sortie:
         Répertoire de sortie — ``stock_enrichi.csv`` y sera écrit.
     chemin_filtres:
-        Chemin vers ``configs_filtre.toml``. Défaut : ``./configs_filtre.toml``.
+        Chemin vers ``configs_filtre_regen.toml``. Défaut : ``./configs_filtre_regen.toml``.
     nom_filtre:
         Nom du filtre à utiliser comme stock de calcul. Défaut : ``"charpente"``.
         Si le filtre n'existe pas dans le TOML, ``stock_enrichi.csv`` est utilisé.
@@ -290,7 +290,7 @@ def _regenerer_stock(
         chemin_calcul = stock_enrichi_path
         if filtres:
             logger.warning(
-                f"Filtre '{nom_filtre}' introuvable dans configs_filtre.toml "
+                f"Filtre '{nom_filtre}' introuvable dans configs_filtre_regen.toml "
                 f"— utilisation de stock_enrichi.csv"
             )
         logger.info(f"Stock enrichi : {chemin_calcul}")
@@ -302,11 +302,11 @@ def run(
     chemin_toml: Path,
     chemin_source: Path = Path("."),
     chemin_stock: Path | None = None,
-    chemin_filtres: Path = Path("configs_filtre.toml"),
+    chemin_filtres: Path = Path("configs_filtre_regen.toml"),
     nom_filtre: str = "charpente",
     chemin_sortie: Path = Path("resultats"),
     chemin_toml_sortie: Path = Path("configs_sortie_vect.toml"),
-    chemin_toml_entre: Path = Path("configs_entre_vect.toml"),
+    chemin_toml_entree: Path = Path("configs_entree_vect.toml"),
     sauvegarder_tenseurs: bool = False,
 ) -> list[ResultatPortee]:
     """Exécute le pipeline complet de calcul EC5 vectorisé.
@@ -325,8 +325,8 @@ def run(
         ``classe_resistance``). Si fourni, la régénération via
         ``sapeg_regen_stock`` est ignorée.
     chemin_filtres:
-        Chemin vers ``configs_filtre.toml`` (filtres sapeg_regen_stock).
-        Défaut : ``./configs_filtre.toml``.
+        Chemin vers ``configs_filtre_regen.toml`` (filtres sapeg_regen_stock).
+        Défaut : ``./configs_filtre_regen.toml``.
     nom_filtre:
         Nom du filtre à utiliser comme stock de calcul. Défaut : ``"charpente"``.
     chemin_sortie:
@@ -335,10 +335,10 @@ def run(
         Chemin vers ``configs_sortie_vect.toml`` définissant les vues dérivées.
         Si le fichier n'existe pas, seul ``abaque_complet_global.csv`` est écrit.
         Défaut : ``./configs_sortie_vect.toml``.
-    chemin_toml_entre:
-        Chemin vers ``configs_entre_vect.toml`` définissant le mappage des colonnes
+    chemin_toml_entree:
+        Chemin vers ``configs_entree_vect.toml`` définissant le mappage des colonnes
         du CSV stock. Si le fichier n'existe pas, les noms de colonnes sont utilisés
-        tels quels (identité). Défaut : ``./configs_entre_vect.toml``.
+        tels quels (identité). Défaut : ``./configs_entree_vect.toml``.
     sauvegarder_tenseurs:
         Si True, sauvegarde les tenseurs de taux dans ``resultats/tenseurs.duckdb``
         (table ``taux`` avec colonnes ``FLOAT[]`` par matériau, table ``materiaux_combo``).
@@ -352,31 +352,31 @@ def run(
 
     chemin_sortie.mkdir(parents=True, exist_ok=True)
 
-    # ── Configuration ingestion CSV (configs_entre_vect.toml) ────────────────
+    # ── Configuration ingestion CSV (configs_entree_vect.toml) ────────────────
     mappage_colonnes: dict[str, str] = {}
     filtrage_col: str | None = None
     filtrage_val: str | None = None
     section_col_forme: str | None = None
     section_col_diam: str | None  = None
-    if chemin_toml_entre.exists():
-        toml_entre: dict = _lire_toml(chemin_toml_entre)
-        mappage_colonnes = toml_entre.get("mappage_colonnes", {})
-        filtrage_cfg: dict = toml_entre.get("filtrage", {})
+    if chemin_toml_entree.exists():
+        toml_entree: dict = _lire_toml(chemin_toml_entree)
+        mappage_colonnes = toml_entree.get("mappage_colonnes", {})
+        filtrage_cfg: dict = toml_entree.get("filtrage", {})
         filtrage_col = filtrage_cfg.get("colonne") or None
         filtrage_val = filtrage_cfg.get("valeur") or None
-        section_cfg: dict = toml_entre.get("section", {})
+        section_cfg: dict = toml_entree.get("section", {})
         section_col_forme: str | None = section_cfg.get("colonne_forme") or None
         section_col_diam: str | None  = section_cfg.get("colonne_diametre") or None
         if mappage_colonnes:
             logger.info(
                 f"Mappage colonnes : {len(mappage_colonnes)} entrée(s) "
-                f"({chemin_toml_entre})"
+                f"({chemin_toml_entree})"
             )
         if filtrage_col:
             logger.info(f"Filtrage CSV : {filtrage_col!r} == {filtrage_val!r}")
     else:
         logger.debug(
-            f"configs_entre_vect.toml introuvable ({chemin_toml_entre}) "
+            f"configs_entree_vect.toml introuvable ({chemin_toml_entree}) "
             f"— colonnes CSV utilisées telles quelles, filtrage sur classe_resistance"
         )
 
@@ -704,10 +704,10 @@ def cli() -> None:
     )
     parser.add_argument(
         "--filtres",
-        default=Path("configs_filtre.toml"),
+        default=Path("configs_filtre_regen.toml"),
         type=Path,
         metavar="FICHIER",
-        help="Fichier configs_filtre.toml (défaut : ./configs_filtre.toml)",
+        help="Fichier configs_filtre_regen.toml (défaut : ./configs_filtre_regen.toml)",
     )
     parser.add_argument(
         "--filtre",
@@ -730,12 +730,12 @@ def cli() -> None:
         help="TOML de configuration des vues de sortie (défaut : ./configs_sortie_vect.toml)",
     )
     parser.add_argument(
-        "--toml-entre",
-        default=Path("configs_entre_vect.toml"),
+        "--toml-entree",
+        default=Path("configs_entree_vect.toml"),
         type=Path,
         metavar="FICHIER",
-        dest="toml_entre",
-        help="TOML de configuration de l'ingestion CSV — mappage colonnes (défaut : ./configs_entre_vect.toml)",
+        dest="toml_entree",
+        help="TOML de configuration de l'ingestion CSV — mappage colonnes (défaut : ./configs_entree_vect.toml)",
     )
     parser.add_argument(
         "--tenseurs",
@@ -760,6 +760,6 @@ def cli() -> None:
         nom_filtre=args.filtre,
         chemin_sortie=args.sortie,
         chemin_toml_sortie=args.toml_sortie,
-        chemin_toml_entre=args.toml_entre,
+        chemin_toml_entree=args.toml_entree,
         sauvegarder_tenseurs=args.tenseurs,
     )
