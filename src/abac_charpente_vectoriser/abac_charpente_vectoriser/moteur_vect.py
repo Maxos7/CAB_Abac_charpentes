@@ -470,8 +470,8 @@ def run(
             )
 
             # Vérifications
-            taux_elu, combo_elu = verifier_elu(espace)
-            taux_els, combo_els = verifier_els(espace)
+            taux_elu, combo_elu, valeur_elu = verifier_elu(espace)
+            taux_els, combo_els, valeur_els = verifier_els(espace)
 
             # ── Détail DEBUG ──────────────────────────────────────────────────
             logger.debug(f"    ── {id_unique} ──")
@@ -522,6 +522,8 @@ def run(
                 config,
                 combo_elu=combo_elu,
                 combo_els=combo_els,
+                valeur_elu=valeur_elu,
+                valeur_els=valeur_els,
             )
             tous_df_complet.append(df_combo)
 

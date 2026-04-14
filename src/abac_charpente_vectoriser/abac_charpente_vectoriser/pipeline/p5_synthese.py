@@ -88,6 +88,7 @@ def synthetiser(
         Un ``ResultatPortee`` par matériau.
     """
     tous_taux: dict[str, np.ndarray] = {**taux_elu, **taux_els}
+    tous_combos: dict[str, np.ndarray] = {**(combo_elu or {}), **(combo_els or {})}
     taux_stack: np.ndarray = np.stack(
         list(tous_taux.values()), axis=0
     )  # (n_verif, n_L, n_M)

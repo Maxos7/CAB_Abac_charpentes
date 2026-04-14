@@ -29,11 +29,13 @@ def construire_df_complet(
     config: ConfigCalculVect,
     combo_elu: dict[str, np.ndarray] | None = None,
     combo_els: dict[str, np.ndarray] | None = None,
+    valeur_elu: dict[str, np.ndarray] | None = None,
+    valeur_els: dict[str, np.ndarray] | None = None,
 ) -> pd.DataFrame:
     """Construit le DataFrame de l'abaque complet sans l'écrire.
 
     Une ligne par couple (matériau × longueur). Contient tous les taux ELU et ELS,
-    ainsi que la combinaison EC0 déterminante pour chaque vérification.
+    les combinaisons déterminantes, et les valeurs intermédiaires physiques (MPa / mm).
 
     Parameters
     ----------
@@ -46,13 +48,19 @@ def construire_df_complet(
     materiaux:
         Liste des configurations matériau ``(n_M,)``.
     config:
-        Configuration de calcul (``id_config_calcul`` doit être l'ID unique du combo).
+        Configuration de calcul.
     combo_elu:
-        Combinaisons ELU déterminantes ``{id_verif: (n_L, n_M)}`` de strings
-        (ex. ``"ELU_STR_G+S"``). Ajoutées en colonne ``elu_<verif>_combo`` si fourni.
+        Combinaisons ELU déterminantes ``{id_verif: (n_L, n_M)}``.
+        Colonne ``elu_<verif>_combo`` si fourni.
     combo_els:
-        Combinaisons ELS déterminantes ``{id_verif: (n_L, n_M)}`` de strings
-        (ex. ``"ELS_CAR_G+Q"``). Ajoutées en colonne ``els_<verif>_combo`` si fourni.
+        Combinaisons ELS déterminantes ``{id_verif: (n_L, n_M)}``.
+        Colonne ``els_<verif>_combo`` si fourni.
+    valeur_elu:
+        Valeurs intermédiaires ELU ``{id_verif: (n_L, n_M)}`` (MPa ou —).
+        Colonne ``elu_<verif>_val`` si fourni. Exclues de ``taux_global``.
+    valeur_els:
+        Valeurs intermédiaires ELS ``{id_verif: (n_L, n_M)}`` (mm).
+        Colonne ``els_<verif>_val`` si fourni. Exclues de ``taux_global``.
 
     Returns
     -------
@@ -74,13 +82,27 @@ def construire_df_complet(
                 "h_mm": mat.h_mm,
                 "longueur_m": round(float(longueurs_m[l_idx]), 3),
             }
+            # Vérifications adimensionnelles (k_crit, k_c_y, k_c_z)
+            _ELU_ADIM: frozenset[str] = frozenset({"k_crit", "k_c_y", "k_c_z"})
+
+            # Taux ELU + combis + valeurs intermédiaires
             for id_v, taux in taux_elu.items():
                 ligne[f"elu_{id_v}"] = round(float(taux[l_idx, m]), 4)
                 if combo_elu is not None:
-                    ligne[f"elu_{id_v}_combo"] = str(combo_elu[id_v][l_idx, m])
+                    ligne[f"elu_{id_v}_combi"] = str(combo_elu[id_v][l_idx, m])
+                if valeur_elu is not None and id_v in valeur_elu:
+                    unite = "adim" if id_v in _ELU_ADIM else "MPa"
+                    ligne[f"elu_{id_v}_val_{unite}"] = round(float(valeur_elu[id_v][l_idx, m]), 4)
+
+            # Taux ELS + combis + valeurs intermédiaires
             for id_v, taux in taux_els.items():
                 ligne[f"els_{id_v}"] = round(float(taux[l_idx, m]), 4)
+                if combo_els is not None and id_v in combo_els:
+                    ligne[f"els_{id_v}_combi"] = str(combo_els[id_v][l_idx, m])
+                if valeur_els is not None and id_v in valeur_els:
+                    ligne[f"els_{id_v}_val_mm"] = round(float(valeur_els[id_v][l_idx, m]), 4)
 
+            # taux_global = max des taux uniquement (exclut les colonnes _val)
             tous: list[float] = [
                 float(t[l_idx, m]) for t in {**taux_elu, **taux_els}.values()
             ]

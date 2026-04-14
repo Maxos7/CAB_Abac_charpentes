@@ -25,7 +25,7 @@ class Compression(VerificationELU):
 
     @property
     def id_verification(self) -> str:
-        return "Compression"
+        return "sigma_c0"
 
     @property
     def article_ec5(self) -> str:
@@ -58,4 +58,7 @@ class Compression(VerificationELU):
         sigma_c0: np.ndarray = np.where(active, np.abs(N_d) / A_11M * 10.0, 0.0)
         taux: np.ndarray = np.where(active, sigma_c0 / f_c0_d, 0.0)
 
-        return ResultatVerification(self.id_verification, taux, active)
+        return ResultatVerification(
+            self.id_verification, taux, active,
+            valeur_intermediaire=sigma_c0, unite_intermediaire="MPa",
+        )

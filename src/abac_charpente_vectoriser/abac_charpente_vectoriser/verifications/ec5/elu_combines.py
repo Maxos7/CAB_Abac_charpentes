@@ -31,7 +31,7 @@ class FlexionTraction(VerificationELU):
 
     @property
     def id_verification(self) -> str:
-        return "FlexionTraction"
+        return "eta_ft"
 
     @property
     def article_ec5(self) -> str:
@@ -64,7 +64,10 @@ class FlexionTraction(VerificationELU):
 
         taux: np.ndarray = np.where(active, sigma_t0 / f_t0_d + sigma_m / f_m_d, 0.0)
 
-        return ResultatVerification(self.id_verification, taux, active)
+        return ResultatVerification(
+            self.id_verification, taux, active,
+            valeur_intermediaire=sigma_t0, unite_intermediaire="MPa",
+        )
 
 
 class FlexionCompressionForte(VerificationELU):
@@ -75,7 +78,7 @@ class FlexionCompressionForte(VerificationELU):
 
     @property
     def id_verification(self) -> str:
-        return "FlexionCompressionForte"
+        return "eta_fc_y"
 
     @property
     def article_ec5(self) -> str:
@@ -109,7 +112,10 @@ class FlexionCompressionForte(VerificationELU):
             0.0,
         )
 
-        return ResultatVerification(self.id_verification, taux, active)
+        return ResultatVerification(
+            self.id_verification, taux, active,
+            valeur_intermediaire=sigma_c0, unite_intermediaire="MPa",
+        )
 
 
 class FlexionCompressionFaible(VerificationELU):
@@ -123,7 +129,7 @@ class FlexionCompressionFaible(VerificationELU):
 
     @property
     def id_verification(self) -> str:
-        return "FlexionCompressionFaible"
+        return "eta_fc_z"
 
     @property
     def article_ec5(self) -> str:
@@ -162,7 +168,10 @@ class FlexionCompressionFaible(VerificationELU):
             0.0,
         )
 
-        return ResultatVerification(self.id_verification, taux, active)
+        return ResultatVerification(
+            self.id_verification, taux, active,
+            valeur_intermediaire=sigma_c0, unite_intermediaire="MPa",
+        )
 
 
 class FlexionDevComprimeeForte(VerificationELU):
@@ -177,7 +186,7 @@ class FlexionDevComprimeeForte(VerificationELU):
 
     @property
     def id_verification(self) -> str:
-        return "FlexionDevComprimeeForte"
+        return "eta_fdc_y"
 
     @property
     def article_ec5(self) -> str:
@@ -217,7 +226,10 @@ class FlexionDevComprimeeForte(VerificationELU):
             0.0,
         )
 
-        return ResultatVerification(self.id_verification, taux, active)
+        return ResultatVerification(
+            self.id_verification, taux, active,
+            valeur_intermediaire=sigma_c0, unite_intermediaire="MPa",
+        )
 
 
 class FlexionDevComprimeeFaible(VerificationELU):
@@ -230,7 +242,7 @@ class FlexionDevComprimeeFaible(VerificationELU):
 
     @property
     def id_verification(self) -> str:
-        return "FlexionDevComprimeeFaible"
+        return "eta_fdc_z"
 
     @property
     def article_ec5(self) -> str:
@@ -270,4 +282,7 @@ class FlexionDevComprimeeFaible(VerificationELU):
             0.0,
         )
 
-        return ResultatVerification(self.id_verification, taux, active)
+        return ResultatVerification(
+            self.id_verification, taux, active,
+            valeur_intermediaire=sigma_c0, unite_intermediaire="MPa",
+        )

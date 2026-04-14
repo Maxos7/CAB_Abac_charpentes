@@ -51,7 +51,7 @@ class FlexionAxeFort(VerificationELU):
 
     @property
     def id_verification(self) -> str:
-        return "FlexionAxeFort"
+        return "sigma_m_y"
 
     @property
     def article_ec5(self) -> str:
@@ -80,7 +80,10 @@ class FlexionAxeFort(VerificationELU):
         taux: np.ndarray = sigma_m_y / (k_crit * f_m_d)
         active: np.ndarray = np.ones_like(taux, dtype=bool)
 
-        return ResultatVerification(self.id_verification, taux, active)
+        return ResultatVerification(
+            self.id_verification, taux, active,
+            valeur_intermediaire=sigma_m_y, unite_intermediaire="MPa",
+        )
 
 
 class FlexionAxeFaible(VerificationELU):
@@ -94,7 +97,7 @@ class FlexionAxeFaible(VerificationELU):
 
     @property
     def id_verification(self) -> str:
-        return "FlexionAxeFaible"
+        return "sigma_m_z"
 
     @property
     def article_ec5(self) -> str:
@@ -119,7 +122,10 @@ class FlexionAxeFaible(VerificationELU):
         taux: np.ndarray = sigma_m_z / f_m_d
         active = np.ones_like(taux, dtype=bool)
 
-        return ResultatVerification(self.id_verification, taux, active)
+        return ResultatVerification(
+            self.id_verification, taux, active,
+            valeur_intermediaire=sigma_m_z, unite_intermediaire="MPa",
+        )
 
 
 class DoubleFlexionForte(VerificationELU):
@@ -130,7 +136,7 @@ class DoubleFlexionForte(VerificationELU):
 
     @property
     def id_verification(self) -> str:
-        return "DoubleFlexionForte"
+        return "eta_m_y"
 
     @property
     def article_ec5(self) -> str:
@@ -156,7 +162,10 @@ class DoubleFlexionForte(VerificationELU):
         taux: np.ndarray = sigma_y / (k_crit * f_m_d) + km * sigma_z / f_m_d
         active = np.ones_like(taux, dtype=bool)
 
-        return ResultatVerification(self.id_verification, taux, active)
+        return ResultatVerification(
+            self.id_verification, taux, active,
+            valeur_intermediaire=sigma_y, unite_intermediaire="MPa",
+        )
 
 
 class DoubleFlexionFaible(VerificationELU):
@@ -167,7 +176,7 @@ class DoubleFlexionFaible(VerificationELU):
 
     @property
     def id_verification(self) -> str:
-        return "DoubleFlexionFaible"
+        return "eta_m_z"
 
     @property
     def article_ec5(self) -> str:
@@ -193,4 +202,7 @@ class DoubleFlexionFaible(VerificationELU):
         taux: np.ndarray = km * sigma_y / (k_crit * f_m_d) + sigma_z / f_m_d
         active = np.ones_like(taux, dtype=bool)
 
-        return ResultatVerification(self.id_verification, taux, active)
+        return ResultatVerification(
+            self.id_verification, taux, active,
+            valeur_intermediaire=sigma_z, unite_intermediaire="MPa",
+        )

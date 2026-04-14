@@ -24,7 +24,7 @@ class Cisaillement(VerificationELU):
 
     @property
     def id_verification(self) -> str:
-        return "Cisaillement"
+        return "tau_d"
 
     @property
     def article_ec5(self) -> str:
@@ -52,4 +52,7 @@ class Cisaillement(VerificationELU):
         taux: np.ndarray = tau_d / f_v_d
         active: np.ndarray = np.ones_like(taux, dtype=bool)
 
-        return ResultatVerification(self.id_verification, taux, active)
+        return ResultatVerification(
+            self.id_verification, taux, active,
+            valeur_intermediaire=tau_d, unite_intermediaire="MPa",
+        )

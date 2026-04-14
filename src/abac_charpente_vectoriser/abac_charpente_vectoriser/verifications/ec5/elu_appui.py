@@ -26,7 +26,7 @@ class Appui(VerificationELU):
 
     @property
     def id_verification(self) -> str:
-        return "Appui"
+        return "sigma_c90"
 
     @property
     def article_ec5(self) -> str:
@@ -71,4 +71,7 @@ class Appui(VerificationELU):
         taux: np.ndarray = sigma_c90 / (k_c90 * f_c90_d)
         active: np.ndarray = np.ones_like(taux, dtype=bool)
 
-        return ResultatVerification(self.id_verification, taux, active)
+        return ResultatVerification(
+            self.id_verification, taux, active,
+            valeur_intermediaire=sigma_c90, unite_intermediaire="MPa",
+        )

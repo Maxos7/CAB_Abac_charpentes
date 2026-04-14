@@ -34,7 +34,7 @@ class FlambementAxeFort(VerificationELU):
 
     @property
     def id_verification(self) -> str:
-        return "FlambementAxeFort"
+        return "k_c_y"
 
     @property
     def article_ec5(self) -> str:
@@ -64,7 +64,10 @@ class FlambementAxeFort(VerificationELU):
         sigma_c0: np.ndarray = np.where(active, np.abs(N_d) / A_11M * 10.0, 0.0)
         taux: np.ndarray = np.where(active, sigma_c0 / (k_c_y * f_c0_d), 0.0)
 
-        return ResultatVerification(self.id_verification, taux, active)
+        return ResultatVerification(
+            self.id_verification, taux, active,
+            valeur_intermediaire=sigma_c0, unite_intermediaire="MPa",
+        )
 
 
 class FlambementAxeFaible(VerificationELU):
@@ -78,7 +81,7 @@ class FlambementAxeFaible(VerificationELU):
 
     @property
     def id_verification(self) -> str:
-        return "FlambementAxeFaible"
+        return "k_c_z"
 
     @property
     def article_ec5(self) -> str:
@@ -108,4 +111,7 @@ class FlambementAxeFaible(VerificationELU):
         sigma_c0: np.ndarray = np.where(active, np.abs(N_d) / A_11M * 10.0, 0.0)
         taux: np.ndarray = np.where(active, sigma_c0 / (k_c_z * f_c0_d), 0.0)
 
-        return ResultatVerification(self.id_verification, taux, active)
+        return ResultatVerification(
+            self.id_verification, taux, active,
+            valeur_intermediaire=sigma_c0, unite_intermediaire="MPa",
+        )

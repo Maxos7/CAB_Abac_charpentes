@@ -208,6 +208,7 @@ def construire_espace(
     # ── Limites ELS ──────────────────────────────────────────────────────────────
     limites: dict[str, float | None] = _charger_limites_fleche(config.usage)
     lim_inst: float = config.limite_fleche_inst or limites["w_inst"]  # type: ignore[assignment]
+    lim_fin_brut: float = float(limites["w_fin_brut"])
     lim_fin: float = config.limite_fleche_fin or limites["w_fin"]  # type: ignore[assignment]
     lim_2: float | None = config.limite_fleche_2 or (
         limites["w_2"] if config.second_oeuvre else None

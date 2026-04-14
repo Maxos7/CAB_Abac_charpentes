@@ -204,6 +204,7 @@ def calculer_resistances_CM(
         "f_c90_d_CM": facteur_CM * f_c90_k,
         "f_t0_d_CM": facteur_CM * f_t0_k,
         "f_c0_d_CM": facteur_CM * f_c0_k,
+        "f_t90_d_CM": facteur_CM * f_t90_k,
     }
 
 

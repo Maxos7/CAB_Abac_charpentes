@@ -33,7 +33,7 @@ class Deversement(VerificationELU):
 
     @property
     def id_verification(self) -> str:
-        return "Deversement"
+        return "k_crit"
 
     @property
     def article_ec5(self) -> str:
@@ -51,5 +51,9 @@ class Deversement(VerificationELU):
         # Taux = 1 - k_crit : indicateur de réduction. 0 = pas de déversement.
         taux: np.ndarray = np.broadcast_to(1.0 - k_crit, (n_L, n_C, n_M)).copy()
         active: np.ndarray = np.ones((n_L, n_C, n_M), dtype=bool)
+        k_crit_LCM: np.ndarray = np.broadcast_to(k_crit, (n_L, n_C, n_M)).copy()
 
-        return ResultatVerification(self.id_verification, taux, active)
+        return ResultatVerification(
+            self.id_verification, taux, active,
+            valeur_intermediaire=k_crit_LCM, unite_intermediaire="—",
+        )

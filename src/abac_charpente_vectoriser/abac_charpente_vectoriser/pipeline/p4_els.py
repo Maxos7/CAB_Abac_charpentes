@@ -4,12 +4,12 @@ pipeline.p4_els
 Étape 4 — Vérifications ELS sur l'espace tenseur.
 
 Itère sur ``VERIFICATIONS_ELS`` et appelle ``calculer()`` sur chaque vérification.
-Le taux maximal sur toutes les combinaisons ELS est retenu pour chaque type
-de vérification (flèche instantanée, finale, second-œuvre), ainsi que
-l'identifiant normatif de la combinaison déterminante (ex. "ELS_CAR_G+S").
+Retourne le taux maximal par combinaison ELS ainsi que l'identifiant normatif
+de la combinaison déterminante (ex. "ELS_CAR_G+S"), et la valeur intermédiaire
+physique à la combinaison déterminante (flèche en mm).
 
 Pour les chevrons, la flèche dans le plan du rampant est convertie en flèche
-verticale : ``w_vert = w_rampant / cos(α)``.
+verticale à l'intérieur des classes ELS (pas de traitement ici).
 
 Aucun ``if/match`` sur le type de poutre ici.
 """
@@ -24,8 +24,8 @@ from .espace import EspaceCombinaisonTenseur
 
 def verifier_els(
     espace: EspaceCombinaisonTenseur,
-) -> tuple[dict[str, np.ndarray], dict[str, np.ndarray]]:
-    """Calcule les taux ELS max et la combinaison déterminante pour chaque vérification.
+) -> tuple[dict[str, np.ndarray], dict[str, np.ndarray], dict[str, np.ndarray]]:
+    """Calcule les taux ELS max, combinaison déterminante et valeur intermédiaire.
 
     Parameters
     ----------
@@ -34,28 +34,39 @@ def verifier_els(
 
     Returns
     -------
-    tuple[dict[str, np.ndarray], dict[str, np.ndarray]]
-        - ``taux_els``  : ``{id_verif: (n_L, n_M)}`` — taux maximal par vérification.
-        - ``combo_els`` : ``{id_verif: (n_L, n_M)}`` — ``id_combinaison`` (str) de la
-          combinaison ayant produit le taux maximal (ex. ``"ELS_CAR_G+S"``).
+    tuple[dict, dict, dict]
+        - ``taux_els``    : ``{id_verif: (n_L, n_M)}`` — taux maximal.
+        - ``combo_els``   : ``{id_verif: (n_L, n_M)}`` — id_combinaison déterminante.
+        - ``valeur_els``  : ``{id_verif: (n_L, n_M)}`` — flèche en mm.
+                            Clé présente uniquement si valeur_intermediaire non None.
     """
-    # Indices et identifiants des combinaisons ELS
     idx_els: list[int] = [
         i for i, c in enumerate(espace.combinaisons) if c.type_etat_limite == "ELS"
     ]
     ids_els: np.ndarray = np.array(
-        [espace.combinaisons[i].id_combinaison for i in idx_els],
-        dtype=object,
+        [espace.combinaisons[i].id_combinaison for i in idx_els], dtype=object
     )  # (n_C_els,)
 
     taux_resultats: dict[str, np.ndarray] = {}
     combo_resultats: dict[str, np.ndarray] = {}
+    valeur_resultats: dict[str, np.ndarray] = {}
+
+    n_L: int = espace.M_d_kNm.shape[0]
+    n_M: int = espace.M_d_kNm.shape[2]
+    arange_L: np.ndarray = np.arange(n_L)[:, np.newaxis]
+    arange_M: np.ndarray = np.arange(n_M)[np.newaxis, :]
 
     for verif in VERIFICATIONS_ELS:
         res = verif.calculer(espace)
-        # Sélection des combinaisons ELS et max sur l'axe 1
-        taux_els: np.ndarray = res.taux_LCM[:, idx_els, :]  # (n_L, n_C_els, n_M)
-        taux_max: np.ndarray = np.max(taux_els, axis=1)  # (n_L, n_M)
-        resultats[verif.id_verification] = taux_max
 
-    return taux_resultats, combo_resultats
+        taux_sub: np.ndarray = res.taux_LCM[:, idx_els, :]    # (n_L, n_C_els, n_M)
+        idx_win: np.ndarray = np.argmax(taux_sub, axis=1)      # (n_L, n_M)
+
+        taux_resultats[verif.id_verification] = taux_sub[arange_L, idx_win, arange_M]
+        combo_resultats[verif.id_verification] = ids_els[idx_win]
+
+        if res.valeur_intermediaire is not None:
+            val_sub: np.ndarray = res.valeur_intermediaire[:, idx_els, :]
+            valeur_resultats[verif.id_verification] = val_sub[arange_L, idx_win, arange_M]
+
+    return taux_resultats, combo_resultats, valeur_resultats

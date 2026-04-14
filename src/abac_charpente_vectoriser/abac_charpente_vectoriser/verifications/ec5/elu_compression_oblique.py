@@ -40,7 +40,7 @@ class CompressionOblique(VerificationELU):
 
     @property
     def id_verification(self) -> str:
-        return "CompressionOblique"
+        return "sigma_c_alpha"
 
     @property
     def article_ec5(self) -> str:
@@ -99,4 +99,7 @@ class CompressionOblique(VerificationELU):
         taux: np.ndarray = sigma_c_alpha / (espace.k_c90 * f_c_alpha_d)
         active: np.ndarray = np.ones((n_L, n_C, n_M), dtype=bool)
 
-        return ResultatVerification(self.id_verification, taux, active)
+        return ResultatVerification(
+            self.id_verification, taux, active,
+            valeur_intermediaire=sigma_c_alpha, unite_intermediaire="MPa",
+        )

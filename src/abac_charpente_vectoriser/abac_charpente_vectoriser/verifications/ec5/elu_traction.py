@@ -27,7 +27,7 @@ class Traction(VerificationELU):
 
     @property
     def id_verification(self) -> str:
-        return "Traction"
+        return "sigma_t0"
 
     @property
     def article_ec5(self) -> str:
@@ -60,7 +60,10 @@ class Traction(VerificationELU):
         sigma_t0: np.ndarray = np.where(active, N_d / A_11M * 10.0, 0.0)
         taux: np.ndarray = np.where(active, sigma_t0 / f_t0_d, 0.0)
 
-        return ResultatVerification(self.id_verification, taux, active)
+        return ResultatVerification(
+            self.id_verification, taux, active,
+            valeur_intermediaire=sigma_t0, unite_intermediaire="MPa",
+        )
 
 
 class TractionTransversale(VerificationELU):
@@ -79,7 +82,7 @@ class TractionTransversale(VerificationELU):
 
     @property
     def id_verification(self) -> str:
-        return "TractionTransversale"
+        return "sigma_t90"
 
     @property
     def article_ec5(self) -> str:
@@ -113,4 +116,7 @@ class TractionTransversale(VerificationELU):
         sigma_t90: np.ndarray = np.where(active, N_d * sin_alpha / A_11M * 10.0, 0.0)
         taux: np.ndarray = np.where(active, sigma_t90 / f_t90_d, 0.0)
 
-        return ResultatVerification(self.id_verification, taux, active)
+        return ResultatVerification(
+            self.id_verification, taux, active,
+            valeur_intermediaire=sigma_t90, unite_intermediaire="MPa",
+        )
