@@ -14,7 +14,7 @@ from .panne_aplomb import PanneAplombVect
 from .panne_deversee import PanneDeverseeVect
 from .solive import SoliveVect
 from .sommier import SommierVect
-from ..protocoles.type_poutre import TypePoutreVect
+from ..protocoles.type_poutre import PoutreHorizontaleVect, TypePoutreInclineeVect, TypePoutreVect
 
 TYPES_POUTRE: dict[str, type[TypePoutreVect]] = {
     # ── Pannes (pièces inclinées, section variable selon orientation) ──────────
@@ -40,6 +40,8 @@ TYPES_POUTRE: dict[str, type[TypePoutreVect]] = {
 __all__ = [
     "TYPES_POUTRE",
     "TypePoutreVect",
+    "TypePoutreInclineeVect",
+    "PoutreHorizontaleVect",
     "ChevronVect",
     "PanneAplombVect",
     "PanneDeverseeVect",

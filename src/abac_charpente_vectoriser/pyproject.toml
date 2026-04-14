@@ -6,9 +6,9 @@ build-backend = "hatchling.build"
 name = "abac-charpente-vectoriser"
 version = "0.1.0"
 description = "Pipeline EC5 vectorisé (numpy) pour abaques paramétriques — programme autonome"
-requires-python = ">=3.13"
+requires-python = ">=3.14"
 dependencies = [
-    "numpy>=1.26",
+    "numpy==2.4.2",
     "pydantic>=2.0",
     "pandas>=2.2",
     "tomllib>=1.0 ; python_version < '3.11'",

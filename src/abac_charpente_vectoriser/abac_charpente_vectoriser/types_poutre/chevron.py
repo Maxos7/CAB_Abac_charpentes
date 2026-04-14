@@ -26,79 +26,17 @@ import math
 
 import numpy as np
 
-from ..modeles.config_calcul import ConfigCalculVect
-from ..protocoles.type_poutre import TypePoutreVect
+from ..protocoles.type_poutre import TypePoutreInclineeVect
 
 
-class ChevronVect(TypePoutreVect):
+class ChevronVect(TypePoutreInclineeVect):
     """Chevron bi-appuyé — portée sur rampant, charges ⊥ au rampant.
 
     Pas de double flexion. Flèche verticale = flèche rampant / cos(α).
     La pente α est issue de ``config.pente_deg``.
     """
 
-    def __init__(self, config: ConfigCalculVect) -> None:
-        super().__init__(config)
-        pente_deg: float = float(
-            config.pente_deg[0]
-            if isinstance(config.pente_deg, list)
-            else config.pente_deg
-        )
-        self._pente_rad: float = math.radians(pente_deg)
-
-    @property
-    def double_flexion_active(self) -> bool:
-        """Toujours False — le chevron travaille en flexion simple ⊥ au rampant."""
-        return False
-
-    def decomposer_charges(
-        self,
-        q_d_kNm: np.ndarray,
-    ) -> tuple[np.ndarray, np.ndarray]:
-        """Toute la charge est perpendiculaire au rampant (axe fort y).
-
-        Le pipeline ``p1_charges`` fournit directement la composante
-        perpendiculaire au rampant dans ``q_d_kNm`` pour les chevrons.
-        Aucune décomposition supplémentaire n'est donc nécessaire ici.
-
-        Parameters
-        ----------
-        q_d_kNm:
-            Charge perpendiculaire au rampant en kN/m (par mètre de rampant).
-
-        Returns
-        -------
-        tuple[np.ndarray, np.ndarray]
-            ``(q_y = q_d, q_z = 0.0)``
-        """
-        return q_d_kNm, np.zeros_like(q_d_kNm)
-
-    def longueur_deversement_m(
-        self,
-        longueurs_m: np.ndarray,
-    ) -> np.ndarray:
-        """Longueur de déversement = portée de rampant (chevron retenu par couverture).
-
-        En pratique, les chevrons sont retenus latéralement par les voligeages /
-        liteaux, réduisant le risque de déversement. Faute de contreventement
-        explicite (entraxe_antideversement_mm = 0), l'élancement est pris sur
-        la portée complète (hypothèse conservatrice).
-
-        Parameters
-        ----------
-        longueurs_m:
-            Vecteur de portées de rampant ``(n_L,)``.
-
-        Returns
-        -------
-        np.ndarray
-            Longueurs de déversement ``(n_L,)``.
-        """
-        e_mm: float = self._config.entraxe_antideversement_mm
-        if e_mm <= 0.0:
-            return longueurs_m.copy()
-        e_m: float = e_mm / 1000.0
-        return np.where(longueurs_m <= 2.0 * e_m, longueurs_m / 2.0, e_m)
+    _DOUBLE_FLEXION = False
 
     def longueur_projetee_m(
         self,

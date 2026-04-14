@@ -24,30 +24,17 @@ import math
 
 import numpy as np
 
-from ..modeles.config_calcul import ConfigCalculVect
-from ..protocoles.type_poutre import TypePoutreVect
+from ..protocoles.type_poutre import TypePoutreInclineeVect
 
 
-class PanneAplombVect(TypePoutreVect):
+class PanneAplombVect(TypePoutreInclineeVect):
     """Panne aplomb bi-appuyée — section verticale sur rampant incliné.
 
     La double flexion est intrinsèque et toujours active.
     La pente α est issue de ``config.pente_deg``.
     """
 
-    def __init__(self, config: ConfigCalculVect) -> None:
-        super().__init__(config)
-        pente_deg: float = float(
-            config.pente_deg[0]
-            if isinstance(config.pente_deg, list)
-            else config.pente_deg
-        )
-        self._pente_rad: float = math.radians(pente_deg)
-
-    @property
-    def double_flexion_active(self) -> bool:
-        """Toujours True — la double flexion est intrinsèque à la panne aplomb."""
-        return True
+    _DOUBLE_FLEXION = True
 
     def decomposer_charges(
         self,
@@ -74,25 +61,3 @@ class PanneAplombVect(TypePoutreVect):
         q_z: np.ndarray = q_d_kNm * tan_a
         return q_y, q_z
 
-    def longueur_deversement_m(self, longueurs_m: np.ndarray) -> np.ndarray:
-        """Longueur de déversement effective — EC5 §6.3.3.
-
-        Parameters
-        ----------
-        longueurs_m:
-            Vecteur de portées (longueurs de rampant) ``(n_L,)``.
-
-        Returns
-        -------
-        np.ndarray
-            Longueurs de déversement ``(n_L,)``.
-        """
-        e_mm: float = self._config.entraxe_antideversement_mm
-        if e_mm <= 0.0:
-            return longueurs_m.copy()
-        e_m: float = e_mm / 1000.0
-        return np.where(longueurs_m <= 2.0 * e_m, longueurs_m / 2.0, e_m)
-
-    def longueur_projetee_m(self, longueurs_m: np.ndarray) -> np.ndarray | None:
-        """Retourne None — la panne aplomb s'appuie sur la longueur de rampant."""
-        return None

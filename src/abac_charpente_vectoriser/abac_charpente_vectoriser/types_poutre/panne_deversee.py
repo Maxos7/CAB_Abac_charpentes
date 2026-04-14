@@ -20,25 +20,15 @@ import math
 
 import numpy as np
 
-from ..modeles.config_calcul import ConfigCalculVect
-from ..protocoles.type_poutre import TypePoutreVect
+from ..protocoles.type_poutre import TypePoutreInclineeVect
 
 
-class PanneDeverseeVect(TypePoutreVect):
+class PanneDeverseeVect(TypePoutreInclineeVect):
     """Panne déversée bi-appuyée — section ⊥ au rampant (normale à la surface).
 
     La pente α est issue de ``config.pente_deg`` (scalaire après développement
     du produit cartésien par le moteur).
     """
-
-    def __init__(self, config: ConfigCalculVect) -> None:
-        super().__init__(config)
-        pente_deg: float = float(
-            config.pente_deg[0]
-            if isinstance(config.pente_deg, list)
-            else config.pente_deg
-        )
-        self._pente_rad: float = math.radians(pente_deg)
 
     def decomposer_charges(
         self,
@@ -69,29 +59,3 @@ class PanneDeverseeVect(TypePoutreVect):
         )
         return q_y, q_z
 
-    def longueur_deversement_m(self, longueurs_m: np.ndarray) -> np.ndarray:
-        """Longueur de déversement effective — EC5 §6.3.3.
-
-        Si ``entraxe_antideversement_mm = 0`` → l_ef = L (rampant complet).
-        Si ``entraxe_antideversement_mm > 0`` et ``L ≤ 2 × e_andev`` → l_ef = L / 2.
-        Sinon → l_ef = entraxe_antideversement_mm / 1000.
-
-        Parameters
-        ----------
-        longueurs_m:
-            Vecteur de portées (longueurs de rampant) ``(n_L,)``.
-
-        Returns
-        -------
-        np.ndarray
-            Longueurs de déversement ``(n_L,)``.
-        """
-        e_mm: float = self._config.entraxe_antideversement_mm
-        if e_mm <= 0.0:
-            return longueurs_m.copy()
-        e_m: float = e_mm / 1000.0
-        return np.where(longueurs_m <= 2.0 * e_m, longueurs_m / 2.0, e_m)
-
-    def longueur_projetee_m(self, longueurs_m: np.ndarray) -> np.ndarray | None:
-        """Retourne None — la panne s'appuie sur la longueur de rampant."""
-        return None
