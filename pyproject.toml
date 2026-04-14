@@ -1,5 +1,5 @@
 [tool.uv.workspace]
-members = ["src/abac_charpente", "src/sapeg_regen_stock", "src/abac_visuel"]
+members = ["src/acac_charpente_vectoriser", "src/abac_charpente", "src/sapeg_regen_stock", "src/abac_visuel"]
 
 [tool.uv.sources]
 sapeg-regen-stock = { workspace = true }
@@ -10,9 +10,7 @@ abac-charpente-vectoriser = { workspace = true }
 dev = [
     "abac-charpente[dev]",
     "duckdb>=1.5.1",
-    "handcalcs>=1.11.0",
     "pykernel>=0.1.6",
-    "zarr>=3.1.6",
 ]
 
 [tool.pytest.ini_options]

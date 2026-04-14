@@ -20,7 +20,6 @@ dev = [
     "pytest>=8.0",
     "pytest-cov",
 ]
-zarr = ["zarr>=2.18"]
 duckdb = ["duckdb>=0.10"]
 
 [project.scripts]
