@@ -10,7 +10,7 @@ Les propriétés mécaniques sont jointes vectoriellement depuis
 Les propriétés de section sont calculées vectoriellement selon la forme de
 chaque ligne (rectangle | rond | custom), pilotée par une colonne du CSV.
 
-Toute la configuration d'ingestion est pilotée depuis ``configs_entre_vect.toml`` :
+Toute la configuration d'ingestion est pilotée depuis ``configs_entree_vect.toml`` :
 mappage colonnes, filtrage, forme de section.
 
 ``id_config_materiau`` n'est jamais lu depuis le CSV ; il est auto-généré par
@@ -83,7 +83,7 @@ def charger_depuis_csv(
     - ``id_produit``   : code article SAPEG
     - ``libelle``      : désignation commerciale
 
-    Filtrage et mappage entièrement pilotés depuis ``configs_entre_vect.toml``.
+    Filtrage et mappage entièrement pilotés depuis ``configs_entree_vect.toml``.
     ``id_config_materiau`` jamais lu — toujours généré par ``__post_init__``.
 
     Parameters
@@ -219,6 +219,11 @@ def charger_depuis_csv(
         if "libelle" in df.columns
         else ""
     )
+    df["col_essence"] = (
+        df["essence"].fillna("").astype(str)
+        if "essence" in df.columns
+        else ""
+    )
 
     # Type de section interne (pour les vérifications EC5)
     df["col_type_section"] = np.where(
@@ -255,6 +260,7 @@ def charger_depuis_csv(
             type_section            = TypeSection(row.col_type_section),
             id_produit              = row.col_id_produit,
             libelle                 = row.col_libelle,
+            essence                 = row.col_essence,
         )
         for row in df.itertuples(index=False)
     ]

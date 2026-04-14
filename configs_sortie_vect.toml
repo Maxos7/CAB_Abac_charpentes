@@ -13,7 +13,12 @@
 #                 Champs obligatoires : groupby (liste de colonnes)
 #                 Champs optionnels  : colonnes, trier_par, filtres
 #   filtre      — sélection de lignes + colonnes sans agrégation
-#                 Champs optionnels  : colonnes, trier_par, filtres
+#                 Champs optionnels  : colonnes, trier_par, filtres,
+#                                     cles_groupe, limite_par_groupe
+#
+# Limitation par groupe (type filtre uniquement) :
+#   cles_groupe       — colonnes définissant le groupe (paramètres de la config)
+#   limite_par_groupe — nombre max d'articles retenus par groupe (après tri)
 #
 # Colonnes calculées automatiquement par l'agrégation :
 #   longueur_max_admissible_m  — portée max vérifiée (taux_global ≤ 1.0)
@@ -26,76 +31,74 @@
 # =============================================================================
 
 
+# =============================================================================
+# Indice de classement
+# Colonne calculée automatiquement : indice_de_classement
+#
+# Score composite [0 ; 1] — faible = article le plus économique/adapté.
+# Critères (normalisés min-max, puis pondérés) :
+#   poids_section   — section la plus fine (b × h minimal)
+#   poids_longueur  — longueur article la plus proche de la portée calculée
+#                     (longueur_max_article_m − longueur_m minimal)
+#   poids_classe    — classe de résistance la plus faible
+#                     (selon ordre_classes_resistance ci-dessous)
+#
+# Mettre actif = false pour supprimer la colonne de tous les exports.
+# Mettre un poids à 0 pour désactiver un critère individuel.
+# =============================================================================
+
+[indice_de_classement]
+actif           = true
+poids_section   = 1.0
+poids_longueur  = 1.0
+poids_classe    = 1.0
+
+# Classes triées de la plus faible (économique) à la plus résistante.
+# Les classes absentes de cette liste sont traitées comme pire cas.
+ordre_classes_resistance = [
+    "C18", "C24", "C27", "C30", "C35", "C40", "C45", "C50",
+    "GL24h", "GL24c", "GL28h", "GL28c", "GL32h", "GL32c"
+]
+
+
 ### ── Vue Questionnaire ────────────────────────────────────────────────────────────
 # Produit un CSV fusionné (une ligne par couple config × article) destiné au
 # logiciel externe de comparaison TypeForms.
-#
-# Correspondance des colonnes avec les tableaux docs/Structure Form.md :
-#
-#   Données comparaison questionnaire :
-#     type_poutre             → type_poutre
-#     pente_deg               → Pente (°)
-#     g_k_kNm2                → G permanente  ⚠ unité kN/m² (× 100 = daN/m²)
-#     entraxe_m               → Entraxe (m)
-#     longueur_max_admissible_m → Portée (m)
-#     essence                 → à venir : colonne dédiée ajoutée dans sapeg_regen_stock
-#                               (pour l'instant encodée dans `libelle`)
-#
-#   Données complémentaires — liste articles :
-#     id_produit              → Code Sapeg
-#     taux_determinant        → Indice de classement (à ne pas afficher)
-#     b_mm                    → Base (mm)
-#     h_mm                    → Hauteur (mm)
-#     longueur_max_article_m  → Longueur_article (m)  [longueur commerciale]
-#     classe_resistance       → Classe de résistance
-#     libelle                 → Commentaire  (contient aussi l'essence)
-#     csl_valide              → article disponible pour cette portée (auto-calculé)
-
 [[vue]]
 nom            = "questionnaire"
 description    = "Format questionnaire — comparaison TypeForms + liste articles"
 fichier_sortie = "abaque_questionnaire.csv"
-type           = "agregation"
-groupby        = ["id_config_calcul", "id_produit"]
+type           = "filtre"
 colonnes       = [
     # ── Données pour comparaison questionnaire ────────────────────────────────
     "type_poutre",
     "pente_deg",                  # Pente (°)
-    "g_k_kNm2",                   # G permanente (kN/m²) — ×100 → daN/m²
+    "g_k_kNm2",                   # G permanente (kN/m²)
+    "g2_k_kNm2",                  # G2 second oeuvre/fragile (kN/m²)
     "entraxe_m",                  # Entraxe (m)
-    "longueur_max_admissible_m",  # Portée max admissible (m)
-    # "essence",                  # Essence — colonne à venir (sapeg_regen_stock)
+    "longueur_m",                 # Portée max admissible (m)
+    "essence",                    # Essence
     # ── Données complémentaires — liste articles ──────────────────────────────
     "id_produit",                 # Code Sapeg
-    "taux_determinant",           # Indice de classement (à ne pas afficher)
     "b_mm",                       # Base (mm)
     "h_mm",                       # Hauteur (mm)
     "longueur_max_article_m",     # Longueur article commercial (m)
     "classe_resistance",          # Classe de résistance
-    "libelle",                    # Commentaire + essence (ex. "épicéa C24 45×120")
-    "csl_valide",                 # Portée ≤ longueur commerciale de l'article
+    "indice_de_classement"
 ]
-trier_par      = ["id_config_calcul", "taux_determinant"]
+trier_par      = ["indice_de_classement"]
+# Limite le nombre d'articles retenus par groupe de coulage (paramètres questionnaire).
+# Pour chaque combinaison unique de cles_coulage, seuls les N premiers articles
+# (selon trier_par) sont conservés. Commenter les deux lignes pour désactiver.
+#cles_groupe       = ["type_poutre", "pente_deg", "g_k_kNm2", "entraxe_m", "longueur_m", "essence"]
+#limite_par_groupe = 10
 
-## ── Vue réduite ────────────────────────────────────────────────────────────────
-#
-#[[vue]]
-#nom            = "reduit"
-#description    = "Format compact — usage BE externe, sans IDs internes du moteur"
-#fichier_sortie = "abaque_reduit_global.csv"
-#type           = "agregation"
-#groupby        = ["id_config_calcul", "id_config_materiau"]
-#colonnes       = [
-#    "classe_resistance",
-#    "b_mm",
-#    "h_mm",
-#    "id_config_calcul",
-#    "longueur_max_admissible_m",
-#    "verif_determinante",
-#    "taux_determinant",
-#]
-#trier_par      = ["id_config_calcul", "classe_resistance", "b_mm", "h_mm"]
-#
+  [[vue.filtres]]
+  champ     = "verifie"
+  operateur = "egal"
+  valeur    = "True"
+
+
 
 # ── Exemples de vues personnalisées ───────────────────────────────────────────
 # Décommenter et adapter selon les besoins.

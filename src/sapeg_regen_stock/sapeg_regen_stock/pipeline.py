@@ -2,7 +2,7 @@
 
 Orchestration :
     1. Détection du fichier stock le plus récent
-    2. Chargement du CSV (latin-1, sep=|)
+    2. Chargement du CSV (utf-8, sep=|)
     3. Dérivation (id_config_materiau + propriétés mécaniques via abac_charpente.ec5.proprietes)
     4. Écriture stock_enrichi.csv (toujours, UTF-8, sep=;, écrasement)
     5. Pour chaque ConfigFiltre : filtrage + écriture CSV dédié (écrasement)
@@ -36,6 +36,7 @@ def run(
     source: Path | str,
     filtres: list[ConfigFiltre],
     stock_enrichi_path: Path | None = None,
+    config_ingestion: ConfigIngestion | None = None,
 ) -> dict[str, Path]:
     """Pipeline complet : détection → chargement → enrichissement → filtrage.
 
@@ -43,20 +44,24 @@ def run(
         source            : répertoire (auto-détection) ou chemin direct du CSV stock
         filtres           : liste de ConfigFiltre (chaque filtre génère un CSV)
         stock_enrichi_path: chemin du CSV enrichi global (défaut : stock_enrichi.csv)
+        config_ingestion  : paramètres d'ingestion (encodage, séparateur, mappage…)
+                            Si None, les valeurs par défaut sont utilisées.
 
     Retourne :
         dict {filtre.nom: Path(filtre.sortie)} pour chaque filtre traité.
     """
     source = Path(source)
 
+    if config_ingestion is None:
+        config_ingestion = ConfigIngestion()
+
     # 1. Détection du fichier stock
     if source.is_file():
         fichier_stock = source
     else:
-        fichier_stock = detecter_fichier_stock(source)
+        fichier_stock = detecter_fichier_stock(source, pattern=config_ingestion.pattern_fichier)
 
     # 2. Chargement
-    config_ingestion = ConfigIngestion()
     produits_stock = charger_stock(fichier_stock, config_ingestion)
 
     if not produits_stock:
@@ -121,6 +126,7 @@ def _ecrire_stock_enrichi(
             {
                 "id_produit": pv.id_produit,
                 "libelle": pv.libelle,
+                "essence": pv.essence,
                 "b_mm": pv.b_mm,
                 "h_mm": pv.h_mm,
                 "L_max_m": pv.L_max_m,
@@ -184,6 +190,7 @@ def _ecrire_csv_filtre(
             {
                 "id_produit": pv.id_produit,
                 "libelle": pv.libelle,
+                "essence": pv.essence,
                 "b_mm": pv.b_mm,
                 "h_mm": pv.h_mm,
                 "L_max_m": pv.L_max_m,

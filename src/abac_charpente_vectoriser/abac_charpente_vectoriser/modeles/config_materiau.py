@@ -121,6 +121,7 @@ class ConfigMatériauVect:
     # Identifiants SAPEG propagés jusqu'aux CSV de sortie
     id_produit: str = ""
     libelle: str = ""
+    essence: str = ""
 
     def __post_init__(self) -> None:
         """Génère id_config_materiau si absent, depuis classe + section."""

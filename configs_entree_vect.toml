@@ -1,10 +1,10 @@
 # =============================================================================
-# configs_entre_vect.toml
+# configs_entree_vect.toml
 # Configuration de l'ingestion CSV (stock produit par sapeg / sapeg_regen_stock)
 #
 # Usage CLI :
 #   uv run abac-vect --toml-calcul configs_calcul_vect.toml
-#   uv run abac-vect --toml-calcul configs_calcul_vect.toml --toml-entre configs_entre_vect.toml
+#   uv run abac-vect --toml-calcul configs_calcul_vect.toml --toml-entree configs_entree_vect.toml
 #
 # [mappage_colonnes]
 #   Déclarer uniquement les colonnes dont le nom a changé dans le CSV.

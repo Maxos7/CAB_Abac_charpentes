@@ -30,6 +30,7 @@ class ProduitStock:
     disponible: bool
     fournisseur: str
     libelle: str = ""
+    essence: str = ""
     classe_dans_libelle: bool = True
     ligne_csv_source: int = 0
 
@@ -48,6 +49,7 @@ class ProduitValide:
     disponible: bool
     fournisseur: str
     id_config_materiau: str
+    essence: str = ""
     classe_dans_libelle: bool = True
     ligne_csv_source: int = 0
 
@@ -73,10 +75,15 @@ class ConfigIngestion:
 
     encodage: str = "latin-1"
     separateur: str = "|"
+    # Glob utilisé par detecteur.py pour trouver le fichier stock le plus récent.
+    pattern_fichier: str = "ALL_PRODUIT_*.csv"
     # Liste vide : la validation des colonnes est faite dynamiquement dans charger_stock().
     # Le format SAPEG ALL_PRODUIT_*.csv (colonnes "produit_*") et le format générique
     # (colonnes "Code article", "Longueur"…) sont tous deux supportés par auto-détection.
     colonnes_obligatoires: list[str] = field(default_factory=list)
+    # Mappage explicite nom_interne → nom_colonne_csv.
+    # Si un champ est absent, la détection automatique par liste de candidats s'applique.
+    mappage_colonnes: dict[str, str] = field(default_factory=dict)
 
 
 # ---------------------------------------------------------------------------
@@ -131,7 +138,7 @@ RegleFiltre = RegleEgal | ReglePlage | RegleListe | RegleNonNul
 
 
 class ConfigFiltre(BaseModel):
-    """Représente un [[filtre]] nommé du fichier configs_filtre.toml."""
+    """Représente un [[filtre]] nommé du fichier configs_filtre_regen.toml."""
 
     nom: str
     sortie: str
