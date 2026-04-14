@@ -13,6 +13,7 @@ dependencies = [
     "pandas>=2.2",
     "tomllib>=1.0 ; python_version < '3.11'",
     "loguru>=0.7",
+    "duckdb>=0.10",
 ]
 
 [project.optional-dependencies]
@@ -21,10 +22,8 @@ dev = [
     "pytest>=8.0",
     "pytest-cov",
 ]
-duckdb = ["duckdb>=0.10"]
-build = [
-    "pyinstaller>=6.0",
-]
+build = ["pyinstaller>=6.0"]
+
 [project.scripts]
 abac-vect = "abac_charpente_vectoriser.moteur_vect:cli"
 

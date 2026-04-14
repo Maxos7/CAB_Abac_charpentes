@@ -5,8 +5,8 @@ members = [
 ]
 
 [tool.uv.sources]
-sapeg-regen-stock = { workspace = true }
 abac-charpente-vectoriser = { workspace = true }
+sapeg-regen-stock = { workspace = true }
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
