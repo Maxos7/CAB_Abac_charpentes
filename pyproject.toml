@@ -3,7 +3,6 @@ members = [
     "src/abac_charpente_vectoriser",
     "src/abac_charpente",
     "src/sapeg_regen_stock",
-    "src/abac_visuel"
 ]
 
 [tool.uv.sources]

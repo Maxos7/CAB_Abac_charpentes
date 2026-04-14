@@ -16,12 +16,15 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+import = ["sapeg-regen-stock"]
 dev = [
     "pytest>=8.0",
     "pytest-cov",
 ]
 duckdb = ["duckdb>=0.10"]
-
+build = [
+    "pyinstaller>=6.0",
+]
 [project.scripts]
 abac-vect = "abac_charpente_vectoriser.moteur_vect:cli"
 

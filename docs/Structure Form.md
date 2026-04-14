@@ -1,3 +1,39 @@
+# Intercalage du logicielle dans la structure informatique actuel
+
+````mermaid
+---
+title : Intecalage
+---
+flowchart TB
+SAPEG --->|CSV| Regene_stock
+subgraph logicielsJ [Logiciels BE charpente .python]
+    direction LR
+    Regene_stock[
+        Regene_stock
+        Permet l'enrichisement et le formatage des csv venant de SAPEG
+        ]
+    Abac_charpente[
+    Abac_charpente
+    Employ les fichier typer de Regen_stock pour générer un fichier calculer de produit admisible pour une hypotése de calcul donnée
+    ]
+    Regene_stock--->Abac_charpente
+    Autrecsv[Autre CSV déjà formater]--->Abac_charpente
+end
+
+Abac_charpente --->|CSV comfigurable en sortie de Abac_charpente| logicielsR
+
+subgraph logicielsR [Logiciels BE charpente .python]
+    direction LR
+    TYPEFORMS-EOLAS
+    --->Compa[Logicielle de comparéson entre retoure typeforms et csv abac et envoi de mail]
+end
+    Compa--->|Mail|End
+````
+
+
+
+
+
 # Foncionement Systéme d'Abaque
 
 ````mermaid
@@ -36,7 +72,6 @@ Regene_stock--->|Ecriture|Bases_complete@{shape: cyl}
 
 Abac_view--->|Generation|abac[Feuille graphique pour le BE
 .pdf]@{shape: doc}
-
 ````
 
 # Logiciel de calcul de portée
