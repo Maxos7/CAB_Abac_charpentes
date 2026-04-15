@@ -49,6 +49,20 @@ def _lire_toml(chemin: Path) -> dict:
 # ── Filtrage ──────────────────────────────────────────────────────────────────
 
 
+def _coerce_vers_dtype_col(col: pd.Series, valeur) -> object:
+    """Convertit ``valeur`` vers le dtype de la colonne pour éviter les faux négatifs.
+
+    Cas traités :
+    - colonne bool + valeur str (ex. ``"True"``/``"False"``) → bool Python.
+    - colonne str/object + valeur bool → str (``"True"``/``"False"``).
+    """
+    if pd.api.types.is_bool_dtype(col) and isinstance(valeur, str):
+        return valeur.strip().lower() == "true"
+    if col.dtype == object and isinstance(valeur, bool):
+        return str(valeur)
+    return valeur
+
+
 def _appliquer_filtres(df: pd.DataFrame, filtres: list[dict]) -> pd.DataFrame:
     """Applique une liste de filtres (AND logic) sur le DataFrame.
 
@@ -83,9 +97,11 @@ def _appliquer_filtres(df: pd.DataFrame, filtres: list[dict]) -> pd.DataFrame:
         col: pd.Series = df[champ]
 
         if op == "egal":
-            masque &= col == valeur
+            v = _coerce_vers_dtype_col(col, valeur)
+            masque &= col == v
         elif op == "different":
-            masque &= col != valeur
+            v = _coerce_vers_dtype_col(col, valeur)
+            masque &= col != v
         elif op == "inferieur":
             masque &= col < valeur
         elif op == "superieur":
@@ -201,6 +217,8 @@ def _produire_filtre(
     df: pd.DataFrame,
     colonnes: list[str],
     trier_par: list[str],
+    cles_groupe: list[str] | None = None,
+    limite_par_groupe: int | None = None,
 ) -> pd.DataFrame:
     """Sélection de colonnes + tri, sans agrégation.
 
@@ -212,6 +230,12 @@ def _produire_filtre(
         Colonnes à retenir. Liste vide = toutes les colonnes.
     trier_par:
         Colonnes de tri.
+    cles_groupe:
+        Colonnes définissant un groupe de « coulage » (ex. paramètres de config
+        questionnaire). Si fourni avec ``limite_par_groupe``, seuls les N premiers
+        articles par groupe (selon le tri) sont conservés.
+    limite_par_groupe:
+        Nombre maximum de lignes à retenir par groupe de coulage.
 
     Returns
     -------
@@ -228,6 +252,14 @@ def _produire_filtre(
         trier_valides: list[str] = [c for c in trier_par if c in df_out.columns]
         if trier_valides:
             df_out = df_out.sort_values(trier_valides)
+
+    if cles_groupe and limite_par_groupe is not None:
+        cles_valides: list[str] = [c for c in cles_groupe if c in df_out.columns]
+        if cles_valides:
+            df_out = (
+                df_out.groupby(cles_valides, sort=False)
+                .head(limite_par_groupe)
+            )
 
     return df_out.reset_index(drop=True)
 
@@ -271,6 +303,8 @@ def appliquer_vues_depuis_toml(
         filtres_raw: list[dict] = vue.get("filtres", [])
         colonnes: list[str] = vue.get("colonnes", [])
         trier_par: list[str] = vue.get("trier_par", [])
+        cles_groupe: list[str] = vue.get("cles_groupe", [])
+        limite_par_groupe: int | None = vue.get("limite_par_groupe")
 
         logger.info(f"Vue '{nom}' ({type_vue}) → {fichier}")
 
@@ -295,7 +329,9 @@ def appliquer_vues_depuis_toml(
             )
 
         elif type_vue == "filtre":
-            df_vue = _produire_filtre(df_filtre, colonnes, trier_par)
+            df_vue = _produire_filtre(
+                df_filtre, colonnes, trier_par, cles_groupe, limite_par_groupe
+            )
 
         else:
             raise ValueError(

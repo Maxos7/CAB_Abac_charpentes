@@ -90,6 +90,7 @@ def construire_df_complet(
                 # ── Article ────────────────────────────────────────────────────
                 "id_produit": mat.id_produit,
                 "libelle": mat.libelle,
+                "essence": mat.essence,
                 "id_config_materiau": mat.id_config_materiau,
                 "classe_resistance": mat.classe_resistance,
                 "b_mm": mat.b_mm,
@@ -124,9 +125,7 @@ def construire_df_complet(
             taux_max: float = max(tous)
             ligne["taux_global"] = round(taux_max, 4)
             ligne["verifie"] = taux_max <= 1.0
-            ligne["verifie_raison"] = (
-                "" if taux_max <= 1.0 else tous_ids[tous.index(taux_max)]
-            )
+            ligne["verifie_raison"] = tous_ids[tous.index(taux_max)]
 
             lignes.append(ligne)
 

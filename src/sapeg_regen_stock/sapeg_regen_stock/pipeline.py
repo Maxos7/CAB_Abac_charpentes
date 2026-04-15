@@ -2,7 +2,7 @@
 
 Orchestration :
     1. Détection du fichier stock le plus récent
-    2. Chargement du CSV (latin-1, sep=|)
+    2. Chargement du CSV (utf-8, sep=|)
     3. Dérivation (id_config_materiau + propriétés mécaniques via abac_charpente.ec5.proprietes)
     4. Écriture stock_enrichi.csv (toujours, UTF-8, sep=;, écrasement)
     5. Pour chaque ConfigFiltre : filtrage + écriture CSV dédié (écrasement)
@@ -126,6 +126,7 @@ def _ecrire_stock_enrichi(
             {
                 "id_produit": pv.id_produit,
                 "libelle": pv.libelle,
+                "essence": pv.essence,
                 "b_mm": pv.b_mm,
                 "h_mm": pv.h_mm,
                 "L_max_m": pv.L_max_m,
@@ -189,6 +190,7 @@ def _ecrire_csv_filtre(
             {
                 "id_produit": pv.id_produit,
                 "libelle": pv.libelle,
+                "essence": pv.essence,
                 "b_mm": pv.b_mm,
                 "h_mm": pv.h_mm,
                 "L_max_m": pv.L_max_m,

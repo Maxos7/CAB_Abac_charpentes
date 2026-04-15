@@ -49,6 +49,22 @@ _COL_FOURNISSEUR = [
 ]
 
 
+def _reparer_mojibake(texte: str) -> str:
+    """Répare le double-encodage latin-1/UTF-8 (mojibake).
+
+    Le CSV SAPEG est exporté en Latin-1 mais contient parfois des libellés dont
+    les caractères accentués ont été encodés en UTF-8 puis stockés octet par octet
+    comme des caractères Latin-1 (ex. "é" → "Ã©").
+    Cette fonction détecte et corrige ce cas en ré-encodant en Latin-1 puis en
+    décodant en UTF-8.
+    """
+    try:
+        corrige = texte.encode("latin-1").decode("utf-8")
+        return corrige
+    except (UnicodeEncodeError, UnicodeDecodeError):
+        return texte
+
+
 def _trouver_colonne(df: pd.DataFrame, candidats: list[str]) -> str | None:
     """Trouve la première colonne disponible parmi les candidats."""
     for col in candidats:
@@ -138,7 +154,7 @@ def charger_stock(chemin: Path, config: ConfigIngestion) -> list[ProduitStock]:
         logger.error("Colonne code article introuvable dans le stock.")
         sys.exit(2)
 
-    from sapeg_regen_stock.derivateur import extraire_classe_resistance
+    from sapeg_regen_stock.derivateur import extraire_classe_resistance, extraire_essence
 
     produits: list[ProduitStock] = []
 
@@ -183,7 +199,7 @@ def charger_stock(chemin: Path, config: ConfigIngestion) -> list[ProduitStock]:
         # Cherche dans : libellé produit → col_classe → code article
         # classe_estimee = True si non trouvée directement dans le libellé
         classe_raw = str(row[col_classe]).strip() if col_classe else ""
-        libelle_raw = (
+        libelle_raw = _reparer_mojibake(
             str(row[col_desi]).strip() if col_desi else str(row.get(col_code, ""))
         )
         classe = extraire_classe_resistance(libelle=libelle_raw, mots_cles="")
@@ -203,7 +219,7 @@ def charger_stock(chemin: Path, config: ConfigIngestion) -> list[ProduitStock]:
                 )
                 continue
 
-        famille = str(row[col_famille]).strip() if col_famille else "INCONNU"
+        famille = _reparer_mojibake(str(row[col_famille]).strip()) if col_famille else "INCONNU"
         disponible = str(row.get(col_dispo, "")).strip().lower() in (
             "disponible",
             "oui",
@@ -211,7 +227,8 @@ def charger_stock(chemin: Path, config: ConfigIngestion) -> list[ProduitStock]:
             "true",
             "1",
         )
-        fournisseur = str(row[col_fournisseur]).strip() if col_fournisseur else ""
+        fournisseur = _reparer_mojibake(str(row[col_fournisseur]).strip()) if col_fournisseur else ""
+        essence = extraire_essence(libelle_raw)
 
         produits.append(
             ProduitStock(
@@ -224,6 +241,7 @@ def charger_stock(chemin: Path, config: ConfigIngestion) -> list[ProduitStock]:
                 disponible=disponible,
                 fournisseur=fournisseur,
                 libelle=libelle_raw,
+                essence=essence,
                 classe_dans_libelle=classe_dans_libelle,
                 ligne_csv_source=int(idx) + 2,  # +2 : 1 pour l'en-tête, 1 pour base-1
             )

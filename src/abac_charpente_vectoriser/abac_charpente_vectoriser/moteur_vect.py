@@ -594,7 +594,8 @@ def run(
         else pd.DataFrame()
     )
     # Enrichissement : longueur commerciale max article depuis le stock (join sortie uniquement)
-    # id_config_materiau n'est pas dans le CSV — on le reconstruit depuis classe + b × h
+    # La valeur L_max_m du stock n'est jamais traitée par le moteur de calcul —
+    # elle est lue directement depuis le CSV brut et jointe en fin de chaîne.
     try:
         df_stock_brut: pd.DataFrame = pd.read_csv(
             chemin_stock_calcul, sep=";", comment="#", low_memory=False
@@ -605,30 +606,67 @@ def run(
                 columns={v: k for k, v in mappage_colonnes.items() if v != k}
             )
         col_lmax: str = "L_max_m"
-        cols_requises: set[str] = {"classe_resistance", "b_mm", "h_mm", col_lmax}
-        if cols_requises.issubset(df_stock_brut.columns) and not df_complet_global.empty:
-            df_lmax: pd.DataFrame = df_stock_brut[
-                ["classe_resistance", "b_mm", "h_mm", col_lmax]
-            ].copy()
-            # Reconstruire id_config_materiau selon la même convention que __post_init__
-            df_lmax["id_config_materiau"] = (
-                df_lmax["classe_resistance"].astype(str)
-                + "_"
-                + df_lmax["b_mm"].astype(int).astype(str)
-                + "x"
-                + df_lmax["h_mm"].astype(int).astype(str)
-            )
-            lmax_map: pd.DataFrame = (
-                df_lmax[["id_config_materiau", col_lmax]]
-                .drop_duplicates("id_config_materiau")
-                .rename(columns={col_lmax: "longueur_max_article_m"})
-            )
-            df_complet_global = df_complet_global.merge(
-                lmax_map, on="id_config_materiau", how="left"
-            )
-            logger.info("longueur_max_article_m ajoutée depuis le stock")
-            # Marquer les lignes dont la portée testée dépasse la longueur max article
-            if "longueur_m" in df_complet_global.columns:
+        if col_lmax in df_stock_brut.columns and not df_complet_global.empty:
+            # ── Jointure sur id_produit (granularité article exacte) ───────────
+            # Cast explicite en str pour correspondre à charger_depuis_csv (.astype(str))
+            if (
+                "id_produit" in df_stock_brut.columns
+                and "id_produit" in df_complet_global.columns
+            ):
+                df_stock_brut["id_produit"] = (
+                    df_stock_brut["id_produit"].fillna("").astype(str)
+                )
+                lmax_map: pd.DataFrame = (
+                    df_stock_brut[["id_produit", col_lmax]]
+                    .dropna(subset=[col_lmax])
+                    .drop_duplicates("id_produit")
+                    .rename(columns={col_lmax: "longueur_max_article_m"})
+                )
+                df_complet_global = df_complet_global.merge(
+                    lmax_map, on="id_produit", how="left"
+                )
+                logger.info("longueur_max_article_m ajoutée depuis le stock (jointure id_produit)")
+            # ── Fallback : reconstruction id_config_materiau depuis classe + b × h ─
+            # (même convention que ConfigMatériauVect.__post_init__)
+            elif {"classe_resistance", "b_mm", "h_mm"}.issubset(df_stock_brut.columns):
+                df_lmax: pd.DataFrame = df_stock_brut[
+                    ["classe_resistance", "b_mm", "h_mm", col_lmax]
+                ].copy()
+                df_lmax = df_lmax.dropna(subset=["b_mm", "h_mm", col_lmax])
+                df_lmax = df_lmax[
+                    np.isfinite(df_lmax["b_mm"].astype(float))
+                    & np.isfinite(df_lmax["h_mm"].astype(float))
+                ]
+                df_lmax["id_config_materiau"] = (
+                    df_lmax["classe_resistance"].astype(str)
+                    + "_"
+                    + df_lmax["b_mm"].astype(float).astype(int).astype(str)
+                    + "x"
+                    + df_lmax["h_mm"].astype(float).astype(int).astype(str)
+                )
+                lmax_map = (
+                    df_lmax.groupby("id_config_materiau")[col_lmax]
+                    .max()
+                    .reset_index()
+                    .rename(columns={col_lmax: "longueur_max_article_m"})
+                )
+                df_complet_global = df_complet_global.merge(
+                    lmax_map, on="id_config_materiau", how="left"
+                )
+                logger.info(
+                    "longueur_max_article_m ajoutée depuis le stock "
+                    "(jointure id_config_materiau reconstruit)"
+                )
+            else:
+                logger.warning(
+                    "Enrichissement L_max_m ignoré : colonnes id_produit / "
+                    "b_mm / h_mm / classe_resistance absentes du stock"
+                )
+            # ── Marquer les lignes dont la portée dépasse la longueur max article
+            if (
+                "longueur_max_article_m" in df_complet_global.columns
+                and "longueur_m" in df_complet_global.columns
+            ):
                 masque_dep: pd.Series = (
                     df_complet_global["longueur_max_article_m"].notna()
                     & (df_complet_global["longueur_m"] > df_complet_global["longueur_max_article_m"])
@@ -636,7 +674,7 @@ def run(
                 df_complet_global.loc[masque_dep, "verifie"] = False
                 df_complet_global.loc[masque_dep, "verifie_raison"] = "longueur_dépassée"
     except Exception as exc:
-        logger.debug(f"Enrichissement L_max_m ignoré : {exc}")
+        logger.warning(f"Enrichissement L_max_m ignoré : {exc}")
 
     chemin_complet: Path = chemin_sortie / "abaque_complet_global.csv"
     exporter_abaque_complet(df_complet_global, chemin_complet)

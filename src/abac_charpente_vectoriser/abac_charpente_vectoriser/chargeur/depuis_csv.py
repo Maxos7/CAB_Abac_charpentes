@@ -219,6 +219,11 @@ def charger_depuis_csv(
         if "libelle" in df.columns
         else ""
     )
+    df["col_essence"] = (
+        df["essence"].fillna("").astype(str)
+        if "essence" in df.columns
+        else ""
+    )
 
     # Type de section interne (pour les vérifications EC5)
     df["col_type_section"] = np.where(
@@ -255,6 +260,7 @@ def charger_depuis_csv(
             type_section            = TypeSection(row.col_type_section),
             id_produit              = row.col_id_produit,
             libelle                 = row.col_libelle,
+            essence                 = row.col_essence,
         )
         for row in df.itertuples(index=False)
     ]

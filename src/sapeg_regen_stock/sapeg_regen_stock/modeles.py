@@ -30,6 +30,7 @@ class ProduitStock:
     disponible: bool
     fournisseur: str
     libelle: str = ""
+    essence: str = ""
     classe_dans_libelle: bool = True
     ligne_csv_source: int = 0
 
@@ -48,6 +49,7 @@ class ProduitValide:
     disponible: bool
     fournisseur: str
     id_config_materiau: str
+    essence: str = ""
     classe_dans_libelle: bool = True
     ligne_csv_source: int = 0
 

@@ -56,14 +56,14 @@ type_poutre       = "PanneDeversee"
 usage             = "panne_standard"
 
 L_min_m           = 2.0
-L_max_m           = 8.0
+L_max_m           = 12
 pas_longueur_m    = 0.25
 
-pente_deg         = [45]
-entraxe_m         = [1.2]
+pente_deg         = [4,15,30,35,40,45]
+entraxe_m         = [1.2,1.7]
 classe_service    = 1
 
-g_k_kNm2          = [0.40]
+g_k_kNm2          = [0.40, 0.50, 0.60, 0.70, 0.80]
 g2_k_kNm2         = 0.17
 q_k_kNm2          = 0.0
 categorie_q       = "H"
@@ -82,10 +82,10 @@ longueur_appui_mm          = 50.0
 # limite_fleche_fin  = 200.0   # Wnet,fin ≤ L/200
 # limite_fleche_2    = 500.0   # Wtot,2   ≤ L/500
 
-  [[config_calcul.filtres]]
-  champ     = "classe_resistance"
-  operateur = "in"
-  valeur    = ["C24","GT24", "GL24h"]
+#  [[config_calcul.filtres]]
+#  champ     = "classe_resistance"
+#  operateur = "in"
+#  valeur    = ["C24","GT24", "GL24h"]
 
 
 

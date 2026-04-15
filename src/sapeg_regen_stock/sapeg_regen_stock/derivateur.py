@@ -20,6 +20,31 @@ _RE_CLASSE = re.compile(
     re.IGNORECASE,
 )
 
+# Essences de bois reconnues dans les libellés (ordre de priorité : composés avant simples)
+# Chaque entrée : (regex compilée, nom canonique)
+_RE_ESSENCES: list[tuple[re.Pattern, str]] = [
+    # Composés sapin/épicéa (avant les mots simples)
+    (re.compile(r"sapin[\s/\-]*[eé]pic[eé]a", re.IGNORECASE), "Sapin/Épicéa"),
+    (re.compile(r"[eé]pic[eé]a[\s/\-]*sapin", re.IGNORECASE), "Sapin/Épicéa"),
+    # Essences simples (du plus spécifique au plus générique)
+    (re.compile(r"\bsapin\b", re.IGNORECASE), "Sapin"),
+    (re.compile(r"\b[eé]pic[eé]a\b", re.IGNORECASE), "Épicéa"),
+    (re.compile(r"\bdouglas\b", re.IGNORECASE), "Douglas"),
+    (re.compile(r"\bpin\s+sylvestre\b", re.IGNORECASE), "Pin sylvestre"),
+    (re.compile(r"\bpin\s+maritime\b", re.IGNORECASE), "Pin maritime"),
+    (re.compile(r"\bpin\s+laricio\b", re.IGNORECASE), "Pin laricio"),
+    (re.compile(r"\bm[eé]l[eè]ze\b", re.IGNORECASE), "Mélèze"),
+    (re.compile(r"\bch[eê]ne\b", re.IGNORECASE), "Chêne"),
+    (re.compile(r"\bh[eê]tre\b", re.IGNORECASE), "Hêtre"),
+    (re.compile(r"\bpeuplier\b", re.IGNORECASE), "Peuplier"),
+    (re.compile(r"\bch[aâ]taignier\b", re.IGNORECASE), "Châtaignier"),
+    (re.compile(r"\bfr[eê]ne\b", re.IGNORECASE), "Frêne"),
+    (re.compile(r"\brobinier\b", re.IGNORECASE), "Robinier"),
+    (re.compile(r"\baulne\b", re.IGNORECASE), "Aulne"),
+    (re.compile(r"\bbouleau\b", re.IGNORECASE), "Bouleau"),
+    (re.compile(r"\bpin\b", re.IGNORECASE), "Pin"),  # générique — après pin+adjectif
+]
+
 # Préfixe des IDs matériau
 _PREFIXE = "MAT_"
 _LONGUEUR_HEX = 8  # 8 caractères hexadécimaux
@@ -94,6 +119,25 @@ def extraire_classe_resistance(libelle: str, mots_cles: str) -> str | None:
     return None
 
 
+def extraire_essence(libelle: str) -> str:
+    """Extrait l'essence de bois depuis un libellé produit.
+
+    Parcourt les patterns dans l'ordre de priorité (composés avant simples,
+    spécifiques avant génériques). Retourne le nom canonique de l'essence,
+    ou une chaîne vide si aucune n'est reconnue.
+
+    Exemples :
+        "SAPIN EPICEA C24 63X175"   → "Sapin/Épicéa"
+        "Douglas C24 45x145 L6000"  → "Douglas"
+        "PIN SYLVESTRE C18 50x100"  → "Pin sylvestre"
+        "GL28h 140x320"             → ""
+    """
+    for pattern, nom_canonique in _RE_ESSENCES:
+        if pattern.search(libelle):
+            return nom_canonique
+    return ""
+
+
 def enrichir_produit(produit_stock, _id_config_materiau: str) -> ProduitValide:
     """Convertit un ProduitStock en ProduitValide avec l'id_config_materiau calculé."""
     return ProduitValide(
@@ -107,6 +151,7 @@ def enrichir_produit(produit_stock, _id_config_materiau: str) -> ProduitValide:
         disponible=produit_stock.disponible,
         fournisseur=produit_stock.fournisseur,
         id_config_materiau=_id_config_materiau,
+        essence=produit_stock.essence,
         classe_dans_libelle=produit_stock.classe_dans_libelle,
         ligne_csv_source=produit_stock.ligne_csv_source,
     )
