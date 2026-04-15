@@ -51,7 +51,7 @@
 # β = 0° → identique Panne ; β = 90° → identique PanneAplomb
 # -----------------------------------------------------------------------------
 [[config_calcul]]
-id_config_calcul = "PANNE_DEVERSEE"
+id_config_calcul = "PANNE_DEVERSEE_W2"
 type_poutre       = "PanneDeversee"
 usage             = "panne_standard"
 
@@ -92,7 +92,7 @@ longueur_appui_mm          = 50.0
 # β = 0° → identique Panne ; β = 90° → identique PanneAplomb
 # -----------------------------------------------------------------------------
 [[config_calcul]]
-id_config_calcul = "PANNE_DEVERSEE_sansW2"
+id_config_calcul = "PANNE_DEVERSEE"
 type_poutre       = "PanneDeversee"
 usage             = "panne_standard"
 
@@ -122,7 +122,7 @@ longueur_appui_mm          = 50.0
 # Solive de plancher — chargement vertical, pas de pente
 # -----------------------------------------------------------------------------
 [[config_calcul]]
-id_config_calcul = "SOLIVE_PLANCHER"
+id_config_calcul = "SOLIVE_PLANCHER_W2"
 type_poutre       = "Solive"
 usage             = "plancher_courant"
 
@@ -144,11 +144,6 @@ w_k_kNm2          = 0.0
 second_oeuvre              = true
 longueur_appui_mm          = 50.0
 entraxe_antideversement_mm = 0.0
-
-  [[config_calcul.filtres]]
-  champ     = "classe_resistance"
-  operateur = "in"
-  valeur    = ["C24","GT24"]
 
 # -----------------------------------------------------------------------------
 # Chevron — portée sur rampant, charges perpendiculaires au rampant
