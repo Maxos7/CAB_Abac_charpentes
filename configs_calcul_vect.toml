@@ -82,11 +82,6 @@ longueur_appui_mm          = 50.0
 # limite_fleche_fin  = 200.0   # Wnet,fin ≤ L/200
 # limite_fleche_2    = 500.0   # Wtot,2   ≤ L/500
 
-#  [[config_calcul.filtres]]
-#  champ     = "classe_resistance"
-#  operateur = "in"
-#  valeur    = ["C24","GT24", "GL24h"]
-
 # -----------------------------------------------------------------------------
 # Panne déversée — section tournée d'un angle β (versage)
 # β = 0° → identique Panne ; β = 90° → identique PanneAplomb
