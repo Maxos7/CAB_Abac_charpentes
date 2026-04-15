@@ -676,6 +676,21 @@ def run(
     except Exception as exc:
         logger.warning(f"Enrichissement L_max_m ignoré : {exc}")
 
+    # ── Indice de classement ──────────────────────────────────────────────────
+    if chemin_toml_sortie.exists() and not df_complet_global.empty:
+        try:
+            from .sortie.abaque_complet import calculer_indice_de_classement
+
+            _toml_sortie: dict = _lire_toml(chemin_toml_sortie)
+            config_indice: dict = _toml_sortie.get("indice_de_classement", {})
+            if config_indice.get("actif", True):
+                df_complet_global["indice_de_classement"] = calculer_indice_de_classement(
+                    df_complet_global, config_indice
+                )
+                logger.info("indice_de_classement calculé et ajouté au DataFrame global")
+        except Exception as exc:
+            logger.warning(f"Calcul indice_de_classement ignoré : {exc}")
+
     chemin_complet: Path = chemin_sortie / "abaque_complet_global.csv"
     exporter_abaque_complet(df_complet_global, chemin_complet)
     logger.info(f"abaque_complet_global.csv → {len(df_complet_global)} lignes")

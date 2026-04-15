@@ -31,6 +31,36 @@
 # =============================================================================
 
 
+# =============================================================================
+# Indice de classement
+# Colonne calculée automatiquement : indice_de_classement
+#
+# Score composite [0 ; 1] — faible = article le plus économique/adapté.
+# Critères (normalisés min-max, puis pondérés) :
+#   poids_section   — section la plus fine (b × h minimal)
+#   poids_longueur  — longueur article la plus proche de la portée calculée
+#                     (longueur_max_article_m − longueur_m minimal)
+#   poids_classe    — classe de résistance la plus faible
+#                     (selon ordre_classes_resistance ci-dessous)
+#
+# Mettre actif = false pour supprimer la colonne de tous les exports.
+# Mettre un poids à 0 pour désactiver un critère individuel.
+# =============================================================================
+
+[indice_de_classement]
+actif           = true
+poids_section   = 1.0
+poids_longueur  = 1.0
+poids_classe    = 1.0
+
+# Classes triées de la plus faible (économique) à la plus résistante.
+# Les classes absentes de cette liste sont traitées comme pire cas.
+ordre_classes_resistance = [
+    "C18", "C24", "C27", "C30", "C35", "C40", "C45", "C50",
+    "GL24h", "GL24c", "GL28h", "GL28c", "GL32h", "GL32c"
+]
+
+
 ### ── Vue Questionnaire ────────────────────────────────────────────────────────────
 # Produit un CSV fusionné (une ligne par couple config × article) destiné au
 # logiciel externe de comparaison TypeForms.
@@ -55,7 +85,7 @@ colonnes       = [
     "longueur_max_article_m",     # Longueur article commercial (m)
     "classe_resistance",          # Classe de résistance
     #"verifie",                    # Portée ≤ longueur commerciale de l'article
-    # indice de classement
+    "indice de classement"
 ]
 trier_par      = ["longueur_max_article_m"]
 # Limite le nombre d'articles retenus par groupe de coulage (paramètres questionnaire).

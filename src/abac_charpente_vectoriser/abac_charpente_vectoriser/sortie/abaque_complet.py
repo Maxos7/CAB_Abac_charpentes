@@ -147,6 +147,80 @@ def renommer_cols_elu_els(df: pd.DataFrame) -> pd.DataFrame:
     return df.rename(columns=renaming) if renaming else df
 
 
+def calculer_indice_de_classement(
+    df: pd.DataFrame,
+    config: dict,
+) -> pd.Series:
+    """Indice de classement composite [0 ; 1] — faible = article le plus économique/adapté.
+
+    Combine trois critères normalisés (min-max) puis pondérés :
+
+    - **section la plus fine** : ``b_mm × h_mm`` minimal
+    - **longueur la plus proche** : ``longueur_max_article_m − longueur_m`` minimal
+    - **classe de résistance la plus faible** : rang dans ``ordre_classes_resistance``
+
+    Parameters
+    ----------
+    df:
+        DataFrame complet (``abaque_complet_global``).
+    config:
+        Dict issu du bloc ``[indice_de_classement]`` du TOML de sortie.
+
+    Returns
+    -------
+    pd.Series
+        Indice arrondi à 4 décimales, indexé comme ``df``.
+    """
+    poids_section  = float(config.get("poids_section",  1.0))
+    poids_longueur = float(config.get("poids_longueur", 1.0))
+    poids_classe   = float(config.get("poids_classe",   1.0))
+    ordre_classes: list[str] = list(config.get("ordre_classes_resistance", []))
+
+    composantes: list[tuple[pd.Series, float]] = []
+
+    # ── 1. Section finesse (b × h) ────────────────────────────────────────────
+    if poids_section > 0 and {"b_mm", "h_mm"}.issubset(df.columns):
+        aire = df["b_mm"].astype(float) * df["h_mm"].astype(float)
+        composantes.append((aire, poids_section))
+
+    # ── 2. Proximité longueur article ─────────────────────────────────────────
+    if (
+        poids_longueur > 0
+        and "longueur_max_article_m" in df.columns
+        and "longueur_m" in df.columns
+    ):
+        delta = (
+            df["longueur_max_article_m"].astype(float) - df["longueur_m"].astype(float)
+        ).clip(lower=0.0)
+        # Articles sans longueur commerciale connue → pire valeur (maximum observé)
+        val_max = delta.max() if delta.notna().any() else 0.0
+        delta = delta.fillna(val_max)
+        composantes.append((delta, poids_longueur))
+
+    # ── 3. Rang de la classe de résistance ────────────────────────────────────
+    if poids_classe > 0 and "classe_resistance" in df.columns and ordre_classes:
+        rang_map = {cls: float(i) for i, cls in enumerate(ordre_classes)}
+        rang_defaut = float(len(ordre_classes))  # classes inconnues → pire rang
+        rang = df["classe_resistance"].map(rang_map).fillna(rang_defaut)
+        composantes.append((rang, poids_classe))
+
+    if not composantes:
+        return pd.Series(0.0, index=df.index, dtype=float)
+
+    poids_total = sum(p for _, p in composantes)
+    indice = pd.Series(0.0, index=df.index, dtype=float)
+
+    for serie, poids in composantes:
+        mn, mx = serie.min(), serie.max()
+        if mx > mn:
+            normalise = (serie - mn) / (mx - mn)
+        else:
+            normalise = pd.Series(0.0, index=df.index, dtype=float)
+        indice += (poids / poids_total) * normalise
+
+    return indice.round(4)
+
+
 def exporter_abaque_complet(
     df: pd.DataFrame,
     chemin_sortie: Path,
