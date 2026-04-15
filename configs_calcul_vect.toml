@@ -59,12 +59,12 @@ L_min_m           = 2.0
 L_max_m           = 12
 pas_longueur_m    = 0.25
 
-pente_deg         = [4,15,30,35,40,45]
-entraxe_m         = [1.2,1.7]
+pente_deg         = [40]
+entraxe_m         = [1.2]
 classe_service    = 1
 
-g_k_kNm2          = [0.40, 0.50, 0.60, 0.70, 0.80]
-g2_k_kNm2         = 0.17
+g_k_kNm2          = [0.40]
+g2_k_kNm2         = [0.17]
 q_k_kNm2          = 0.0
 categorie_q       = "H"
 s_k_kNm2          = 0.36
@@ -87,7 +87,36 @@ longueur_appui_mm          = 50.0
 #  operateur = "in"
 #  valeur    = ["C24","GT24", "GL24h"]
 
+# -----------------------------------------------------------------------------
+# Panne déversée — section tournée d'un angle β (versage)
+# β = 0° → identique Panne ; β = 90° → identique PanneAplomb
+# -----------------------------------------------------------------------------
+[[config_calcul]]
+id_config_calcul = "PANNE_DEVERSEE_sansW2"
+type_poutre       = "PanneDeversee"
+usage             = "panne_standard"
 
+L_min_m           = 2.0
+L_max_m           = 12
+pas_longueur_m    = 0.25
+
+pente_deg         = [40]
+entraxe_m         = [1.2]
+classe_service    = 1
+
+g_k_kNm2          = [0.40]
+g2_k_kNm2         = [0]
+q_k_kNm2          = 0.0
+categorie_q       = "H"
+s_k_kNm2          = 0.36
+w_k_kNm2          = 0.0
+
+double_flexion             = true
+fleches_double             = true   # calcul bi-axe ELS flèche (implicite si double_flexion=true)
+contre_fleche_mm           = 0.0    # pré-cambrure à soustraire de w_fin et w_2 [mm]
+second_oeuvre              = false
+entraxe_antideversement_mm = 0.0
+longueur_appui_mm          = 50.0
 
 # -----------------------------------------------------------------------------
 # Solive de plancher — chargement vertical, pas de pente
