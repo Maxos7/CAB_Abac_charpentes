@@ -1,7 +1,7 @@
 """Entités domaine du paquet sapeg_regen_stock.
 
 Toutes les entités sont des dataclasses ou modèles pydantic (Principe X).
-Aucune importation depuis abac_charpente (Constitution IV).
+Aucune importation depuis abac_charpente_vectoriser (Constitution IV).
 """
 
 from __future__ import annotations

@@ -3,13 +3,13 @@
 Orchestration :
     1. Détection du fichier stock le plus récent
     2. Chargement du CSV (utf-8, sep=|)
-    3. Dérivation (id_config_materiau + propriétés mécaniques via abac_charpente.ec5.proprietes)
+    3. Dérivation (id_config_materiau + propriétés mécaniques via abac_charpente_vectoriser.ec5.proprietes)
     4. Écriture stock_enrichi.csv (toujours, UTF-8, sep=;, écrasement)
     5. Pour chaque ConfigFiltre : filtrage + écriture CSV dédié (écrasement)
     6. Retourne {filtre.nom: Path(filtre.sortie), ...}
 
-IMPORTANT : aucun import depuis abac_charpente.ec5 / ec0 / ec1 / moteur / sortie (Constitution IV).
-Les propriétés mécaniques sont importées depuis abac_charpente.ec5.proprietes uniquement
+IMPORTANT : aucun import depuis abac_charpente_vectoriser.ec5 / ec0 / ec1 / moteur / sortie (Constitution IV).
+Les propriétés mécaniques sont importées depuis abac_charpente_vectoriser.ec5.proprietes uniquement
 pour la dérivation — ce module SAPEG DOIT rester indépendant du calcul EC5.
 """
 
