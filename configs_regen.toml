@@ -1,41 +1,14 @@
-# =============================================================================
-# configs_regen.toml
-# Configuration de l'ingestion et du mappage colonnes pour sapeg_regen_stock
-#
-# Usage CLI :
-#   uv run sapeg-regen-stock regenerer -s data/sapeg/ --config configs_regen.toml
-#   uv run sapeg-regen-stock regenerer -s data/sapeg/ --config configs_regen.toml \
-#       --filtres configs_filtre_regen.toml
-#
-# [ingestion]
-#   Paramètres de lecture du fichier stock SAPEG.
-#
-# [mappage_colonnes]
-#   Déclarer uniquement les colonnes dont le nom diffère du défaut.
-#   Convention : nom_interne = "nom_réel_dans_le_csv"
-#   Si un champ est absent ou commenté : détection automatique par liste de
-#   candidats (comportement de repli).
-#
-# Noms internes reconnus :
-#   code_article  — identifiant unique du produit (obligatoire)
-#   designation   — libellé commercial
-#   famille       — famille produit
-#   disponibilite — disponibilité/commandabilité
-#   longueur      — longueur commerciale max (converti en m)
-#   largeur       — largeur/épaisseur b (converti en mm)
-#   hauteur       — hauteur h (converti en mm)
-#   classe        — classe de résistance EN 338 / EN 14080
-#   fournisseur   — nom du fournisseur
-# =============================================================================
+# configs_regen.toml — Ingestion stock SAPEG
+# Référence complète : modeles_config.md
+# CLI : uv run sapeg-regen-stock regenerer -s data/sapeg/ --config configs_regen.toml
 
 [ingestion]
-encodage        = "latin-1"            # encodage du fichier ALL_PRODUIT_*.csv
-separateur      = "|"                  # séparateur de colonnes CSV
-pattern_fichier = "ALL_PRODUIT_*.csv"  # glob pour la détection automatique du fichier le plus récent
-
+encodage        = "latin-1"
+separateur      = "|"
+pattern_fichier = "ALL_PRODUIT_*.csv"
 
 [mappage_colonnes]
-# Format SAPEG standard (ALL_PRODUIT_*.csv avec préfixe "produit_", dimensions en cm)
+# Format SAPEG standard (ALL_PRODUIT_*.csv, dimensions en cm, préfixe "produit_")
 code_article  = "produit_code_article"
 designation   = "produit_libelle"
 famille       = "Famille"

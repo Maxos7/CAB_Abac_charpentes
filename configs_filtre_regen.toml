@@ -1,24 +1,22 @@
+# configs_filtre_regen.toml — Filtres stock
+# Référence complète : modeles_config.md
+
 [[filtre]]
-nom = "charpente"
-sortie = "resultats/stock_charpente.csv"
+nom         = "charpente"
+sortie      = "resultats/stock_charpente.csv"
 description = "Produits charpente bois massif C24 avec dimensions structurelles"
 
   [[filtre.regles]]
-  type = "liste"
-  champ = "classe_resistance"
+  type    = "liste"
+  champ   = "classe_resistance"
   valeurs = ["C24", "GL24H", "GT24"]
 
   [[filtre.regles]]
-  type = "plage"
+  type  = "plage"
   champ = "b_mm"
-  min = 45.0
+  min   = 45.0
 
   [[filtre.regles]]
-  type = "plage"
+  type  = "plage"
   champ = "h_mm"
-  min = 100.0
-
-#[[filtre]]
-#nom = "CW_barre"
-#sortie = "resultats/stock_CW_barre.csv"
-#description = "Produits pour optimisation barre dans CadWork"
+  min   = 100.0

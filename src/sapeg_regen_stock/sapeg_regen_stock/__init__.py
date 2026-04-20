@@ -10,7 +10,7 @@ Exports principaux (T033) :
     ConfigFiltre           : configuration d'un filtre nommé
     ConfigMatériau         : entité matériau dérivée
 
-IMPORTANT : ce paquet n'importe PAS abac_charpente.ec5 / ec0 / ec1 / moteur / sortie
+IMPORTANT : ce paquet n'importe PAS abac_charpente_vectoriser.ec5 / ec0 / ec1 / moteur / sortie
 (Constitution IV — couplage faible).
 """
 

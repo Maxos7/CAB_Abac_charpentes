@@ -248,7 +248,7 @@ def _regenerer_stock(
 ) -> Path:
     """Appelle ``sapeg_regen_stock`` pour générer le stock filtré.
 
-    Suit le même processus que ``abac_charpente`` : auto-détection du fichier
+    Suit le même processus que ``abac_charpente_vectoriser`` : auto-détection du fichier
     ``ALL_PRODUIT_*.csv`` dans ``chemin_source``, enrichissement des propriétés
     mécaniques, application du filtre ``nom_filtre`` depuis ``configs_filtre_regen.toml``.
 
