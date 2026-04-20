@@ -1,190 +1,38 @@
-# =============================================================================
-# configs_sortie_vect.toml
-# Configuration des exports dérivés depuis abaque_complet_global.csv
-#
-# Usage CLI :
-#   uv run abac-vect   (configs_sortie_vect.toml chargé automatiquement)
-#   uv run abac-vect --toml-sortie autre_configs_sortie.toml
-#
-# Chaque [[vue]] produit un fichier CSV indépendant.
-#
-# Types disponibles :
-#   agregation  — longueur max admissible par groupe [agrégation]
-#                 Champs obligatoires : groupby (liste de colonnes)
-#                 Champs optionnels  : colonnes, trier_par, filtres
-#   filtre      — sélection de lignes + colonnes sans agrégation
-#                 Champs optionnels  : colonnes, trier_par, filtres,
-#                                     cles_groupe, limite_par_groupe
-#
-# Limitation par groupe (type filtre uniquement) :
-#   cles_groupe       — colonnes définissant le groupe (paramètres de la config)
-#   limite_par_groupe — nombre max d'articles retenus par groupe (après tri)
-#
-# Colonnes calculées automatiquement par l'agrégation :
-#   longueur_max_admissible_m  — portée max vérifiée (taux_global ≤ 1.0)
-#   verif_determinante         — vérification au taux le plus élevé
-#   taux_determinant           — valeur de ce taux
-#
-# Opérateurs de filtres :
-#   egal, different, inferieur, superieur, inferieur_egal, superieur_egal,
-#   contient (sous-chaîne, insensible à la casse), in (liste de valeurs)
-# =============================================================================
+# configs_sortie_vect.toml — Exports CSV depuis abaque_complet_global.csv
+# Référence complète : modeles_config.md
+# CLI : uv run abac-vect --toml-sortie configs_sortie_vect.toml
 
-
-# =============================================================================
-# Indice de classement
-# Colonne calculée automatiquement : indice_de_classement
-#
 # Score composite [0 ; 1] — faible = article le plus économique/adapté.
-# Critères (normalisés min-max, puis pondérés) :
-#   poids_section   — section la plus fine (b × h minimal)
-#   poids_longueur  — longueur article la plus proche de la portée calculée
-#                     (longueur_max_article_m − longueur_m minimal)
-#   poids_classe    — classe de résistance la plus faible
-#                     (selon ordre_classes_resistance ci-dessous)
-#
-# Mettre actif = false pour supprimer la colonne de tous les exports.
-# Mettre un poids à 0 pour désactiver un critère individuel.
-# =============================================================================
-
+# Poids à 0 pour désactiver un critère ; actif = false pour supprimer la colonne.
 [indice_de_classement]
 actif           = true
 poids_section   = 1.0
 poids_longueur  = 1.0
 poids_classe    = 1.0
 
-# Classes triées de la plus faible (économique) à la plus résistante.
-# Les classes absentes de cette liste sont traitées comme pire cas.
 ordre_classes_resistance = [
     "C18", "C24", "C27", "C30", "C35", "C40", "C45", "C50",
     "GL24h", "GL24c", "GL28h", "GL28c", "GL32h", "GL32c"
 ]
 
 
-### ── Vue Questionnaire ────────────────────────────────────────────────────────────
-# Produit un CSV fusionné (une ligne par couple config × article) destiné au
-# logiciel externe de comparaison TypeForms.
+# ── Vue Questionnaire ─────────────────────────────────────────────────────────
 [[vue]]
 nom            = "questionnaire"
 description    = "Format questionnaire — comparaison TypeForms + liste articles"
 fichier_sortie = "abaque_questionnaire.csv"
 type           = "filtre"
 colonnes       = [
-    # ── Données pour comparaison questionnaire ────────────────────────────────
-    "type_poutre",
-    "pente_deg",                  # Pente (°)
-    "g_k_kNm2",                   # G permanente (kN/m²)
-    "g2_k_kNm2",                  # G2 second oeuvre/fragile (kN/m²)
-    "entraxe_m",                  # Entraxe (m)
-    "longueur_m",                 # Portée max admissible (m)
-    "essence",                    # Essence
-    # ── Données complémentaires — liste articles ──────────────────────────────
-    "id_produit",                 # Code Sapeg
-    "b_mm",                       # Base (mm)
-    "h_mm",                       # Hauteur (mm)
-    "longueur_max_article_m",     # Longueur article commercial (m)
-    "classe_resistance",          # Classe de résistance
-    "indice_de_classement"
+    "type_poutre", "pente_deg", "g_k_kNm2", "g2_k_kNm2",
+    "entraxe_m", "longueur_m", "essence",
+    "id_produit", "b_mm", "h_mm", "longueur_max_article_m",
+    "classe_resistance", "indice_de_classement"
 ]
 trier_par      = ["indice_de_classement"]
-# Limite le nombre d'articles retenus par groupe de coulage (paramètres questionnaire).
-# Pour chaque combinaison unique de cles_coulage, seuls les N premiers articles
-# (selon trier_par) sont conservés. Commenter les deux lignes pour désactiver.
-#cles_groupe       = ["type_poutre", "pente_deg", "g_k_kNm2", "entraxe_m", "longueur_m", "essence"]
-#limite_par_groupe = 10
+# cles_groupe       = ["type_poutre", "pente_deg", "g_k_kNm2", "entraxe_m", "longueur_m", "essence"]
+# limite_par_groupe = 10
 
   [[vue.filtres]]
   champ     = "verifie"
   operateur = "egal"
   valeur    = "True"
-
-
-
-# ── Exemples de vues personnalisées ───────────────────────────────────────────
-# Décommenter et adapter selon les besoins.
-
-# Toutes les portées vérifiées (taux ≤ 1.0) — données brutes filtrées
-#[[vue]]
-#nom            = "verifie"
-#description    = "Toutes les lignes vérifiées (taux_global ≤ 1.0) — export brut"
-#fichier_sortie = "abaque_verifie.csv"
-#type           = "filtre"
-#colonnes       = ["id_config_calcul", "id_config_materiau", "classe_resistance",
-#                  "b_mm", "h_mm", "longueur_m", "taux_global"]
-#trier_par      = ["id_config_calcul", "classe_resistance", "b_mm", "h_mm", "longueur_m"]
-#
-#  [[vue.filtres]]
-#  champ     = "verifie"
-#  operateur = "egal"
-#  valeur    = true
-
-
-# Bois massif C uniquement — longueur max admissible
-#[[vue]]
-#nom            = "massif"
-#description    = "Bois massif C uniquement — longueur max admissible"
-#fichier_sortie = "abaque_massif_global.csv"
-#type           = "agregation"
-#groupby        = ["id_config_materiau", "id_config_calcul"]
-#colonnes       = ["classe_resistance", "b_mm", "h_mm", "id_config_calcul",
-#                  "longueur_max_admissible_m", "verif_determinante", "taux_determinant"]
-#trier_par      = ["classe_resistance", "b_mm", "h_mm"]
-#
-#  [[vue.filtres]]
-#  champ     = "classe_resistance"
-#  operateur = "contient"
-#  valeur    = "C"
-
-
-# Bois lamellé-collé GL uniquement — longueur max admissible
-#[[vue]]
-#nom            = "GL"
-#description    = "Bois lamellé-collé GL uniquement — longueur max admissible"
-#fichier_sortie = "abaque_GL_global.csv"
-#type           = "agregation"
-#groupby        = ["id_config_materiau", "id_config_calcul"]
-#colonnes       = ["classe_resistance", "b_mm", "h_mm", "id_config_calcul",
-#                  "longueur_max_admissible_m", "verif_determinante", "taux_determinant"]
-#trier_par      = ["classe_resistance", "b_mm", "h_mm"]
-#
-#  [[vue.filtres]]
-#  champ     = "classe_resistance"
-#  operateur = "contient"
-#  valeur    = "GL"
-
-
-# Détail complet d'une config — tous les taux ELU/ELS
-#[[vue]]
-#nom            = "detail_P30"
-#description    = "Détail complet config pente 30° — tous les taux ELU/ELS"
-#fichier_sortie = "abaque_detail_P30.csv"
-#type           = "filtre"
-#colonnes       = []    # vide = toutes les colonnes
-#trier_par      = ["id_config_materiau", "longueur_m"]
-#
-#  [[vue.filtres]]
-#  champ     = "id_config_calcul"
-#  operateur = "contient"
-#  valeur    = "_P30_"
-
-
-# Grandes sections vérifiées — export métreur
-#[[vue]]
-#nom            = "grandes_sections"
-#description    = "Sections b≥100 et h≥200 — longueur max admissible"
-#fichier_sortie = "abaque_grandes_sections.csv"
-#type           = "agregation"
-#groupby        = ["id_config_materiau", "id_config_calcul"]
-#colonnes       = ["classe_resistance", "b_mm", "h_mm", "id_config_calcul",
-#                  "longueur_max_admissible_m", "verif_determinante", "taux_determinant"]
-#trier_par      = ["b_mm", "h_mm"]
-#
-#  [[vue.filtres]]
-#  champ     = "b_mm"
-#  operateur = "superieur_egal"
-#  valeur    = 100.0
-#
-#  [[vue.filtres]]
-#  champ     = "h_mm"
-#  operateur = "superieur_egal"
-#  valeur    = 200.0
