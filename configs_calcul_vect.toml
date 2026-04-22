@@ -41,7 +41,7 @@ longueur_appui_mm          = 50.0
 # Panne déversée sans second œuvre
 # -----------------------------------------------------------------------------
 [[config_calcul]]
-id_config_calcul = "PANNE_DEVERSEE"
+id_config_calcul = "PANNE_DEVERSEE_W2"
 type_poutre       = "PanneDeversee"
 usage             = "panne_standard"
 
