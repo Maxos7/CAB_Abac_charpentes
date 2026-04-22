@@ -564,6 +564,10 @@ def run(
                 combo_els=combo_els,
                 valeur_elu=valeur_elu,
                 valeur_els=valeur_els,
+                limite_fleche_inst_eff=espace.limite_fleche_inst,
+                limite_fleche_fin_brut_eff=espace.limite_fleche_fin_brut,
+                limite_fleche_fin_eff=espace.limite_fleche_fin,
+                limite_fleche_2_eff=espace.limite_fleche_2,
             )
             tous_df_complet.append(df_combo)
 

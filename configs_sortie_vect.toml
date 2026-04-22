@@ -36,3 +36,15 @@ trier_par      = ["indice_de_classement"]
   champ     = "verifie"
   operateur = "egal"
   valeur    = "True"
+
+
+# ── Vue calcul vérifiée (sans doublons article) ───────────────────────────────
+[[vue]]
+nom              = "verification calcul"
+description      = "Toutes portées vérifiées par section × config — sans doublons article"
+fichier_sortie   = "verification_calcul.csv"
+type             = "filtre"
+exclure_colonnes = ["id_produit", "libelle", "essence", "longueur_max_article_m", "indice_de_classement"]
+deduplicer       = true
+colonnes         = []
+trier_par        = ["type_poutre", "pente_deg", "entraxe_m", "longueur_m"]

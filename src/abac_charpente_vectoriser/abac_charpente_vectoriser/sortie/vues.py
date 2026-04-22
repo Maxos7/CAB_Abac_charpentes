@@ -219,6 +219,8 @@ def _produire_filtre(
     trier_par: list[str],
     cles_groupe: list[str] | None = None,
     limite_par_groupe: int | None = None,
+    exclure_colonnes: list[str] | None = None,
+    deduplicer: bool = False,
 ) -> pd.DataFrame:
     """Sélection de colonnes + tri, sans agrégation.
 
@@ -247,6 +249,12 @@ def _produire_filtre(
         df_out: pd.DataFrame = df[cols_valides].copy()
     else:
         df_out = df.copy()
+
+    if exclure_colonnes:
+        df_out = df_out.drop(columns=[c for c in exclure_colonnes if c in df_out.columns])
+
+    if deduplicer:
+        df_out = df_out.drop_duplicates()
 
     if trier_par:
         trier_valides: list[str] = [c for c in trier_par if c in df_out.columns]
@@ -305,6 +313,8 @@ def appliquer_vues_depuis_toml(
         trier_par: list[str] = vue.get("trier_par", [])
         cles_groupe: list[str] = vue.get("cles_groupe", [])
         limite_par_groupe: int | None = vue.get("limite_par_groupe")
+        exclure_colonnes: list[str] = vue.get("exclure_colonnes", [])
+        deduplicer: bool = vue.get("deduplicer", False)
 
         logger.info(f"Vue '{nom}' ({type_vue}) → {fichier}")
 
@@ -330,7 +340,8 @@ def appliquer_vues_depuis_toml(
 
         elif type_vue == "filtre":
             df_vue = _produire_filtre(
-                df_filtre, colonnes, trier_par, cles_groupe, limite_par_groupe
+                df_filtre, colonnes, trier_par, cles_groupe, limite_par_groupe,
+                exclure_colonnes, deduplicer,
             )
 
         else:

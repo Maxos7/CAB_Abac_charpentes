@@ -31,6 +31,10 @@ def construire_df_complet(
     combo_els: dict[str, np.ndarray] | None = None,
     valeur_elu: dict[str, np.ndarray] | None = None,
     valeur_els: dict[str, np.ndarray] | None = None,
+    limite_fleche_inst_eff: float | None = None,
+    limite_fleche_fin_brut_eff: float | None = None,
+    limite_fleche_fin_eff: float | None = None,
+    limite_fleche_2_eff: float | None = None,
 ) -> pd.DataFrame:
     """Construit le DataFrame de l'abaque complet sans l'écrire.
 
@@ -87,6 +91,18 @@ def construire_df_complet(
                 "categorie_q": config.categorie_q,
                 "s_k_kNm2": config.s_k_kNm2,
                 "w_k_kNm2": config.w_k_kNm2,
+                "type_toiture_vent": config.type_toiture_vent,
+                # Options de vérification
+                "double_flexion": config.double_flexion,
+                "fleches_double": config.fleches_double,
+                "contre_fleche_mm": config.contre_fleche_mm,
+                "second_oeuvre": config.second_oeuvre,
+                "entraxe_antideversement_mm": config.entraxe_antideversement_mm,
+                "longueur_appui_mm": config.longueur_appui_mm,
+                "limite_fleche_inst": limite_fleche_inst_eff,
+                "limite_fleche_fin_brut": limite_fleche_fin_brut_eff,
+                "limite_fleche_fin": limite_fleche_fin_eff,
+                "limite_fleche_2": limite_fleche_2_eff,
                 # ── Article ────────────────────────────────────────────────────
                 "id_produit": mat.id_produit,
                 "libelle": mat.libelle,
