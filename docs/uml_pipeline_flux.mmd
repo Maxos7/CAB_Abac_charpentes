@@ -1,0 +1,120 @@
+---
+title: CAB_Abac_charpentes — Flux du pipeline de calcul EC5
+---
+
+flowchart TD
+    TOML[/"configs_calcul_vect.toml"/]
+    STOCK_CSV[/"stock CSV\nALL_PRODUIT_*.csv"/]
+    FILTRES[/"configs_filtre_regen.toml"/]
+    SORTIE_CFG[/"configs_sortie_vect.toml"/]
+
+    subgraph INIT["Initialisation"]
+        A[lire_toml] --> B[developper_produit_cartesien\nmulti-valeurs → combinaisons scalaires]
+    end
+
+    subgraph REGEN["sapeg_regen_stock\n(optionnel)"]
+        R1[detecter_fichier_stock] --> R2[charger_stock\nCSV → ProduitStock]
+        R2 --> R3[enrichir_produit\nA, I, W, hash_id]
+        R3 --> R4[appliquer_filtres\nConfigFiltre]
+        R4 --> R5[/"stock_enrichi.csv"/]
+    end
+
+    subgraph LOOP["Pour chaque config_calcul scalaire"]
+        direction TB
+
+        subgraph LOAD["Chargement"]
+            L1[charger_depuis_csv\nConfigMatériauVect × n_M]
+            L2[appliquer_filtres\nRegleFiltre]
+            L3[generer_combinaisons\nCombinaisonEC0Vect × n_C]
+        end
+
+        subgraph P1["Étape 1 — Charges caractéristiques"]
+            P1A[TypePoutreVect.decomposer_charges\ng, q, s, w → q_y, q_z par axe]
+            P1B[poids_propre_kNm\nρ × A × g]
+        end
+
+        subgraph P2["Étape 2 — Construction du tenseur\nn_L × n_C × n_M"]
+            P2A[Sollicitations\nM_d, V_d, M_y, M_z, N_d]
+            P2B[Propriétés EC5\nkmod, kdef, résistances]
+            P2C[Facteurs de stabilité\nk_crit, k_c_y, k_c_z\nLongueur déversement]
+            P2D[Limites de flèche\nlimites_fleche_ec5.csv]
+            P2E([EspaceCombinaisonTenseur])
+            P2A --> P2E
+            P2B --> P2E
+            P2C --> P2E
+            P2D --> P2E
+        end
+
+        subgraph P3["Étape 3 — Vérifications ELU\n17 vérifications vectorisées"]
+            P3A["Flexion (axe fort/faible, double flexion)"]
+            P3B["Cisaillement, Appui"]
+            P3C["Déversement §6.3.3"]
+            P3D["Flambement §6.3.2"]
+            P3E["Compression, Traction"]
+            P3F["Combinés (flexion+compression, Hankinson)"]
+            P3G["max taux ELU [n_L, n_M]"]
+            P3A & P3B & P3C & P3D & P3E & P3F --> P3G
+        end
+
+        subgraph P4["Étape 4 — Vérifications ELS\n12 vérifications vectorisées"]
+            P4A["Flèche instantanée (y, z, résultante)"]
+            P4B["Flèche finale brute (kdef)"]
+            P4C["Flèche finale nette"]
+            P4D["Flèche second œuvre"]
+            P4G["max taux ELS [n_L, n_M]"]
+            P4A & P4B & P4C & P4D --> P4G
+        end
+
+        subgraph P5["Étape 5 — Synthèse\npar matériau"]
+            P5A[max taux global\nELU ∪ ELS]
+            P5B[L_max_admissible_m\ndernier L où taux ≤ 1.0]
+            P5C[verification_dominante\nidentification]
+            P5D([ResultatPortee × n_M])
+            P5A --> P5B --> P5C --> P5D
+        end
+
+        L1 --> L2 --> L3
+        L3 --> P1A
+        L2 --> P1B
+        P1A & P1B --> P2A
+        L2 --> P2B
+        L2 --> P2C
+        P2E --> P3A & P3B & P3C & P3D & P3E & P3F
+        P2E --> P4A & P4B & P4C & P4D
+        P3G & P4G --> P5A
+    end
+
+    subgraph EXPORT["Export global"]
+        E1[construire_df_complet\nabaque_complet DataFrame]
+        E2[indice_de_classement\nclassement par rentabilité]
+        E3[appliquer_vues_depuis_toml]
+        E4[/"abaque_complet_global.csv"/]
+        E5[/"vues dérivées CSV"/]
+        E6[/"tenseurs.duckdb\n(optionnel)"/]
+        E1 --> E2 --> E3 --> E4
+        E3 --> E5
+    end
+
+    %% Connexions globales
+    TOML --> INIT
+    FILTRES --> REGEN
+    STOCK_CSV --> REGEN
+    REGEN --> LOOP
+    INIT --> LOOP
+    LOOP --> EXPORT
+    SORTIE_CFG --> EXPORT
+
+    %% Données normatives EC5
+    EC5_DATA[/"Données normatives EC5\nkmod.csv · kdef.csv · gamma_m.csv\npsi_coefficients.csv · materiaux_bois.csv\nlimites_fleche_ec5.csv"/]
+    EC5_DATA -.->|lecture| P2
+
+    style INIT fill:#e8f4f8,stroke:#2980b9
+    style REGEN fill:#fef9e7,stroke:#f39c12
+    style LOOP fill:#f0fff0,stroke:#27ae60
+    style P1 fill:#eaf6fb,stroke:#17a589
+    style P2 fill:#eaf6fb,stroke:#17a589
+    style P3 fill:#fdf2f8,stroke:#8e44ad
+    style P4 fill:#fdf2f8,stroke:#8e44ad
+    style P5 fill:#e8f8f5,stroke:#1abc9c
+    style EXPORT fill:#fef5e7,stroke:#e67e22
+    style EC5_DATA fill:#f8f9fa,stroke:#95a5a6

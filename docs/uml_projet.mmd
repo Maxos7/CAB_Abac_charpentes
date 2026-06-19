@@ -1,0 +1,429 @@
+---
+title: CAB_Abac_charpentes — Architecture UML
+---
+
+%% ============================================================
+%%  DIAGRAMME DE CLASSES — abac_charpente_vectoriser + sapeg_regen_stock
+%% ============================================================
+
+classDiagram
+    direction TB
+
+    %% ───────────────────────────────
+    %%  MODÈLES DE DONNÉES
+    %% ───────────────────────────────
+
+    class ConfigCalculVect {
+        +str id_config_calcul
+        +str type_poutre
+        +str usage
+        +float L_min_m
+        +float L_max_m
+        +float g_k
+        +float q_k
+        +float s_k
+        +float w_k
+        +int class_service
+        +list~RegleFiltre~ filtres
+    }
+
+    class RegleFiltre {
+        +str champ
+        +str operateur
+        +any valeur
+    }
+
+    class ConfigMatériauVect {
+        +str classe_resistance
+        +float b_mm
+        +float h_mm
+        +float A_cm2
+        +float I_y_cm4
+        +float W_y_cm3
+        +float f_m_k_MPa
+        +float E_0_mean_MPa
+        +float rho_k_kgm3
+        +str id_config_materiau
+    }
+
+    class CombinaisonEC0Vect {
+        +str id_combinaison
+        +str type_etat_limite
+        +float gamma_G
+        +float gamma_Q1
+        +float gamma_Q_accomp
+        +str type_charge_principale
+        +str duree_charge
+    }
+
+    class TypeSection {
+        <<enumeration>>
+        RECTANGULAIRE
+        RONDE
+        PERSONNALISEE
+    }
+
+    class ResultatPortee {
+        +str id_config_materiau
+        +float L_max_admissible_m
+        +str verification_dominante
+        +float taux_max
+    }
+
+    class ResultatVerification {
+        +str id_verification
+        +ndarray taux_LCM
+        +ndarray active_LCM
+        +str unite
+    }
+
+    %% ───────────────────────────────
+    %%  ESPACE TENSEUR CENTRAL
+    %% ───────────────────────────────
+
+    class EspaceCombinaisonTenseur {
+        +ndarray longueurs_m       [n_L]
+        +list combinaisons         [n_C]
+        +list materiaux            [n_M]
+        +ndarray M_d_kNm           [n_L, n_C, n_M]
+        +ndarray V_d_kN            [n_L, n_C, n_M]
+        +ndarray M_y_kNm           [n_L, n_C, n_M]
+        +ndarray M_z_kNm           [n_L, n_C, n_M]
+        +ndarray k_mod_CM          [n_C, n_M]
+        +ndarray kdef_arr          [n_M]
+        +ndarray k_crit_LM         [n_L, n_M]
+        +ndarray k_c_y_LM          [n_L, n_M]
+        +ndarray k_c_z_LM          [n_L, n_M]
+        +ndarray f_m_d_CM          [n_C, n_M]
+        +ndarray f_v_d_CM          [n_C, n_M]
+        +ndarray f_c0_d_CM         [n_C, n_M]
+        +ndarray f_c90_d_CM        [n_C, n_M]
+        +ndarray limite_fleche     [n_M]
+    }
+
+    %% ───────────────────────────────
+    %%  ORCHESTRATEUR
+    %% ───────────────────────────────
+
+    class MoteurVect {
+        <<orchestrateur>>
+        +run(chemin_toml) list~ResultatPortee~
+        +cli()
+        -_regenerer_stock(source, filtres)
+        -_developper_produit_cartesien(config) list~dict~
+        -_lire_toml(chemin) dict
+    }
+
+    %% ───────────────────────────────
+    %%  ÉTAPES PIPELINE
+    %% ───────────────────────────────
+
+    class P1Charges {
+        <<pipeline stage 1>>
+        +calculer_charges_caracteristiques(config, materiaux, type_poutre) dict
+    }
+
+    class P2Combinaison {
+        <<pipeline stage 2>>
+        +construire_espace(longueurs, combinaisons, materiaux, config, type_poutre) EspaceCombinaisonTenseur
+    }
+
+    class P3ELU {
+        <<pipeline stage 3>>
+        +verifier_elu(espace, verifications) tuple
+    }
+
+    class P4ELS {
+        <<pipeline stage 4>>
+        +verifier_els(espace, verifications) tuple
+    }
+
+    class P5Synthese {
+        <<pipeline stage 5>>
+        +synthetiser(longueurs, taux_elu, taux_els, materiaux, config) list~ResultatPortee~
+    }
+
+    %% ───────────────────────────────
+    %%  TYPES DE POUTRE (Protocole)
+    %% ───────────────────────────────
+
+    class TypePoutreVect {
+        <<abstract>>
+        +str id_type_poutre
+        +bool double_flexion_active
+        +decomposer_charges(g, q, s, w, config)* dict
+        +longueur_deversement_m(L, config)* float
+        +poids_propre_kNm(materiau)* float
+    }
+
+    class SoliveVect {
+        +id_type_poutre = "solive"
+        +double_flexion_active = false
+        +decomposer_charges()
+        +longueur_deversement_m()
+    }
+
+    class SommierVect {
+        +id_type_poutre = "sommier"
+        +double_flexion_active = false
+        +decomposer_charges()
+        +longueur_deversement_m()
+    }
+
+    class ChevronVect {
+        +id_type_poutre = "chevron"
+        +double_flexion_active = false
+        +decomposer_charges()
+        +longueur_deversement_m()
+    }
+
+    class PanneDeverseeVect {
+        +id_type_poutre = "panne_deversee"
+        +bool double_flexion_active
+        +decomposer_charges()
+        +longueur_deversement_m()
+    }
+
+    class PanneAplombVect {
+        +id_type_poutre = "panne_aplomb"
+        +double_flexion_active = true
+        +decomposer_charges()
+        +longueur_deversement_m()
+    }
+
+    %% ───────────────────────────────
+    %%  VÉRIFICATIONS ELU (Protocole)
+    %% ───────────────────────────────
+
+    class VerificationELU {
+        <<abstract>>
+        +str id_verification
+        +str article_ec5
+        +calculer(espace)* ResultatVerification
+    }
+
+    class FlexionAxeFort {
+        +id = "flexion_axe_fort"
+        +article_ec5 = "§6.1.6 Eq.6.11"
+    }
+    class FlexionAxeFaible {
+        +id = "flexion_axe_faible"
+        +article_ec5 = "§6.1.6 Eq.6.12"
+    }
+    class DoubleFlexionForte {
+        +id = "double_flexion_forte"
+        +article_ec5 = "§6.1.6 Eq.6.19"
+    }
+    class Cisaillement {
+        +id = "cisaillement"
+        +article_ec5 = "§6.1.7"
+    }
+    class Appui {
+        +id = "appui"
+        +article_ec5 = "§6.1.5"
+    }
+    class Deversement {
+        +id = "deversement"
+        +article_ec5 = "§6.3.3"
+    }
+    class FlambementAxeFort {
+        +id = "flambement_axe_fort"
+        +article_ec5 = "§6.3.2"
+    }
+    class FlambementAxeFaible {
+        +id = "flambement_axe_faible"
+        +article_ec5 = "§6.3.2"
+    }
+    class Compression {
+        +id = "compression"
+        +article_ec5 = "§6.1.4"
+    }
+    class Traction {
+        +id = "traction"
+        +article_ec5 = "§6.1.2"
+    }
+    class CompressionOblique {
+        +id = "compression_oblique"
+        +article_ec5 = "§6.2.2 Hankinson"
+    }
+    class FlexionCompression {
+        +id = "flexion_compression_forte"
+        +article_ec5 = "§6.2.4"
+    }
+
+    %% ───────────────────────────────
+    %%  VÉRIFICATIONS ELS (Protocole)
+    %% ───────────────────────────────
+
+    class VerificationELS {
+        <<abstract>>
+        +str id_verification
+        +str article_ec5
+        +calculer(espace)* ResultatVerification
+    }
+
+    class FlecheInst {
+        +id = "fleche_inst"
+        +article_ec5 = "§7.2"
+    }
+    class FlecheFin {
+        +id = "fleche_fin"
+        +article_ec5 = "§7.2"
+    }
+    class FlecheFinBrute {
+        +id = "fleche_fin_brute"
+        +article_ec5 = "§7.2"
+    }
+    class FlecheSecondOeuvre {
+        +id = "fleche_second_oeuvre"
+        +article_ec5 = "§7.2"
+    }
+
+    %% ───────────────────────────────
+    %%  REGISTRES
+    %% ───────────────────────────────
+
+    class TYPES_POUTRE {
+        <<registry>>
+        +dict~str, TypePoutreVect~ types
+        +get(id) TypePoutreVect
+    }
+
+    class VERIFICATIONS_ELU {
+        <<registry>>
+        +list~VerificationELU~ verifications
+    }
+
+    class VERIFICATIONS_ELS {
+        <<registry>>
+        +list~VerificationELS~ verifications
+    }
+
+    %% ───────────────────────────────
+    %%  MODULE STOCK (sapeg_regen_stock)
+    %% ───────────────────────────────
+
+    class SapegRegenStock {
+        <<module>>
+        +run(source, filtres, output) dict
+        +detecter_fichier_stock(source_dir) Path
+        +charger_stock(fichier) list~ProduitStock~
+        +enrichir_produit(produit) ProduitValide
+        +hash_id_materiau(b, h, classe, L_max) str
+    }
+
+    class ProduitStock {
+        +str reference
+        +str classe_resistance
+        +float b_mm
+        +float h_mm
+        +float L_max_m
+    }
+
+    class ProduitValide {
+        +str hash_id_materiau
+        +float A_cm2
+        +float I_y_cm4
+        +float W_y_cm3
+        +float f_m_k_MPa
+    }
+
+    class ConfigFiltre {
+        +list~RegleFiltre~ regles
+    }
+
+    %% ───────────────────────────────
+    %%  SORTIE
+    %% ───────────────────────────────
+
+    class AbaqueComplet {
+        <<sortie>>
+        +construire_df_complet(resultats) DataFrame
+        +exporter_csv(df, chemin) None
+    }
+
+    class TenseurDuck {
+        <<sortie>>
+        +sauvegarder(espace, chemin_duckdb) None
+    }
+
+    class VuesSortie {
+        <<sortie>>
+        +appliquer_vues_depuis_toml(df, config_sortie) dict~str,DataFrame~
+    }
+
+    %% ────────────────────────────────────────────────
+    %%  RELATIONS
+    %% ────────────────────────────────────────────────
+
+    %% Composition config
+    ConfigCalculVect "1" *-- "0..*" RegleFiltre : contient
+    ConfigMatériauVect --> TypeSection : utilise
+
+    %% Orchestrateur → étapes
+    MoteurVect --> P1Charges : 1. charges
+    MoteurVect --> P2Combinaison : 2. espace
+    MoteurVect --> P3ELU : 3. ELU
+    MoteurVect --> P4ELS : 4. ELS
+    MoteurVect --> P5Synthese : 5. synthèse
+    MoteurVect --> SapegRegenStock : regen stock
+    MoteurVect --> AbaqueComplet : exporte
+    MoteurVect --> TenseurDuck : sauvegarde
+    MoteurVect --> VuesSortie : applique
+
+    %% Flux de données dans le pipeline
+    P1Charges ..> EspaceCombinaisonTenseur : alimente (charges)
+    P2Combinaison --> EspaceCombinaisonTenseur : construit
+    P3ELU ..> EspaceCombinaisonTenseur : consomme
+    P4ELS ..> EspaceCombinaisonTenseur : consomme
+    P5Synthese --> ResultatPortee : produit
+
+    %% Composition du tenseur
+    EspaceCombinaisonTenseur "1" *-- "n_M" ConfigMatériauVect : axis M
+    EspaceCombinaisonTenseur "1" *-- "n_C" CombinaisonEC0Vect : axis C
+    EspaceCombinaisonTenseur --> TypePoutreVect : délègue décomposition
+
+    %% Filtrage
+    ConfigCalculVect --> ConfigMatériauVect : filtre (appliquer_filtres)
+    ConfigCalculVect --> CombinaisonEC0Vect : génère (generer_combinaisons)
+
+    %% Hiérarchie types de poutre
+    TypePoutreVect <|-- SoliveVect
+    TypePoutreVect <|-- SommierVect
+    TypePoutreVect <|-- ChevronVect
+    TypePoutreVect <|-- PanneDeverseeVect
+    TypePoutreVect <|-- PanneAplombVect
+    TYPES_POUTRE o-- TypePoutreVect : enregistre
+
+    %% Hiérarchie vérifications ELU
+    VerificationELU <|-- FlexionAxeFort
+    VerificationELU <|-- FlexionAxeFaible
+    VerificationELU <|-- DoubleFlexionForte
+    VerificationELU <|-- Cisaillement
+    VerificationELU <|-- Appui
+    VerificationELU <|-- Deversement
+    VerificationELU <|-- FlambementAxeFort
+    VerificationELU <|-- FlambementAxeFaible
+    VerificationELU <|-- Compression
+    VerificationELU <|-- Traction
+    VerificationELU <|-- CompressionOblique
+    VerificationELU <|-- FlexionCompression
+    VERIFICATIONS_ELU o-- VerificationELU : 17 vérifications
+
+    %% Hiérarchie vérifications ELS
+    VerificationELS <|-- FlecheInst
+    VerificationELS <|-- FlecheFin
+    VerificationELS <|-- FlecheFinBrute
+    VerificationELS <|-- FlecheSecondOeuvre
+    VERIFICATIONS_ELS o-- VerificationELS : 12 vérifications
+
+    %% Résultats vérifications
+    VerificationELU ..> ResultatVerification : produit
+    VerificationELS ..> ResultatVerification : produit
+
+    %% Module stock
+    SapegRegenStock --> ProduitStock : charge
+    SapegRegenStock --> ProduitValide : enrichit
+    SapegRegenStock --> ConfigFiltre : applique
+    ProduitValide --|> ProduitStock : extends
+    ConfigFiltre "1" *-- "0..*" RegleFiltre : contient
