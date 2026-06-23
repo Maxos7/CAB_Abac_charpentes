@@ -126,7 +126,7 @@ def regenerer(
         dict_résultats = run(source, liste_filtres, stock_enrichi_path, config_ingestion)
 
         # Rapport FR sur stdout
-        click.echo("Enrichissement termine.")
+        click.echo("Enrichissement terminé.")
         for nom, chemin in dict_résultats.items():
             click.echo(f"  Filtre '{nom}' -> {chemin}")
 

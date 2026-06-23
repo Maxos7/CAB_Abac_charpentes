@@ -148,6 +148,7 @@ def _ecrire_stock_enrichi(
             {
                 "id_produit": ex["id_produit"],
                 "libelle": None,
+                "essence": None,
                 "b_mm": None,
                 "h_mm": None,
                 "L_max_m": None,
@@ -207,6 +208,7 @@ def _ecrire_csv_filtre(
             {
                 "id_produit": ex.id_produit,
                 "libelle": None,
+                "essence": None,
                 "b_mm": None,
                 "h_mm": None,
                 "L_max_m": None,

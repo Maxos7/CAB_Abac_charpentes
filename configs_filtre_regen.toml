@@ -9,7 +9,7 @@ description = "Produits charpente bois massif C24 avec dimensions structurelles"
   [[filtre.regles]]
   type    = "liste"
   champ   = "classe_resistance"
-  valeurs = ["C24", "GL24H", "GT24"]
+  valeurs = ["C24", "GL24h", "GT24"]
 
   [[filtre.regles]]
   type  = "plage"

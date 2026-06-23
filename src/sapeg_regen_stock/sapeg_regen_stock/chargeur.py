@@ -74,11 +74,14 @@ def _trouver_colonne(df: pd.DataFrame, candidats: list[str]) -> str | None:
 
 
 def _lire_unite(row: dict, col: str, df_columns: pd.Index) -> str:
-    """Retourne l'unité depuis la colonne '{col}_unite' si disponible, sinon 'mm'."""
+    """Retourne l'unité depuis la colonne '{col}_unite' si disponible.
+
+    Par défaut : 'cm' pour les colonnes SAPEG (préfixe 'produit_'), 'mm' pour les autres.
+    """
     unite_col = f"{col}_unite"
     if unite_col in df_columns:
         return str(row.get(unite_col, "mm")).strip().lower()
-    return "mm"
+    return "cm" if col.startswith("produit_") else "mm"
 
 
 def _vers_mm(valeur: float, unite: str) -> float:

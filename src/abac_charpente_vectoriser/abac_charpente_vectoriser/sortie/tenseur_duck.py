@@ -183,6 +183,7 @@ class TenseurDuck:
                         verif_id,
                         float(L),
                         arr[l_idx].tolist(),
+                        arr_combo[l_idx].tolist() if arr_combo is not None else None,
                         horodatage,
                     )
                 )
@@ -196,6 +197,7 @@ class TenseurDuck:
                         verif_id,
                         float(L),
                         arr[l_idx].tolist(),
+                        arr_combo[l_idx].tolist() if arr_combo is not None else None,
                         horodatage,
                     )
                 )

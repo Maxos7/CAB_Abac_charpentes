@@ -9,7 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, field_validator, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 # ---------------------------------------------------------------------------
@@ -143,7 +143,7 @@ class ConfigFiltre(BaseModel):
     nom: str
     sortie: str
     description: str = ""
-    regles: list[RegleEgal | ReglePlage | RegleListe | RegleNonNul] = field(
+    regles: list[RegleEgal | ReglePlage | RegleListe | RegleNonNul] = Field(
         default_factory=list
     )
 

@@ -1,6 +1,6 @@
 # configs_calcul_vect.toml — Configurations de calcul EC5
 # Référence complète : modeles_config.md
-# CLI : uv run abac-vect --toml configs_calcul_vect.toml --stock stock.csv
+# CLI : uv run abac-vect --toml-calcul configs_calcul_vect.toml --stock stock.csv
 # Champs multi-valués (liste) → produit cartésien automatique.
 
 # -----------------------------------------------------------------------------
@@ -12,7 +12,7 @@ type_poutre       = "PanneDeversee"
 usage             = "panne_standard"
 
 L_min_m           = 2.0
-L_max_m           = 12
+L_max_m           = 12.0
 pas_longueur_m    = 0.25
 
 pente_deg         = [40]
@@ -25,6 +25,7 @@ q_k_kNm2          = 0.0
 categorie_q       = "H"
 s_k_kNm2          = 0.36
 w_k_kNm2          = 0.0
+type_toiture_vent = "1_pan"   # "1_pan" | "2_pans" | "terrasse"
 
 double_flexion             = true
 fleches_double             = true
@@ -41,12 +42,12 @@ longueur_appui_mm          = 50.0
 # Panne déversée sans second œuvre
 # -----------------------------------------------------------------------------
 [[config_calcul]]
-id_config_calcul = "PANNE_DEVERSEE_W2"
+id_config_calcul = "PANNE_DEVERSEE"
 type_poutre       = "PanneDeversee"
 usage             = "panne_standard"
 
 L_min_m           = 2.0
-L_max_m           = 12
+L_max_m           = 12.0
 pas_longueur_m    = 0.25
 
 pente_deg         = [40]
@@ -59,6 +60,7 @@ q_k_kNm2          = 0.0
 categorie_q       = "H"
 s_k_kNm2          = 0.36
 w_k_kNm2          = 0.0
+type_toiture_vent = "1_pan"   # "1_pan" | "2_pans" | "terrasse"
 
 double_flexion             = true
 fleches_double             = true
@@ -89,6 +91,7 @@ q_k_kNm2          = 1.50   # habitation catégorie A
 categorie_q       = "A"
 s_k_kNm2          = 0.0
 w_k_kNm2          = 0.0
+type_toiture_vent = "1_pan"   # "1_pan" | "2_pans" | "terrasse"
 
 second_oeuvre              = true
 longueur_appui_mm          = 50.0
