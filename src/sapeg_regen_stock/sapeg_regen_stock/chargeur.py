@@ -247,6 +247,7 @@ def charger_stock(chemin: Path, config: ConfigIngestion) -> list[ProduitStock]:
                 essence=essence,
                 classe_dans_libelle=classe_dans_libelle,
                 ligne_csv_source=int(idx) + 2,  # +2 : 1 pour l'en-tête, 1 pour base-1
+                produit_statut=str(row.get("produit_statut", "")).strip(),
             )
         )
 

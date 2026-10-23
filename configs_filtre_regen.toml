@@ -7,6 +7,11 @@ sortie      = "resultats/stock_charpente.csv"
 description = "Produits charpente bois massif C24 avec dimensions structurelles"
 
   [[filtre.regles]]
+  type   = "egal"
+  champ  = "produit_statut"
+  valeur = 1
+
+  [[filtre.regles]]
   type    = "liste"
   champ   = "classe_resistance"
   valeurs = ["C24", "GL24h", "GT24"]

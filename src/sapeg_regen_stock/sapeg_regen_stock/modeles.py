@@ -33,6 +33,7 @@ class ProduitStock:
     essence: str = ""
     classe_dans_libelle: bool = True
     ligne_csv_source: int = 0
+    produit_statut: str = ""
 
 
 @dataclass
@@ -52,6 +53,7 @@ class ProduitValide:
     essence: str = ""
     classe_dans_libelle: bool = True
     ligne_csv_source: int = 0
+    produit_statut: str = ""
 
 
 @dataclass

@@ -154,4 +154,5 @@ def enrichir_produit(produit_stock, _id_config_materiau: str) -> ProduitValide:
         essence=produit_stock.essence,
         classe_dans_libelle=produit_stock.classe_dans_libelle,
         ligne_csv_source=produit_stock.ligne_csv_source,
+        produit_statut=produit_stock.produit_statut,
     )

@@ -89,6 +89,10 @@ def _verifier_regle(produit: ProduitValide, regle) -> str | None:
             if val.strip().lower() != cible.strip().lower():
                 return f"egal({regle.champ}={cible})"
         else:
+            # Le CSV source est lu en texte : "1" doit égaler 1
+            if isinstance(val, str):
+                val = val.strip()
+                cible = str(cible)
             if val != cible:
                 return f"egal({regle.champ}={cible})"
         return None

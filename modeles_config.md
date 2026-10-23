@@ -1,5 +1,12 @@
 # Modèles de configuration
 
+Ce documment regroupe un enssemble de paramétre utilisable pour la configuration des différent fichier de réglage en .toml.
+Le .toml et un standard d'écriture texte ou un enssemble de paramétre est déclarée.
+- Un groupe de paramétre est ouvet avec  "[~~~]"
+- Un paramétre est definie par une Clef = Valeur
+
+Suit ci dessous, pour chaque fichier .toml, les groupement de paramétre, leur paramétre, et leux valeurs possible !
+
 # `configs_regen.toml` — Ingestion stock SAPEG
 
 ## `[ingestion]`
